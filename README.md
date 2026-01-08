@@ -1,0 +1,1 @@
+v6.6 更新：支持 lexeme.csv 中的 variants_chs 与 variants_en；右上粉卡每行“中文 + 英文（小行）”，无喇叭。
