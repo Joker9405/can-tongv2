@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Can-Tong — 粤语查询</title>
+  <link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">Can-Tong <span class="dot">•</span></div>
+    <div class="lang">chs-zhh-en</div>
+  </header>
+  <main class="container">
+    <div class="search">
+      <input id="q" type="text" placeholder="" autocomplete="off" />
+    </div>
+
+    <!-- ⭐ 新增：当 crossmap 里 term 重复时，这里显示图一那排候选 zhh 按钮 -->
+    <section id="candidate-bar" class="candidate-bar"></section>
+
+    <!-- 原来的结果区域（图二） -->
+    <section id="grid" class="grid"></section>
+    <section id="examples" class="examples" hidden>
+      <div class="examples-inner" id="examples-list"></div>
+    </section>
+  </main>
+  <footer class="foot">CanTongMVP — Code MIT, Lexicon Closed; data/* CSVs CC BY-NC-ND.</footer>
+  <script src="/js/app.js"></script>
+</body>
+</html>

@@ -1,1 +1,11 @@
-v6.6 更新：支持 lexeme.csv 中的 variants_chs 与 variants_en；右上粉卡每行“中文 + 英文（小行）”，无喇叭。
+
+  # Minimalist sidebar component
+
+  This is a code bundle for Minimalist sidebar component. The original project is available at https://www.figma.com/design/zdHkWjWm1ifQ3YuoUXQK5c/Minimalist-sidebar-component.
+
+  ## Running the code
+
+  Run `npm i` to install the dependencies.
+
+  Run `npm run dev` to start the development server.
+  
