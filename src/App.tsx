@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Search } from './components/Search';
 import { GreenCard } from './components/GreenCard';
@@ -6,14 +7,15 @@ import { BlueCard } from './components/BlueCard';
 import { AddWordDrawer } from './components/AddWordDrawer';
 
 export interface LexemeEntry {
-  id?: string;
-  zhh: string;
-  chs: string;
-  en: string;
-  jyutping: string;
-  tags?: string;
-  related?: string;
-  is_r18?: string;
+  id?: string;          // 对应 id 字段
+  zhh: string;          // 对应 zhh 字段
+  zhh_pron: string;     // 对应 zhh_pron（粤拼）字段
+  is_r18?: string;      // 对应 is_r18 字段
+  chs: string;          // 对应 chs 字段
+  en: string;           // 对应 en 字段
+  owner_tag?: string;   // 对应 owner_tag 字段
+  register?: string;    // 对应 register 字段
+  intent?: string;      // 对应 intent 字段
 }
 
 export default function App() {
@@ -29,18 +31,16 @@ export default function App() {
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
-    // Load CSV data from GitHub
     const loadCSV = async () => {
       try {
-        const url = 'YOUR_GITHUB_RAW_CSV_URL';
-        const response = await fetch(url);
+        // Load the CSV file from local public directory
+        const response = await fetch('/lexeme.csv');
         const csvText = await response.text();
         const parsedData = parseCSV(csvText);
         setLexemeData(parsedData);
         setLoading(false);
       } catch (error) {
         console.error('Failed to load CSV data:', error);
-        setLexemeData(mockData);
         setLoading(false);
       }
     };
@@ -49,85 +49,88 @@ export default function App() {
   }, []);
 
   const parseCSV = (csvText: string): LexemeEntry[] => {
-    const lines = csvText.split('\n');
-    const headers = lines[0].split(',').map(h => h.trim());
-    
+   const lines = csvText.split('\n');
+   const headers = lines[0].split(',').map(h => h.trim());
+  
     const data: LexemeEntry[] = [];
-    for (let i = 1; i < lines.length; i++) {
-      if (!lines[i].trim()) continue;
+  for (let i = 1; i < lines.length; i++) {
+    if (!lines[i].trim()) continue;
       
-      const values = lines[i].split(',').map(v => v.trim());
-      const entry: any = {};
+       const values = lines[i].split(',').map(v => v.trim());
+       const entry: any = {};
       
       headers.forEach((header, index) => {
-        entry[header] = values[index] || '';
-      });
+      entry[header] = values[index] || '';
+    });
       
-      data.push(entry as LexemeEntry);
-    }
-    
+    data.push(entry as LexemeEntry);
+  } 
+
+    console.log('Parsed CSV Data:', data);  // 打印 CSV 解析后的数据
     return data;
   };
 
-  const handleSearch = (term: string) => {
-    setSearchTerm(term);
-    
-    if (!term.trim()) {
-      setMatchedEntries([]);
-      setSelectedEntry(null);
-      setRelatedWords([]);
-      setNotFound(false);
-      return;
-    }
+const handleSearch = (term: string) => {
+  setSearchTerm(term);
 
-    // Define keyword groups
-    const keywordGroups = [
-      {
-        chs: ['笨蛋', '蠢货', '没用', '人头猪脑', '没有用的人'],
-        en: ['dumb', 'imbecile', 'incredibly stupid', 'brain dead', 'fool', 'idiot', 'moron', 'stupid', 'retarded', 'doofus', 'dimwit', 'nitwit', 'stupid person', 'big sweet potato', 'pig brained', 'dumb person'],
-        entries: mockData
-      }
-    ];
+  if (!term.trim()) {
+    setMatchedEntries([]);
+    setSelectedEntry(null);
+    setRelatedWords([]);
+    setNotFound(false);
+    setSwearingToggle(false);
+    return;
+  }
 
-    let searchResults: LexemeEntry[] = [];
-    
-    // Check if matches any keyword group
-    for (const group of keywordGroups) {
-      const keywords = language === 'chs' ? group.chs : group.en;
-      const isMatch = keywords.some(keyword => 
-        keyword.toLowerCase().includes(term.toLowerCase()) ||
-        term.toLowerCase().includes(keyword.toLowerCase())
-      );
-      
-      if (isMatch) {
-        searchResults = group.entries;
-        break;
-      }
-    }
+  // 将输入的关键词通过 `/` 分割，处理多个关键词
+  const keywords = term.split('/').map(keyword => keyword.trim().toLowerCase());
 
-    if (searchResults.length > 0) {
-      // Randomly select one to display
-      const randomIndex = Math.floor(Math.random() * searchResults.length);
-      const selected = searchResults[randomIndex];
-      
-      setMatchedEntries(searchResults);
-      setSelectedEntry(selected);
-      setNotFound(false);
-      
-      // Process related field
-      if (selected.related) {
-        const words = selected.related.split(/[,/]/).map(w => w.trim()).filter(w => w);
-        setRelatedWords(words);
-      } else {
-        setRelatedWords([]);
-      }
+  console.log('Search Term:', term); // 打印搜索关键词
+  console.log('Keywords:', keywords); // 打印分割后的关键词
+
+  // 在 chs 和 en 列中进行匹配
+  const searchResults: LexemeEntry[] = lexemeData.filter(entry => {
+    // 获取当前选择的语言列（chs 和 en）
+    const matchChs = entry.chs.toLowerCase();
+    const matchEn = entry.en.toLowerCase();
+
+    console.log('Matching chs:', matchChs);  // 打印当前匹配的中文词条
+    console.log('Matching en:', matchEn);  // 打印当前匹配的英文词条
+
+    // 确保每个关键词都能匹配到 chs 或 en 列
+    return keywords.every(keyword =>
+      matchChs.includes(keyword) || matchEn.includes(keyword)  // 在 chs 或 en 中进行匹配
+    );
+  });
+
+  console.log('Search Results:', searchResults);  // 打印匹配到的结果
+
+  if (searchResults.length > 0) {
+    const colloquialResults = searchResults.filter(e => e.is_r18 === '0');
+    const entriesToChooseFrom = colloquialResults.length > 0 ? colloquialResults : searchResults;
+    const randomIndex = Math.floor(Math.random() * entriesToChooseFrom.length);
+    const selected = entriesToChooseFrom[randomIndex];
+
+    setMatchedEntries(searchResults);
+    setSelectedEntry(selected);
+    setNotFound(false);
+    setSwearingToggle(false);
+
+    if (selected.related) {
+      const words = selected.related.split(/[,/]/).map(w => w.trim()).filter(w => w);
+      setRelatedWords(words);
     } else {
-      setMatchedEntries([]);
-      setSelectedEntry(null);
       setRelatedWords([]);
-      setNotFound(true);
     }
-  };
+  } else {
+    setMatchedEntries([]);
+    setSelectedEntry(null);
+    setRelatedWords([]);
+    setNotFound(true);
+    setSwearingToggle(false);
+  }
+};
+
 
   const handleWordClick = (word: string) => {
     const found = matchedEntries.find(entry => entry.zhh === word);
@@ -155,14 +158,12 @@ export default function App() {
   const isSwearing = selectedEntry?.is_r18 === '1' || selectedEntry?.tags?.includes('Swearing');
   const isColloquial = selectedEntry?.is_r18 === '0';
 
-  // Separate vulgar and colloquial entries
   const vulgarEntries = matchedEntries.filter(e => e.is_r18 === '1');
   const colloquialEntries = matchedEntries.filter(e => e.is_r18 === '0');
 
   return (
     <div className="min-h-screen bg-black text-white pb-20">
       <div className="max-w-3xl mx-auto px-4 py-8">
-        {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-2">
             <h1 className="text-3xl font-bold text-[#c8ff00] font-[Architects_Daughter] text-[32px]">Can-Tong</h1>
@@ -177,146 +178,76 @@ export default function App() {
           </button>
         </div>
 
-        {/* Search */}
         <Search
           value={searchTerm}
           onChange={handleSearch}
           placeholder="imbecile"
         />
 
-        {/* Results */}
-        {loading && (
-          <div className="text-center text-gray-400 mt-8">
-            Loading data...
-          </div>
-        )}
+        {loading && <div className="text-center text-gray-400 mt-8">Loading data...</div>}
 
-        {!loading && selectedEntry && !isSwearing && (
+        {!loading && selectedEntry && (
           <div className="mt-2 space-y-2">
-            {/* Green Card for Colloquial */}
-            <GreenCard entry={selectedEntry} />
-
-            {/* Related Terms */}
-            <div className="flex flex-wrap gap-2">
-              {relatedWords.map((word, index) => (
-                <button
-                  key={`related-${index}`}
-                  onClick={() => handleWordClick(word)}
-                  className="px-4 py-2 bg-[#c8ff00] text-black rounded-full text-sm 
-                            hover:scale-105 transition-transform font-medium"
-                >
-                  {word}
-                </button>
-              ))}
-              
-              {matchedEntries
-                .filter(e => e !== selectedEntry)
-                .map((entry, index) => (
-                  <button
-                    key={`entry-${index}`}
-                    onClick={() => handleEntryClick(entry)}
-                    className="px-4 py-2 bg-[#c8ff00] text-black rounded-full text-sm 
-                              hover:scale-105 transition-transform font-medium"
-                  >
-                    {entry.zhh}
-                  </button>
-                ))}
-            </div>
-
-            {/* Add Button with Drawer */}
-            <div className="relative">
-              <button
-                onClick={() => setShowAddDrawer(true)}
-                className="px-5 py-2 bg-gray-700 text-[#c8ff00] rounded-full text-sm 
-                          hover:bg-gray-600 transition-colors font-medium"
-              >
-                add
-              </button>
-              
-              {/* Add Word Drawer - Positioned to cover the button */}
-              {showAddDrawer && (
-                <AddWordDrawer
-                  isOpen={showAddDrawer}
-                  onClose={() => setShowAddDrawer(false)}
-                />
-              )}
-            </div>
-          </div>
-        )}
-
-        {!loading && selectedEntry && isSwearing && (
-          <div className="mt-2 space-y-2">
-            {/* Main Display Card - Green or Magenta depending on selection */}
             {selectedEntry.is_r18 === '1' ? (
               <MagentaCard entry={selectedEntry} />
             ) : (
               <GreenCard entry={selectedEntry} />
             )}
 
-            {/* Related Colloquial Terms (Green pills) */}
             <div className="flex flex-wrap gap-2">
-              {relatedWords.map((word, index) => (
-                <button
-                  key={`related-${index}`}
-                  onClick={() => handleWordClick(word)}
-                  className="px-4 py-2 bg-[#c8ff00] text-black rounded-full text-lg hover:scale-105 transition-transform font-medium"
-                >
-                  {word}
-                </button>
-              ))}
-              
-              {matchedEntries
-                .filter(e => e !== selectedEntry && e.is_r18 !== '1')
+              {colloquialEntries
+                .filter(e => e !== selectedEntry)
                 .map((entry, index) => (
                   <button
-                    key={`entry-${index}`}
+                    key={`green-${index}`}
                     onClick={() => handleEntryClick(entry)}
-                    className="px-4 py-2 bg-[#c8ff00] text-black rounded-full text-sm 
+                    className="px-5 py-3 bg-[#c8ff00] text-black rounded-[28px] p-8 relative text-lg 
                               hover:scale-105 transition-transform font-medium"
                   >
-                    {entry.zhh}
+                    {entry.zhh} 
                   </button>
                 ))}
             </div>
 
-            {/* Swearing Toggle - Always visible when results found */}
-            {!swearingToggle ? (
-              <div className="flex items-center gap-3">
+            {vulgarEntries.length > 0 && !swearingToggle && (
+              <div className="flex items-center gap-2">
                 <button
                   onClick={() => setSwearingToggle(true)}
-                  className="px-5 py-2 bg-[#ff0090] text-white rounded-full text-lg hover:bg-[#ff1a9f] transition-colors font-medium font-bold font-[Anton]"
+                  className="px-5 py-3 bg-[#ff0090] text-white rounded-[28px] p-8 relative text-lg 
+                            hover:bg-[#ff1a9f] transition-colors font-medium font-bold font-[Anton]"
                 >
                   Swearing
                 </button>
               </div>
-            ) : (
-              /* Vulgar Terms - Slide in from left to right */
+            )}
+
+            {swearingToggle && vulgarEntries.length > 0 && (
               <div className="flex flex-wrap gap-2">
-                {vulgarEntries.map((entry, index) => (
-                  <button
-                    key={`vulgar-${index}`}
-                    onClick={() => handleEntryClick(entry)}
-                    className="px-4 py-2 bg-[#ff0090] text-white rounded-full text-lg 
-                              hover:scale-105 transition-transform font-medium
-                              animate-slide-in"
-                    style={{ animationDelay: `${index * 0.05}s` }}
-                  >
-                    {entry.zhh}
-                  </button>
-                ))}
+                {vulgarEntries
+                  .filter(e => e !== selectedEntry)
+                  .map((entry, index) => (
+                    <button
+                      key={`magenta-${index}`}
+                      onClick={() => handleEntryClick(entry)}
+                      className="px-5 py-3 bg-[#ff0090] text-white rounded-[28px] p-8 relative text-lg 
+                                hover:scale-105 transition-transform font-medium animate-slide-in"
+                      style={{ animationDelay: `${index * 0.05}s` }}
+                    >
+                      {entry.zhh} 
+                    </button>
+                  ))}
               </div>
             )}
 
-            {/* Add Button - Always below swearing content */}
             <div className="relative">
               <button
                 onClick={() => setShowAddDrawer(true)}
-                className="px-5 py-2 bg-gray-700 text-[#c8ff00] rounded-full text-lg hover:bg-gray-600 transition-colors font-medium font-[Anton] font-bold"
+                className="px-5 py-3 bg-gray-700 text-[#c8ff00] rounded-[28px] p-8 relative text-lg 
+                          hover:bg-gray-600 transition-colors font-medium font-[Anton] font-bold"
               >
                 add
               </button>
               
-              {/* Add Word Drawer - Positioned to cover the button */}
               {showAddDrawer && (
                 <AddWordDrawer
                   isOpen={showAddDrawer}
@@ -327,12 +258,10 @@ export default function App() {
           </div>
         )}
 
-        {/* Not Found - Blue Card */}
         {!loading && notFound && searchTerm && (
           <BlueCard searchTerm={searchTerm} />
         )}
 
-        {/* Footer */}
         <div className="mt-16 pt-8 text-center text-xs text-gray-600">
           <p className="font-[Inder]">Vocabulary collected on that day: {lexemeData.length} Entry</p>
           <p className="mt-1 font-[ABeeZee]">
@@ -343,77 +272,3 @@ export default function App() {
     </div>
   );
 }
-
-// Mock data
-const mockData: LexemeEntry[] = [
-  {
-    id: '1',
-    zhh: '死蠢',
-    chs: '笨蛋',
-    en: 'dumb',
-    jyutping: 'sei2 ceon2',
-    tags: 'Swearing',
-    related: '蠢材/茂利/磨碌/豬頭炳/大番薯/人頭豬腦',
-    is_r18: '1'
-  },
-  {
-    id: '2',
-    zhh: '蠢材',
-    chs: '蠢货',
-    en: 'imbecile',
-    jyutping: 'ceon2 coi4',
-    tags: 'Swearing',
-    related: '死蠢/茂利/磨碌/豬頭炳/大番薯/人頭豬腦',
-    is_r18: '1'
-  },
-  {
-    id: '3',
-    zhh: '茂利',
-    chs: '笨蛋',
-    en: 'incredibly stupid',
-    jyutping: 'mau6 lei6',
-    tags: 'Swearing',
-    related: '死蠢/蠢材/磨碌/豬頭炳/大番薯/人頭豬腦',
-    is_r18: '1'
-  },
-  {
-    id: '4',
-    zhh: '磨碌',
-    chs: '没用',
-    en: 'brain dead',
-    jyutping: 'mo4 luk1',
-    tags: 'Swearing',
-    related: '死蠢/蠢材/茂利/豬頭炳/大番薯/人頭豬腦',
-    is_r18: '1'
-  },
-  {
-    id: '5',
-    zhh: '豬頭炳',
-    chs: '笨蛋',
-    en: 'fool',
-    jyutping: 'zyu1 tau4 bing2',
-    tags: 'Swearing',
-    related: '死蠢/蠢材/茂利/磨碌/大番薯/人頭豬腦',
-    is_r18: '1'
-  },
-  {
-    id: '6',
-    zhh: '大番薯',
-    chs: '蠢货',
-    en: 'idiot',
-    jyutping: 'daai6 faan1 syu4',
-    tags: 'Swearing',
-    related: '死蠢/蠢材/茂利/磨碌/豬頭炳/人頭豬腦',
-    is_r18: '1'
-  },
-  {
-    id: '7',
-    zhh: '人頭豬腦',
-    chs: '人头猪脑',
-    en: 'moron',
-    jyutping: 'jan4 tau4 zyu1 nou5',
-    tags: 'Swearing',
-    related: '死蠢/蠢材/茂利/磨碌/豬頭炳/大番薯',
-    is_r18: '1'
-  }
-];

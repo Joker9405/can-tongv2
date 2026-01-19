@@ -15,13 +15,16 @@ export function GreenCard({ entry }: GreenCardProps) {
   };
 
   return (
-    <div className="bg-[#c8ff00] rounded-2xl p-8 relative">
+    <div className="bg-[#c8ff00] rounded-[28px] p-8 relative">
       <div className="text-center">
         <h2 className="text-6xl font-bold text-black mb-2">
-          {entry.zhh}
+          {entry.zhh}  {/* 显示词条 */}
         </h2>
         <p className="text-lg text-gray-600">
-          {entry.jyutping}
+          {entry.zhh_pron}  {/* 显示粤拼 */}
+        </p>
+        <p className="text-md text-gray-500">
+
         </p>
       </div>
 

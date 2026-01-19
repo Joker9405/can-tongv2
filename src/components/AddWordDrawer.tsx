@@ -49,23 +49,23 @@ export function AddWordDrawer({ isOpen, onClose }: AddWordDrawerProps) {
       <div className="flex gap-3 mb-6 -pr-20 -pb-20">
         <button
           onClick={() => setWordType('0')}
-          className="relative w-8 h-8 rounded-full bg-[#c8ff00] flex items-center justify-center
+          className="relative w-8 h-8 rounded-[28px] bg-[#c8ff00] flex items-center justify-center
                      hover:scale-110 transition-transform"
           aria-label="Colloquial term"
         >
           {wordType === '0' && (
-            <div className="w-4 h-4 rounded-full bg-black"></div>
+            <div className="w-4 h-4 rounded-[28px] bg-black"></div>
           )}
         </button>
         
         <button
           onClick={() => setWordType('1')}
-          className="relative w-8 h-8 rounded-full bg-[#ff0090] flex items-center justify-center
+          className="relative w-8 h-8 rounded-[28px] bg-[#ff0090] flex items-center justify-center
                      hover:scale-110 transition-transform"
           aria-label="Vulgar term"
         >
           {wordType === '1' && (
-            <div className="w-4 h-4 rounded-full bg-black"></div>
+            <div className="w-4 h-4 rounded-[28px] bg-black"></div>
           )}
         </button>
       </div>
@@ -87,7 +87,7 @@ export function AddWordDrawer({ isOpen, onClose }: AddWordDrawerProps) {
       <div className="flex justify-end -pr-20 -pb-20">
         <button
           onClick={handleAdd}
-          className="px-8 py-3 bg-black text-[#c8ff00] rounded-full text-xl font-bold 
+          className="px-6 py-3 bg-black text-[#c8ff00] rounded-[28px] text-xl font-bold 
               hover:scale-105 transition-transform font-[Anton]"
         >
           add

@@ -95,7 +95,7 @@ function InterfacesLogo1() {
 function Avatar() {
   return (
     <div
-      className="bg-[#000000] relative rounded-[999px] shrink-0 size-8"
+      className="bg-[#000000] relative rounded-[28px] p-8 relative"
       data-name="Avatar"
     >
       <div className="box-border content-stretch flex flex-row items-center justify-center overflow-clip p-0 relative size-8">

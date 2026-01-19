@@ -61,7 +61,7 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
     <>
       <div className="mt-2 space-y-2">
         {/* AI Generated Blue Card */}
-        <div className="bg-[#0000ff] rounded-[28px] p-8 p-8 relative">
+        <div className="bg-[#0000ff] rounded-[28px] p-8 relative">
           <div className="text-center">
             <h2 className="text-6xl font-bold text-white mb-2">
               {searchTerm}

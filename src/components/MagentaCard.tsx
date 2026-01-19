@@ -17,7 +17,7 @@ export function MagentaCard({ entry, isSmall = false }: MagentaCardProps) {
 
   if (isSmall) {
     return (
-      <div className="bg-[#ff0090] rounded-xl p-4 relative cursor-pointer hover:scale-[1.02] transition-transform">
+      <div className="bg-[#ff0090] rounded-[28px] p-8 relative cursor-pointer hover:scale-[1.02] transition-transform">
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-2xl font-bold text-white">
@@ -25,6 +25,10 @@ export function MagentaCard({ entry, isSmall = false }: MagentaCardProps) {
             </h3>
             <p className="text-sm text-gray-200 mt-1">
               {entry.jyutping}
+            </p>
+            {/* 显示粤拼（zhh_pron） */}
+            <p className="text-sm text-gray-200 mt-1">
+              {entry.zhh_pron} {/* 这里渲染粤拼 */}
             </p>
           </div>
 
@@ -54,12 +58,16 @@ export function MagentaCard({ entry, isSmall = false }: MagentaCardProps) {
         <p className="text-lg text-gray-200">
           {entry.jyutping}
         </p>
+        {/* 显示粤拼（zhh_pron） */}
+        <p className="text-lg text-gray-200">
+          {entry.zhh_pron} {/* 这里渲染粤拼 */}
+        </p>
       </div>
 
       {/* Speaker Button - Inside card corner radius */}
       <button
         onClick={handleSpeak}
-        className="absolute bottom-4 right-4 w-12 h-12 bg-black rounded-full 
+        className="absolute bottom-4 right-4 w-12 h-12 bg-black rounded-[28px] 
                    flex items-center justify-center hover:scale-110 transition-transform"
         aria-label="Play pronunciation"
       >
