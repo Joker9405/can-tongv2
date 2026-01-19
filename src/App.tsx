@@ -10,12 +10,16 @@ export interface LexemeEntry {
   id?: string;          // 对应 id 字段
   zhh: string;          // 对应 zhh 字段
   zhh_pron: string;     // 对应 zhh_pron（粤拼）字段
-  is_r18?: string;      // 对应 is_r18 字段
+  // 统一规范为 '0' | '1'，避免出现 "1" / 1 / 1\r 导致的粉卡不稳定
+  is_r18: '0' | '1';    // 对应 is_r18 字段
   chs: string;          // 对应 chs 字段
   en: string;           // 对应 en 字段
   owner_tag?: string;   // 对应 owner_tag 字段
   register?: string;    // 对应 register 字段
   intent?: string;      // 对应 intent 字段
+  // 兼容旧 UI 逻辑（即便 CSV 不提供这些列，也不会影响）
+  related?: string;
+  tags?: string;
 }
 
 export default function App() {
@@ -48,88 +52,145 @@ export default function App() {
     loadCSV();
   }, []);
 
-  const parseCSV = (csvText: string): LexemeEntry[] => {
-   const lines = csvText.split('\n');
-   const headers = lines[0].split(',').map(h => h.trim());
-  
-    const data: LexemeEntry[] = [];
-  for (let i = 1; i < lines.length; i++) {
-    if (!lines[i].trim()) continue;
-      
-       const values = lines[i].split(',').map(v => v.trim());
-       const entry: any = {};
-      
-      headers.forEach((header, index) => {
-      entry[header] = values[index] || '';
-    });
-      
-    data.push(entry as LexemeEntry);
-  } 
+  // 规范化 is_r18：兼容 1 / "1" / 1\r / 空值
+  const normalizeIsR18 = (raw: unknown): '0' | '1' => {
+    const v = String(raw ?? '')
+      .replace(/^\uFEFF/, '')
+      .trim()
+      .replace(/^"+|"+$/g, '');
+    return v === '1' ? '1' : '0';
+  };
 
-    console.log('Parsed CSV Data:', data);  // 打印 CSV 解析后的数据
+  // RFC4180 兼容 CSV 解析：解决含引号/逗号/换行导致的列错位（粉卡不稳定的根因）
+  const parseCsvRows = (text: string): string[][] => {
+    const rows: string[][] = [];
+    let row: string[] = [];
+    let field = '';
+    let inQuotes = false;
+
+    for (let i = 0; i < text.length; i++) {
+      const ch = text[i];
+      const next = text[i + 1];
+
+      if (ch === '"') {
+        if (inQuotes && next === '"') {
+          field += '"';
+          i++;
+        } else {
+          inQuotes = !inQuotes;
+        }
+        continue;
+      }
+
+      if (ch === ',' && !inQuotes) {
+        row.push(field);
+        field = '';
+        continue;
+      }
+
+      if ((ch === '\n' || ch === '\r') && !inQuotes) {
+        if (ch === '\r' && next === '\n') i++;
+        row.push(field);
+        rows.push(row);
+        row = [];
+        field = '';
+        continue;
+      }
+
+      field += ch;
+    }
+
+    // flush last field/row
+    row.push(field);
+    rows.push(row);
+    return rows;
+  };
+
+  const parseCSV = (csvText: string): LexemeEntry[] => {
+    const rows = parseCsvRows(csvText);
+    if (!rows.length) return [];
+
+    const headers = rows[0].map(h => String(h ?? '').replace(/^\uFEFF/, '').trim());
+    const data: LexemeEntry[] = [];
+
+    for (let i = 1; i < rows.length; i++) {
+      const r = rows[i];
+      if (!r || r.every(c => String(c ?? '').trim() === '')) continue;
+
+      const entry: any = {};
+      headers.forEach((header, index) => {
+        entry[header] = String(r[index] ?? '').trim();
+      });
+
+      // 必填字段兜底，避免空值导致渲染异常
+      entry.id = entry.id || '';
+      entry.zhh = entry.zhh || '';
+      entry.zhh_pron = entry.zhh_pron || '';
+      entry.chs = entry.chs || '';
+      entry.en = entry.en || '';
+      entry.is_r18 = normalizeIsR18(entry.is_r18);
+
+      data.push(entry as LexemeEntry);
+    }
+
     return data;
   };
 
-const handleSearch = (term: string) => {
-  setSearchTerm(term);
+  // 词条字段里用 / 分隔多个同义词：只允许“完全一致”命中某一个 token（取消 includes/模糊）
+  const splitTokens = (value: string, lower = false) =>
+    String(value ?? '')
+      .split('/')
+      .map(s => s.trim())
+      .filter(Boolean)
+      .map(s => (lower ? s.toLowerCase() : s));
 
-  if (!term.trim()) {
-    setMatchedEntries([]);
-    setSelectedEntry(null);
-    setRelatedWords([]);
-    setNotFound(false);
-    setSwearingToggle(false);
-    return;
-  }
+  const handleSearch = (term: string) => {
+    setSearchTerm(term);
 
-  // 将输入的关键词通过 `/` 分割，处理多个关键词
-  const keywords = term.split('/').map(keyword => keyword.trim().toLowerCase());
-
-  console.log('Search Term:', term); // 打印搜索关键词
-  console.log('Keywords:', keywords); // 打印分割后的关键词
-
-  // 在 chs 和 en 列中进行匹配
-  const searchResults: LexemeEntry[] = lexemeData.filter(entry => {
-    // 获取当前选择的语言列（chs 和 en）
-    const matchChs = entry.chs.toLowerCase();
-    const matchEn = entry.en.toLowerCase();
-
-    console.log('Matching chs:', matchChs);  // 打印当前匹配的中文词条
-    console.log('Matching en:', matchEn);  // 打印当前匹配的英文词条
-
-    // 确保每个关键词都能匹配到 chs 或 en 列
-    return keywords.every(keyword =>
-      matchChs.includes(keyword) || matchEn.includes(keyword)  // 在 chs 或 en 中进行匹配
-    );
-  });
-
-  console.log('Search Results:', searchResults);  // 打印匹配到的结果
-
-  if (searchResults.length > 0) {
-    const colloquialResults = searchResults.filter(e => e.is_r18 === '0');
-    const entriesToChooseFrom = colloquialResults.length > 0 ? colloquialResults : searchResults;
-    const randomIndex = Math.floor(Math.random() * entriesToChooseFrom.length);
-    const selected = entriesToChooseFrom[randomIndex];
-
-    setMatchedEntries(searchResults);
-    setSelectedEntry(selected);
-    setNotFound(false);
-    setSwearingToggle(false);
-
-    if (selected.related) {
-      const words = selected.related.split(/[,/]/).map(w => w.trim()).filter(w => w);
-      setRelatedWords(words);
-    } else {
+    const query = term.trim();
+    if (!query) {
+      setMatchedEntries([]);
+      setSelectedEntry(null);
       setRelatedWords([]);
+      setNotFound(false);
+      setSwearingToggle(false);
+      return;
     }
-  } else {
-    setMatchedEntries([]);
-    setSelectedEntry(null);
-    setRelatedWords([]);
-    setNotFound(true);
-    setSwearingToggle(false);
-  }
-};
+
+    const queryEn = query.toLowerCase();
+
+    // 只允许 chs 或 en 精确 token 命中（完全相等），否则不算命中
+    const searchResults: LexemeEntry[] = lexemeData.filter(entry => {
+      const chsTokens = splitTokens(entry.chs, false);
+      const enTokens = splitTokens(entry.en, true);
+      return chsTokens.includes(query) || enTokens.includes(queryEn);
+    });
+
+    if (searchResults.length > 0) {
+      const colloquialResults = searchResults.filter(e => e.is_r18 === '0');
+      const entriesToChooseFrom = colloquialResults.length > 0 ? colloquialResults : searchResults;
+      const randomIndex = Math.floor(Math.random() * entriesToChooseFrom.length);
+      const selected = entriesToChooseFrom[randomIndex];
+
+      setMatchedEntries(searchResults);
+      setSelectedEntry(selected);
+      setNotFound(false);
+      setSwearingToggle(false);
+
+      if (selected.related) {
+        const words = selected.related.split(/[,/]/).map(w => w.trim()).filter(w => w);
+        setRelatedWords(words);
+      } else {
+        setRelatedWords([]);
+      }
+    } else {
+      setMatchedEntries([]);
+      setSelectedEntry(null);
+      setRelatedWords([]);
+      setNotFound(true);
+      setSwearingToggle(false);
+    }
+  };
 
 
   const handleWordClick = (word: string) => {
