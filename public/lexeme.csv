@@ -470,7 +470,7 @@ L468,弱智,joek6 zi3,0,蠢人/低能者/韭菜本尊/韭菜/傻子/弱智,block
 L469,跟住落嚟,gan1 zyu6 lok6 lai4,0,接下来,next,CanTong Lexicon 2026,Colloquial,curse
 L470,傻閪,so4 hai1,1,傻叼/愚蠢的人/sb/傻瓜/沙雕/傻叉/神经病,idiot/Stupid/tosser/fucking idiot/dumbass/asshole/asshole/piece of shit/stupid cunt/dumb cunt/twat/wanker/dickhead,CanTong Lexicon 2026,Colloquial,curse
 L471,傻仔,so4 zai2,0,傻叼/愚蠢的人/sb/傻瓜/沙雕/傻叉/神经病,idiot/Stupid/tosser/fucking idiot/dumbass/asshole/asshole/piece of shit/stupid cunt/dumb cunt/twat/wanker/dickhead/silly,CanTong Lexicon 2026,Colloquial,curse
-L472,撲街仔,puk1 gaai1 zai2,0,傻叼/愚蠢的人/sb/傻瓜/沙雕/傻叉/神经病,idiot/Stupid/tosser/fucking idiot/dumbass/asshole/asshole/piece of shit/stupid cunt/dumb cunt/twat/wanker/dickhead,CanTong Lexicon 2026,Colloquial,curse
+L472,撲街仔,puk1 gaai1 zai2,0,死小子/孙子/臭小子/混蛋/王八蛋/反贼/反骨/讨厌的人/叛徒/白眼狼/忘恩负义/因将仇报,Bastard/Asshole/shithead/traitor/betrayer,CanTong Lexicon 2026,Colloquial,curse
 L473,傻佬,so4 lou2,0,傻叼/愚蠢的人/sb/傻瓜/沙雕/傻叉/神经病,idiot/Stupid/tosser/fucking idiot/dumbass/asshole/asshole/piece of shit/stupid cunt/dumb cunt/twat/wanker/dickhead,CanTong Lexicon 2026,Colloquial,curse
 L474,蒸生瓜,zing1 saang1 gwaa1,0,傻叼/愚蠢的人/sb/傻瓜/沙雕/傻叉/神经病,idiot/Stupid/tosser/fucking idiot/dumbass/asshole/asshole/piece of shit/stupid cunt/dumb cunt/twat/wanker/dickhead,CanTong Lexicon 2026,Colloquial,curse
 L475,傻傻閪閪,so4 so4 hai1 hai1,1,傻叼/愚蠢的人/sb/傻瓜/沙雕/傻叉/神经病,idiot/Stupid/tosser/fucking idiot/dumbass/asshole/asshole/piece of shit/stupid cunt/dumb cunt/twat/wanker/dickhead,CanTong Lexicon 2026,Colloquial,curse
@@ -520,14 +520,77 @@ L518,唔等洗,m4 dang2 sai2,0,不等用/没用的/多余的/多余/不切实际
 L519,啜核,zyut3 wat6,0,很过分/很刁钻/很犀利/很极致/真的想不到/很搞笑/很好笑,that's outrageous/tricky/sharp/extreme/unbelievable/hilarious/funny,CanTong Lexicon 2026,Slang,
 L520,搞嘢,gaau2 je5,0,很过分/很刁钻/很犀利/很极致/真的想不到/很搞笑/很好笑,that's outrageous/tricky/sharp/extreme/unbelievable/hilarious/funny,CanTong Lexicon 2026,Colloquial,
 L521,攪笑,gaau2 siu3,0,真的想不到/搞笑/好笑,unbelievable/funny/hilarious,CanTong Lexicon 2026,Colloquial,
-L522,劈𠹌,pek3 lang1,1,很过分/很刁钻/很犀利/很极致/真的想不到/很搞笑/很好笑,that's outrageous/tricky/sharp/extreme/unbelievable/hilarious/funny,CanTong Lexicon 2026,Colloquial,
+L522,劈撚,pek3 lang1,1,很过分/很刁钻/很犀利/很极致/真的想不到/很搞笑/很好笑,that's outrageous/tricky/sharp/extreme/unbelievable/hilarious/funny,CanTong Lexicon 2026,Colloquial,
 L523,抵死,dai2 sei2,0,很过分/很极致/很搞笑/很好笑/活该/风趣幽默,that's outrageous/extreme/hilarious/very funny/serves him right/funny and humorous,CanTong Lexicon 2026,Colloquial,
 L524,風趣,fung1 ceoi3,0,风趣/幽默/风趣幽默/很搞笑/很好笑/搞笑/滑稽,humorous/funny/very funny/charm/humor/wit/witty,CanTong Lexicon 2026,Formal,
 L525,風趣幽默,fung1 ceoi3 jau1 mak6,0,风趣/幽默/风趣幽默/很搞笑/很好笑/搞笑/滑稽,humorous/funny/very funny/charm/humor/wit/witty,CanTong Lexicon 2026,Formal,
-L526,,,,,,,,
-L527,,,,,,,,
-L528,,,,,,,,
-L529,,,,,,,,
-L530,,,,,,,,
-L531,,,,,,,,
+L526,黐線,ci1 sin6,0,神经病/发神经/白痴/弱智/有病,dork/idiot/ridiculous/moron/crazy/insane/short/idiocy/fool/lunatic/mad/schizophrenic/weak minded/mentally deficient/retarded/,CanTong Lexicon 2026,Colloquial,curse
+L527,发神經,faat3 san4 ging,0,神经病/发神经/白痴/弱智/有病,dork/idiot/ridiculous/moron/crazy/insane/short/idiocy/fool/lunatic/mad/schizophrenic/weak minded/mentally deficient/retarded/,CanTong Lexicon 2026,Colloquial,curse
+L528,白痴,baak6 ci1,0,神经病/发神经/白痴/弱智/有病,dork/idiot/ridiculous/moron/crazy/insane/short/idiocy/fool/lunatic/mad/schizophrenic/weak minded/mentally deficient/retarded/,CanTong Lexicon 2026,Colloquial,curse
+L529,黐筋,ci1 gan1,0,神经病/发神经/白痴/弱智/有病,dork/idiot/ridiculous/moron/crazy/insane/short/idiocy/fool/lunatic/mad/schizophrenic/weak minded/mentally deficient/retarded/,CanTong Lexicon 2026,Slang,curse
+L530,黐孖筋,ci1 maa1 gan1,0,神经病/发神经/白痴/弱智/有病,dork/idiot/ridiculous/moron/crazy/insane/short/idiocy/fool/lunatic/mad/schizophrenic/weak minded/mentally deficient/retarded/,CanTong Lexicon 2026,Slang,curse
+L531,忽忽哋,fat1 fat1 dei2,0,神经病/发神经/白痴/弱智/有病,dork/idiot/ridiculous/moron/crazy/insane/short/idiocy/fool/lunatic/mad/schizophrenic/weak minded/mentally deficient/retarded/,CanTong Lexicon 2026,Slang,curse
+L532,腎腎哋,san5 san5 dei2,0,神经病/发神经/白痴/弱智/有病,dork/idiot/ridiculous/moron/crazy/insane/short/idiocy/fool/lunatic/mad/schizophrenic/weak minded/mentally deficient/retarded/,CanTong Lexicon 2026,Slang,curse
+L533,弱智,joek6 zi3,0,神经病/发神经/白痴/弱智/有病,dork/idiot/ridiculous/moron/crazy/insane/short/idiocy/fool/lunatic/mad/schizophrenic/weak minded/mentally deficient/retarded/,CanTong Lexicon 2026,Colloquial,curse
+L534,有病,jau5 beng6,0,神经病/发神经/白痴/弱智/有病,dork/idiot/ridiculous/moron/crazy/insane/short/idiocy/fool/lunatic/mad/schizophrenic/weak minded/mentally deficient/retarded/,CanTong Lexicon 2026,Formal,curse
+L535,癫,din1,0,神经病/发神经/白痴/弱智/有病,dork/idiot/ridiculous/moron/crazy/insane/short/idiocy/fool/lunatic/mad/schizophrenic/weak minded/mentally deficient/retarded/,CanTong Lexicon 2026,Colloquial,curse
+L536,shortshort地,short short dei2,0,神经病/发神经/白痴/弱智/有病,dork/idiot/ridiculous/moron/crazy/insane/short/idiocy/fool/lunatic/mad/schizophrenic/weak minded/mentally deficient/retarded/,CanTong Lexicon 2026,Colloquial,curse
+L537,黐撚線,ci1 lan2 sin3,1,神经病/发神经/白痴/弱智/有病,dork/idiot/ridiculous/moron/crazy/insane/short/idiocy/fool/lunatic/mad/schizophrenic/weak minded/mentally deficient/retarded/,CanTong Lexicon 2026,Colloquial,curse
+L538,黐鳩線,ci1 gau1 sin3,1,神经病/发神经/白痴/弱智/有病,dork/idiot/ridiculous/moron/crazy/insane/short/idiocy/fool/lunatic/mad/schizophrenic/weak minded/mentally deficient/retarded/,CanTong Lexicon 2026,Colloquial,curse
+L539,黐閪線,ci1 hai1 sin3,1,神经病/发神经/白痴/弱智/有病,dork/idiot/ridiculous/moron/crazy/insane/short/idiocy/fool/lunatic/mad/schizophrenic/weak minded/mentally deficient/retarded/,CanTong Lexicon 2026,Colloquial,curse
+L540,黐柒線,ci1 cat1 sin3,1,神经病/发神经/白痴/弱智/有病,dork/idiot/ridiculous/moron/crazy/insane/short/idiocy/fool/lunatic/mad/schizophrenic/weak minded/mentally deficient/retarded/,CanTong Lexicon 2026,Colloquial,curse
+L541,有鳩病,jau5 gau1 beng6,1,没有病,no disease,CanTong Lexicon 2026,Colloquial,
+L542,弱鳩智,joek6 gau1 zi3,1,神经病/发神经/白痴/弱智/有病/他妈的弱智,dork/idiot/ridiculous/moron/crazy/insane/short/idiocy/fool/lunatic/mad/schizophrenic/weak minded/mentally deficient/retarded/,CanTong Lexicon 2026,Colloquial,curse
+L543,智障,zi3 zoeng1,0,神经病/发神经/白痴/弱智/有病/他妈的弱智,dork/idiot/ridiculous/moron/crazy/insane/short/idiocy/fool/lunatic/mad/schizophrenic/weak minded/mentally deficient/retarded/,CanTong Lexicon 2026,Colloquial,curse
+L544,反骨仔,faan2 gwat1 zai2,0,死小子/孙子/臭小子/混蛋/王八蛋/反贼/反骨/讨厌的人/叛徒/白眼狼/忘恩负义/因将仇报/吃里扒外的货,Bastard/Asshole/shithead/traitor/betrayer/utterly ungrateful,CanTong Lexicon 2026,Colloquial,curse
+L545,二五仔,ji6 ng5 zai2,0,死小子/孙子/臭小子/混蛋/王八蛋/反贼/反骨/讨厌的人/叛徒/白眼狼/忘恩负义/因将仇报/吃里扒外的货,Bastard/Asshole/shithead/traitor/betrayer/utterly ungrateful,CanTong Lexicon 2026,Colloquial,curse
+L546,食碗麵，反碗底,"sik6 wun2 min6, faan2 wun2 dai2",0,死小子/孙子/臭小子/混蛋/王八蛋/反贼/反骨/讨厌的人/叛徒/白眼狼/忘恩负义/因将仇报/吃里扒外的货,to return one's kindess with ingratitude and betrayal/Bastard/Asshole/shithead/traitor/betrayer/utterly ungrateful,CanTong Lexicon 2026,Slang,curse
+L547,恩將仇報,jan1 zoeng1 cau4 bou3,0,死小子/孙子/臭小子/混蛋/王八蛋/反贼/反骨/讨厌的人/叛徒/白眼狼/忘恩负义/因将仇报/吃里扒外的货,Bastard/Asshole/shithead/traitor/betrayer/utterly ungrateful,CanTong Lexicon 2026,Formal,curse
+L548,忘恩負義,mong4 jan1 fu6 ji6,0,死小子/孙子/臭小子/混蛋/王八蛋/反贼/反骨/讨厌的人/叛徒/白眼狼/忘恩负义/因将仇报/吃里扒外的货,Bastard/Asshole/shithead/traitor/betrayer/utterly ungrateful,CanTong Lexicon 2026,Formal,curse
+L549,撲街,pok3 gaai1,0,该死/出大事了/跌倒/王八蛋/完了/完蛋了/倒霉了/扑街/糟糕了/糟糕,damn it/something terrible happened/I fell/bastard/It's over/I'm doomed/I'm doomed/I'm unlucky/poor guy,CanTong Lexicon 2026,Colloquial,curse
+L550,正撲街,zing3 pok3 gaai1,0,真该死/真的是王八蛋/正扑街/正一扑街,damn it/He's such a bastard/scoundrel,CanTong Lexicon 2026,Colloquial,curse
+L551,正一撲街,zing3 jat1 pok3 gaai1,0,真该死/真的是王八蛋/正扑街/正一扑街,damn it/He's such a bastard/scoundrel,CanTong Lexicon 2026,Colloquial,curse
+L552,食屎,sik6 si2,0,去死吧/吃屎去,Go to hell,CanTong Lexicon 2026,Colloquial,curse
+L553,柒頭皮,cat1 tau4 pei4,1,死小子/孙子/臭小子/混蛋/王八蛋/反贼/反骨/讨厌的人,Bastard/Asshole/shithead,CanTong Lexicon 2026,Colloquial,curse
+L554,柒柒哋,cat1 cat1 dei2,1,死小子/孙子/臭小子/混蛋/王八蛋/反贼/反骨/讨厌的人,Bastard/Asshole/shithead,CanTong Lexicon 2026,Colloquial,curse
+L555,撚樣,lan2 joeng6,1,死小子/孙子/臭小子/混蛋/王八蛋/反贼/反骨/讨厌的人/叛徒/白眼狼/忘恩负义/因将仇报/吃里扒外的货,Bastard/Asshole/shithead/traitor/betrayer/utterly ungrateful,CanTong Lexicon 2026,Colloquial,curse
+L556,粉腸,fan2 coeng2,0,死小子/孙子/臭小子/混蛋/王八蛋/反贼/反骨/讨厌的人/叛徒/白眼狼/忘恩负义/因将仇报/吃里扒外的货,Bastard/Asshole/shithead/traitor/betrayer/utterly ungrateful,CanTong Lexicon 2026,Slang,curse
+L557,攔坦,laan4 taan2,0,死小子/孙子/臭小子/混蛋/王八蛋/反贼/反骨/讨厌的人/叛徒/白眼狼/忘恩负义/因将仇报/吃里扒外的货,Bastard/Asshole/shithead/traitor/betrayer/utterly ungrateful,CanTong Lexicon 2026,Slang,curse
+L558,死你就去,sei2 nei5 zau6 heoi3,0,去死吧你/吃屎去,Go to hell,CanTong Lexicon 2026,Colloquial,curse
+L559,大镬,daai6 wok6,0,该死/出大事了/完了/完蛋了/倒霉了/扑街/糟糕了/糟糕,Go to hell,CanTong Lexicon 2026,Colloquial,
+L560,趁地淋,can3 dei6 lam4,0,去死吧/吃屎去,Go to hell,CanTong Lexicon 2026,Colloquial,curse
+L561,屌閪喇,diu2 hai1 laa3,1,该死/出大事了/完了/完蛋了/倒霉了/扑街/糟糕了/糟糕,Go to hell,CanTong Lexicon 2026,Colloquial,
+L562,龜缩,gwai1 suk1,0,笨蛋/蠢货/笨7/笨叱/浪费机会/错失良机,dumb person/dumb/imbecile/incredibly stupid/brain dead/silly/dickhead/miss the boat/stupid/stupid prick,CanTong Lexicon 2026,Slang,curse
+L563,嘥料,saai1 liu6,0,笨蛋/蠢货/笨7/笨叱/浪费机会/错失良机,dumb person/dumb/imbecile/incredibly stupid/brain dead/silly/dickhead/miss the boat/stupid/stupid prick,CanTong Lexicon 2026,Colloquial,curse
+L564,柒轱辘,cat1 gu1 luk6,1,笨蛋/蠢货/笨7/笨叱/浪费机会/错失良机,dumb person/dumb/imbecile/incredibly stupid/brain dead/silly/dickhead/miss the boat/stupid/stupid prick,CanTong Lexicon 2026,Colloquial,curse
+L565,乞人憎,hat1 jan4 zang1,0,讨人厌/讨厌鬼/神憎鬼厌,jerk/disgusting,CanTong Lexicon 2026,Colloquial,curse
+L566,乞閪人憎,hat1 hai1 jan4 zang1,1,讨人厌/讨厌鬼/神憎鬼厌,jerk/disgusting/fucking disgust/fu*king disgusting,CanTong Lexicon 2026,Colloquial,curse
+L567,非洲和尚,fei1 zau1 wo4 soeng6,0,讨人厌/讨厌鬼/神憎鬼厌,jerk/disgusting,CanTong Lexicon 2026,Slang,curse
+L568,神憎鬼厌,san4 zang1 gwai2 jim3,0,讨人厌/讨厌鬼/神憎鬼厌,jerk/disgusting,CanTong Lexicon 2026,Formal,curse
+L569,樣衰,joeng6 seoi1,0,出洋相/难为情/丑/丑八怪/讨厌/愚蠢/倒霉,clown/bad looking/bad face/ugly face/ugly/,CanTong Lexicon 2026,Colloquial,curse
+L570,出丑,ceot1 cau2,0,小丑/出洋相/难为情/丑/丑八怪/讨厌/愚蠢/倒霉,clown/bad looking/bad face/ugly face/ugly/,CanTong Lexicon 2026,Formal,curse
+L571,好瘀,hou2 jyu1,0,小丑/出洋相/难为情/丑/丑八怪/讨厌/愚蠢,clown/bad looking/bad face/ugly face/ugly/,CanTong Lexicon 2026,Colloquial,curse
+L572,核突,wat6 dat6,0,小丑/出洋相/难为情/丑/丑八怪/讨厌/愚蠢/不太好,clown/bad looking/bad face/ugly face/ugly/disgusting/fucking disgust/fu*king disgusting,CanTong Lexicon 2026,Colloquial,curse
+L573,肉酸,juk6 syun1,0,小丑/出洋相/难为情/丑/丑八怪/讨厌/愚蠢/反胃,clown/bad looking/bad face/ugly face/ugly/disgusting/fucking disgust/fu*king disgusting,CanTong Lexicon 2026,Colloquial,curse
+L574,反胃,faan2 wai6,0,令人窒息/丑/丑八怪/讨厌/愚蠢/反胃/令人作呕,retching/vomiting/disgusting/horrible/fucking disgust/fu*king disgusting,CanTong Lexicon 2026,Colloquial,curse
+L575,核閪突突,wat6 hai1 dat6 dat6,1,小丑/出洋相/难为情/丑/丑八怪/讨厌/愚蠢/不太好,clown/bad looking/bad face/ugly face/ugly/disgusting/fucking disgust/fu*king disgusting,CanTong Lexicon 2026,Colloquial,curse
+L576,核閪突,wat6 hai1 dat6,1,小丑/出洋相/难为情/丑/丑八怪/讨厌/愚蠢/不太好,clown/bad looking/bad face/ugly face/ugly/disgusting/fucking disgust/fu*king disgusting,CanTong Lexicon 2026,Colloquial,curse
+L577,核鳩突,wat6 gau1 dat6,1,小丑/出洋相/难为情/丑/丑八怪/讨厌/愚蠢/不太好,clown/bad looking/bad face/ugly face/ugly/disgusting/fucking disgust/fu*king disgusting,CanTong Lexicon 2026,Colloquial,curse
+L578,核撚突,wat6 lan2 dat6,1,小丑/出洋相/难为情/丑/丑八怪/讨厌/愚蠢/不太好,clown/bad looking/bad face/ugly face/ugly/disgusting/fucking disgust/fu*king disgusting,CanTong Lexicon 2026,Colloquial,curse
+L579,核鳩突突,wat6 gau1 dat6 dat6,1,小丑/出洋相/难为情/丑/丑八怪/讨厌/愚蠢/不太好,clown/bad looking/bad face/ugly face/ugly/disgusting/fucking disgust/fu*king disgusting,CanTong Lexicon 2026,Colloquial,curse
+L580,核撚突突,wat6 lan2 dat6 dat6,1,小丑/出洋相/难为情/丑/丑八怪/讨厌/愚蠢/不太好,clown/bad looking/bad face/ugly face/ugly/disgusting/fucking disgust/fu*king disgusting,CanTong Lexicon 2026,Colloquial,curse
+L581,肉鳩酸,juk6 gau1 syun1,1,小丑/出洋相/难为情/丑/丑八怪/讨厌/愚蠢/反胃,clown/bad looking/bad face/ugly face/ugly/disgusting/fucking disgust/fu*king disgusting,CanTong Lexicon 2026,Colloquial,curse
+L582,肉撚酸,juk6 lan2 syun1,1,小丑/出洋相/难为情/丑/丑八怪/讨厌/愚蠢/反胃,clown/bad looking/bad face/ugly face/ugly/disgusting/fucking disgust/fu*king disgusting,CanTong Lexicon 2026,Colloquial,curse
+L583,肉閪酸,juk6 hai1 syun1,1,小丑/出洋相/难为情/丑/丑八怪/讨厌/愚蠢/反胃,clown/bad looking/bad face/ugly face/ugly/disgusting/fucking disgust/fu*king disgusting,CanTong Lexicon 2026,Colloquial,curse
+L584,肉鳩酸酸,juk6 gau1 syun1 syun1,1,小丑/出洋相/难为情/丑/丑八怪/讨厌/愚蠢/反胃,clown/bad looking/bad face/ugly face/ugly/disgusting/fucking disgust/fu*king disgusting,CanTong Lexicon 2026,Colloquial,curse
+L585,肉撚酸酸,juk6 lan2 syun1 syun1,1,小丑/出洋相/难为情/丑/丑八怪/讨厌/愚蠢/反胃,clown/bad looking/bad face/ugly face/ugly/disgusting/fucking disgust/fu*king disgusting,CanTong Lexicon 2026,Colloquial,curse
+L586,肉閪酸酸,juk6 hai1 syun1 syun1,1,小丑/出洋相/难为情/丑/丑八怪/讨厌/愚蠢/反胃,clown/bad looking/bad face/ugly face/ugly/disgusting/fucking disgust/fu*king disgusting,CanTong Lexicon 2026,Colloquial,curse
+L587,好柒瘀,hou2 cat1 jyu1,1,小丑/出洋相/难为情/丑/丑八怪/讨厌/愚蠢,clown/bad looking/bad face/ugly face/ugly/,CanTong Lexicon 2026,Colloquial,curse
+L588,好撚瘀,hou2 lan2 jyu1,1,小丑/出洋相/难为情/丑/丑八怪/讨厌/愚蠢,clown/bad looking/bad face/ugly face/ugly/,CanTong Lexicon 2026,Colloquial,curse
+L589,好鳩瘀,hou2 gau1 jyu1,1,小丑/出洋相/难为情/丑/丑八怪/讨厌/愚蠢,clown/bad looking/bad face/ugly face/ugly/,CanTong Lexicon 2026,Colloquial,curse
+L590,好閪瘀,hou2 hai1 jyu1,1,小丑/出洋相/难为情/丑/丑八怪/讨厌/愚蠢,clown/bad looking/bad face/ugly face/ugly/,CanTong Lexicon 2026,Colloquial,curse
+L591,樣閪衰,joeng6 hai1 seoi1,1,出洋相/难为情/丑/丑八怪/讨厌/愚蠢/倒霉,clown/bad looking/bad face/ugly face/ugly/,CanTong Lexicon 2026,Colloquial,curse
+L592,樣鳩衰,joeng6 gau1 seoi1,1,出洋相/难为情/丑/丑八怪/讨厌/愚蠢/倒霉,clown/bad looking/bad face/ugly face/ugly/,CanTong Lexicon 2026,Colloquial,curse
+L593,樣鳩衰衰,joeng6 gau1 seoi1 seoi1,1,出洋相/难为情/丑/丑八怪/讨厌/愚蠢/倒霉,clown/bad looking/bad face/ugly face/ugly/,CanTong Lexicon 2026,Colloquial,curse
+L594,樣閪衰衰,joeng6 hai1 seoi1 seoi1,1,出洋相/难为情/丑/丑八怪/讨厌/愚蠢/倒霉,clown/bad looking/bad face/ugly face/ugly/,CanTong Lexicon 2026,Colloquial,curse
 ,,,,,,,,
