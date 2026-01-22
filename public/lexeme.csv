@@ -371,7 +371,7 @@ L369,𡁻完唱,ziu6 jyun4 coeng3,0,占完便宜还到处诋毁/占便宜/白嫖
 L370,𡁻完踩,ziu6 jyun4 jaai2,0,占完便宜还到处诋毁/占便宜/白嫖,to not take any responsibility after exploiting others for self-interest/especially referring to abandoning somebody after having sex with him//especially referring to abandoning somebody after having sex with her/to not take any responsibility/to use and dump,CanTong Lexicon 2026,Colloquial,
 L371,搞掂,gaau2 dim6,0,完成/搞定,finish/complete,CanTong Lexicon 2026,Colloquial,
 L372,好犀利,hou2 sai1 lei6,0,很厉害/好厉害/猴犀利/好犀利,awesome,CanTong Lexicon 2026,Colloquial,
-L373,收皮,sau1 pei4,0,闭嘴/完蛋/省省吧,piss off,CanTong Lexicon 2026,Colloquial,
+L373,收皮,sau1 pei4,0,闭嘴/完蛋/省省吧/别吵/不要吵/别烦/不要闹/玩完/滚开/滚蛋/闭嘴/住口,Shut up/It's over/Save it/Don't argue/Don't argue/Don't bother/Don't make a fuss/It's over/Get lost/Get lost/Shut up/Shut up/Piss off/Knock it off,CanTong Lexicon 2026,Colloquial,
 L374,唔該,m4 goi1,0,谢谢/麻烦借过,please/thanks/excuse me,CanTong Lexicon 2026,Colloquial,
 L375,烏搲,wu1 we2,0,不整洁/不修边幅/不打扮/邋遢/没仪容,ugly/in bad shape,CanTong Lexicon 2026,Colloquial,
 L376,複灼 ,fuk1 coek3,0,报仇/复仇,go back again/fight back/revenge,CanTong Lexicon 2026,Colloquial,
@@ -438,11 +438,11 @@ L436,響撚,hai2 lan2,1,在这个屁/在这里个屁/在场个屁/存在个屁/�
 L437,響閪,hai2 hai1,1,在这个屁/在这里个屁/在场个屁/存在个屁/响到,here/there/present/existing/In this damn place,CanTong Lexicon 2026,Colloquial,
 L438,響鳩,hai2 gau1 hai1,1,在这个屁/在这里个屁/在场个屁/存在个屁/响到,here/there/present/existing/In this damn place,CanTong Lexicon 2026,Colloquial,
 L439,喺閪嗰度,hai2 hai1 go2 dou6,1,在那里哪有/在那哪有,there/where is it,CanTong Lexicon 2026,Colloquial,
-L440,燶,nung1,0,脸色难看/卖相难看/烧焦/焦了/煳了/㶶/黑脸,to burn/to scorch/burnt/charred/drastic drop in stock market/pull a long face/to look angry/unhappy,CanTong Lexicon 2026,Colloquial,
-L441,燶起塊臉,nung1 hei2 faai3 min6,0,脸色难看/黑脸,pull a long face/to look angry/unhappy,CanTong Lexicon 2026,Colloquial,
-L442,黑起塊臉,hak1 hei2 faai3 min6,0,脸色难看/黑脸,pull a long face/to look angry/unhappy,CanTong Lexicon 2026,Colloquial,
-L443,燶口燶面,nung1 hau2 nung1 min6,0,脸色难看/黑脸,pull a long face/to look angry/unhappy,CanTong Lexicon 2026,Colloquial,
-L444,黑口黑面,hak1 hau2 hak1 min6,0,脸色难看/黑脸,pull a long face/to look angry/unhappy,CanTong Lexicon 2026,Colloquial,
+L440,燶,nung1,0,脸色难看/卖相难看/烧焦/焦了/煳了/㶶/黑脸/脸很臭/臭着脸/不高兴/板着脸/拉长着脸,to burn/to scorch/burnt/charred/drastic drop in stock market/pull a long face/to look angry/unhappy,CanTong Lexicon 2026,Colloquial,
+L441,燶起塊臉,nung1 hei2 faai3 min6,0,脸色难看/黑脸/脸很臭/臭着脸/不高兴/板着脸/拉长着脸,pull a long face/to look angry/unhappy,CanTong Lexicon 2026,Colloquial,
+L442,黑起塊臉,hak1 hei2 faai3 min6,0,脸色难看/黑脸/脸很臭/臭着脸/不高兴/板着脸/拉长着脸,pull a long face/to look angry/unhappy,CanTong Lexicon 2026,Colloquial,
+L443,燶口燶面,nung1 hau2 nung1 min6,0,脸色难看/黑脸/脸很臭/臭着脸/不高兴/板着脸/拉长着脸,pull a long face/to look angry/unhappy,CanTong Lexicon 2026,Colloquial,
+L444,黑口黑面,hak1 hau2 hak1 min6,0,脸色难看/黑脸/脸很臭/臭着脸/不高兴/板着脸/拉长着脸,pull a long face/to look angry/unhappy,CanTong Lexicon 2026,Colloquial,
 L445,賤格,zin6 gaak3,0,缺德/卑鄙/贱,despicable/contemptible/vile/mean/cheap/cheap person,CanTong Lexicon 2026,Colloquial,curse
 L446,衰格,seoi1 gaak3,0,缺德/卑鄙/贱,despicable/contemptible/vile/mean/cheap/cheap person,CanTong Lexicon 2026,Colloquial,curse
 L447,衰衰格格,seoi1 seoi1 gaak3 gaak3,0,缺德/卑鄙/贱,despicable/contemptible/vile/mean/cheap/cheap person,CanTong Lexicon 2026,Colloquial,curse
@@ -595,184 +595,237 @@ L593,垃圾,laap6 saai1,0,失败者/废人/废物,Loser/garbage/rubbish/trash/ju
 L594,廢​物,fai3 mat6,0,失败者/废人/废物,Loser/garbage/rubbish/trash/junk,CanTong Lexicon 2026,Colloquial,curse
 L595,冇用,mou5 jung6,0,失败者/废人/废物,Loser/garbage/rubbish/trash/junk,CanTong Lexicon 2026,Colloquial,curse
 L596,廢柴,fai3 caai4,0,失败者/废人/废物,Loser/garbage/rubbish/trash/junk,CanTong Lexicon 2026,Colloquial,curse
-L597,收爹,sau1 deoi1,0,闭嘴/住口,Shut up/shut your mouth,CanTong Lexicon 2026,Colloquial,curse
-L598,收皮,sau1 pei4,0,闭嘴/住口,Shut up/shut your mouth,CanTong Lexicon 2026,Colloquial,curse
-L599,收声,sau1 seng1,0,闭嘴/住口,Shut up/shut your mouth,CanTong Lexicon 2026,Colloquial,curse
-L600,屌你,diu2 nei5,1,去你的/操你/草泥马/叼你/法克鱿/福建鱼,fuck you/fucking you/fu*king you/fu*k u/fu*k you/Fujian U,CanTong Lexicon 2026,Colloquial,curse
-L601,屌柒你,diu2 cat1 nei5,1,去你的/操你/草泥马/叼你/法克鱿/福建鱼,fuck you/fucking you/fu*king you/fu*k u/fu*k you/Fujian U,CanTong Lexicon 2026,Colloquial,curse
-L602,屌鳩你,diu2 gau1 nei5,1,去你的/操你/草泥马/叼你/法克鱿/福建鱼,fuck you/fucking you/fu*king you/fu*k u/fu*k you/Fujian U,CanTong Lexicon 2026,Colloquial,curse
-L603,屌你老母,diu2 nei5 lou5 mou2,1,去你的/操你妈/草泥马/叼你/法克鱿/福建鱼,fuck your mum/fucking your mum/fu*king your mum/fu*k your mum/Fujian U/fuck your mother/fucking your mother/What the fuck?/What the fuck/Motherfucker,CanTong Lexicon 2026,Colloquial,curse
-L604,問候你娘親,man6 hau6 nei5 noeng4 can1,0,去你的/操你妈/草泥马/叼你/法克鱿/福建鱼,fuck your mum/fucking your mum/fu*king your mum/fu*k your mum/Fujian U/fuck your mother/fucking your mother/What the fuck?/What the fuck/Motherfucker,CanTong Lexicon 2026,Colloquial,curse
-L605,屌你老味,diu2 nei5 lou5 mei6,1,去你的/操你妈/草泥马/叼你/法克鱿/福建鱼,fuck your mum/fucking your mum/fu*king your mum/fu*k your mum/Fujian U/fuck your mother/fucking your mother/What the fuck?/What the fuck/Motherfucker,CanTong Lexicon 2026,Colloquial,curse
-L606,屌那星,diu2 naa5 sing1,1,去你的/操你妈/草泥马/叼你/法克鱿/福建鱼,fuck your mum/fucking your mum/fu*king your mum/fu*k your mum/Fujian U/fuck your mother/fucking your mother/What the fuck?/What the fuck/Motherfucker,CanTong Lexicon 2026,Colloquial,curse
-L607,屌你鹵味,diu2 nei5 lou5 mei6,1,去你的/操你妈/草泥马/叼你/法克鱿/福建鱼,fuck your mum/fucking your mum/fu*king your mum/fu*k your mum/Fujian U/fuck your mother/fucking your mother/What the fuck?/What the fuck/Motherfucker,CanTong Lexicon 2026,Colloquial,curse
-L608,屌那妈,diu2 naa5 maa1,1,去你的/操你妈/草泥马/叼你/法克鱿/福建鱼,fuck your mum/fucking your mum/fu*king your mum/fu*k your mum/Fujian U/fuck your mother/fucking your mother/What the fuck?/What the fuck/Motherfucker,CanTong Lexicon 2026,Colloquial,curse
-L609,屌佢老母,diu2 keoi5 lou5 mou2,1,去他妈/去她妈/操他妈/操她妈/tmd/tm/法克鱿,fuck her mum/fucking her mum/fu*king her mum/fu*k her mum/fuck her mother/fucking her mother/fuck him mum/fucking him mum/fu*king him mum/fu*k him mum/fuck him mother/fucking him mother/What the fuck?/What the fuck/Motherfucker,CanTong Lexicon 2026,Colloquial,curse
-L610,問候佢娘親,man6 hau6 keoi5 noeng4 can1,1,去他妈/去她妈/操他妈/操她妈/tmd/tm/法克鱿,fuck her mum/fucking her mum/fu*king her mum/fu*k her mum/fuck her mother/fucking her mother/fuck him mum/fucking him mum/fu*king him mum/fu*k him mum/fuck him mother/fucking him mother/What the fuck?/What the fuck/Motherfucker,CanTong Lexicon 2026,Colloquial,curse
-L611,屌佢老味,diu2 keoi5 lou5 mei6,1,去他妈/去她妈/操他妈/操她妈/tmd/tm/法克鱿,fuck her mum/fucking her mum/fu*king her mum/fu*k her mum/fuck her mother/fucking her mother/fuck him mum/fucking him mum/fu*king him mum/fu*k him mum/fuck him mother/fucking him mother/What the fuck?/What the fuck/Motherfucker,CanTong Lexicon 2026,Colloquial,curse
-L612,屌佢鹵味,diu2 keoi5 lou5 mei6,1,去他妈/去她妈/操他妈/操她妈/tmd/tm/法克鱿,fuck her mum/fucking her mum/fu*king her mum/fu*k her mum/fuck her mother/fucking her mother/fuck him mum/fucking him mum/fu*king him mum/fu*k him mum/fuck him mother/fucking him mother/What the fuck?/What the fuck/Motherfucker,CanTong Lexicon 2026,Colloquial,curse
-L613,屌到反艇,diu2 dou3 faan2 teng5,1,操到你爽,Fuck you until you're satisfied/intense sexual intercourse,CanTong Lexicon 2026,Colloquial,curse
-L614,屌到你反艇,diu2 dou3 nei5 faan2 teng5,1,操到你爽,Fuck you until you're satisfied/intense sexual intercourse,CanTong Lexicon 2026,Colloquial,curse
-L615,屌到你叫救命,diu2 dou3 nei5 giu3 gau3 meng6,1,操到你爽,Fuck you until you're satisfied/intense sexual intercourse,CanTong Lexicon 2026,Colloquial,curse
-L616,你真系搞笑,nei5 zan1 hai6 gaau2 siu3,0,你就是个笑话/你真的很搞笑,You're a joke,CanTong Lexicon 2026,Colloquial,curse
-L617,你真系好好笑,nei5 zan1 hai6 hou2 hou2 siu3,0,你就是个笑话/你真的很搞笑,You're a joke,CanTong Lexicon 2026,Colloquial,curse
-L618,你真系笑撚死我,nei5 zan1 hai6 siu3 lan2 sei2 ngo5,1,你就是个笑话/你真的很搞笑,You're a joke,CanTong Lexicon 2026,Colloquial,curse
-L619,火滚,fo2 gwan2,0,很生气,maddening/pissed off/irate,CanTong Lexicon 2026,Colloquial,
-L620,㷫,hing1,0,很生气,maddening/pissed off/irate,CanTong Lexicon 2026,Colloquial,
-L621,嬲爆爆,nou5 baau3 baau3,0,非常生气/嫐爆爆,furious/enraged/infuriated,CanTong Lexicon 2026,Colloquial,
-L622,㷫烚烚,hing1 lap6 lap6,0,非常生气/嫐爆爆/兴奋/热烘烘,furious/enraged/infuriated/very hot/so hot,CanTong Lexicon 2026,Slang,
-L623,㷫過辣雞,hing1 gwo3 laat6 gai1,0,超级无敌生气/兴过辣鸡/兴过火屎,furious/fuming/very angry/extremely angry,CanTong Lexicon 2026,Slang,
-L624,㷫過火屎,hing1 gwo3 fo2 si2,0,超级无敌生气/兴过辣鸡/兴过火屎,furious/fuming/very angry/extremely angry,CanTong Lexicon 2026,Slang,
-L625,㷫過焫雞,hing1 gwo3 jit6 gai1,0,超级无敌生气/兴过辣鸡/兴过火屎,furious/fuming/very angry/extremely angry,CanTong Lexicon 2026,Slang,
-L626,吹脹,ceoi1 zoeng3,0,气死/吹胀,to blow up/to exasperate/to irritate,CanTong Lexicon 2026,Slang,
-L627,符弗,fu4 fat1,0,方法；办法,method/tricks ,CanTong Lexicon 2026,Slang,
-L628,計仔,gai3 zai2,0,方法；办法,method/tricks ,CanTong Lexicon 2026,Colloquial,
-L629,符fit,fu4 fit1,0,方法；办法,method/tricks ,CanTong Lexicon 2026,Slang,
-L630,板斧,baan2 fu2,0,方法；办法,method/tricks ,CanTong Lexicon 2026,Slang,
-L631,辦法,baan6 faat3,0,方法；办法,method/tricks ,CanTong Lexicon 2026,Formal,
-L632,冇晒符,mou5 saai3 fu4,0,没办法/没办法了/毫无办法,no way/no other way/absolutely no solution/no solution,CanTong Lexicon 2026,Slang,
-L633,冇計,mou5 gai3,0,没办法/没办法了/毫无办法,no way/no other way/absolutely no solution/no solution,CanTong Lexicon 2026,Colloquial,
-L634,冇晒符弗,mou5 saai3 fu4 fat1,0,没办法/没办法了/毫无办法,no way/no other way/absolutely no solution/no solution,CanTong Lexicon 2026,Slang,
-L635,煞食,saat3 sik6,0,厉害/在行/牛B/牛X/牛叉/牛逼,Awesome/Expert/amazing,CanTong Lexicon 2026,Slang,
-L636,犀利,sai1 lei6,0,厉害/在行/牛B/牛X/牛叉/牛逼,Awesome/Expert/amazing,CanTong Lexicon 2026,Formal,
-L637,抽秤,cau1 cing3,0,抽称/挑刺/挑毛病,Find fault/nitpick/find defects,CanTong Lexicon 2026,Slang,
-L638,挑刺,tiu1 ci3,0,抽称/挑刺/挑毛病,Find fault/nitpick/find defects,CanTong Lexicon 2026,Formal,
-L639,瀨嘢,laai6 je5,0,中招/踩坑/倒霉,get stung/step on a mine/it was a letdown/it`s a miss/bad luck,CanTong Lexicon 2026,Slang,
-L640,瀨撚攦嘢,laai6 lan2 laai6 je5,1,中招/踩坑/倒霉,get stung/step on a mine/it was a letdown/it`s a miss/bad luck,CanTong Lexicon 2026,Colloquial,
-L641,瀨攦嘢,laai6 laai6 je5,0,中招/踩坑/倒霉,get stung/step on a mine/it was a letdown/it`s a miss/bad luck,CanTong Lexicon 2026,Colloquial,
-L642,瀨柒攦嘢,laai6 cat1 laai6 je5,1,中招/踩坑/倒霉,get stung/step on a mine/it was a letdown/it`s a miss/bad luck,CanTong Lexicon 2026,Colloquial,
-L643,瀨鳩攦嘢,laai6 gau1 laai6 je5,1,中招/踩坑/倒霉,get stung/step on a mine/it was a letdown/it`s a miss/bad luck,CanTong Lexicon 2026,Colloquial,
-L644,舐撻,lai2 taat3,0,中招/踩坑/倒霉,get stung/step on a mine/it was a letdown/it`s a miss/bad luck,CanTong Lexicon 2026,Slang,
-L645,舐閪,lai2 hai1,1,中招/踩坑/倒霉,get stung/step on a mine/it was a letdown/it`s a miss/bad luck,CanTong Lexicon 2026,Colloquial,
-L646,嬲,nou5,0,生气,angry/to get angry/to take offence/to detest,CanTong Lexicon 2026,Colloquial,
-L647,心郁郁,sam1 juk1 juk1,0,想去做,Want to do,CanTong Lexicon 2026,Slang,
-L648,心思思,sam1 si1 si1,0,渴望/念念不忘,to constantly think about/Longing/Unforgettable,CanTong Lexicon 2026,Slang,
-L649,心掛掛,sam1 gwaa3 gwaa3,0,想着某人/心挂挂/担心别人,keep thinking/missing/to worry,CanTong Lexicon 2026,Formal,
-L650,掛住​,gwaa3 zyu6,0,想着某人/心挂挂/担心别人,keep thinking/missing/to worry,CanTong Lexicon 2026,Formal,
-L651,牽腸​掛肚,hin1 coeng4 gwaa3 tou5,0,想着某人/心挂挂/担心别人,keep thinking/missing/to worry,CanTong Lexicon 2026,Formal,
-L652,擔心​,daam1 sam1,0,想着某人/心挂挂/担心别人,keep thinking/missing/to worry,CanTong Lexicon 2026,Formal,
-L653,​唔​放心,m4 fong1 sam1,0,想着某人/心挂挂/担心别人,keep thinking/missing/to worry,CanTong Lexicon 2026,Colloquial,
-L654,關​係,gwaan1 hai6,0,连结/瓜葛/关系,linkage/unresolved matters/relation/association,CanTong Lexicon 2026,Colloquial,
-L655,闷閪,mun6 hai1,1,闷骚,Surprise package/Man show,CanTong Lexicon 2026,Colloquial,curse
-L656,水蛇春咁長,seoi2 se4 ceon1 gam3 coeng4,0,超长/超级长,extremely long or lengthy,CanTong Lexicon 2026,Slang,
-L657,的式,dik1 sik1,0,小巧玲珑/精致/迷你/微缩/微型,petite/diminutive/cute and small/pocket-size/pocket/mini,CanTong Lexicon 2026,Formal,
-L658,趣​緻​,ceoi3 zi3,0,小巧玲珑/精致/迷你/微缩/微型,petite/diminutive/cute and small/pocket-size/pocket/mini,CanTong Lexicon 2026,Formal,
-L659,菂薂,dik1 dik1,0,小巧玲珑/精致/迷你/微缩/微型,petite/diminutive/cute and small/pocket-size/pocket/mini,CanTong Lexicon 2026,Formal,
-L660,的骰,dik1 sak1,0,小巧玲珑/精致/迷你/微缩/微型,petite/diminutive/cute and small/pocket-size/pocket/mini,CanTong Lexicon 2026,Formal,
-L661,奄尖,jim1 zim1,0,挑剔/腌尖/难以取悦/过分挑剔/难以满足,fussy/picky/fastidious/choosy/hard to please,CanTong Lexicon 2026,Colloquial,curse
-L662,揀擇,gaan2 zaak6,0,挑剔/腌尖/难以取悦/过分挑剔/难以满足,fussy/picky/fastidious/choosy/hard to please,CanTong Lexicon 2026,Formal,curse
-L663,奄尖聲悶,jim1 zim1 seng1 mun6,0,挑剔/腌尖/难以取悦/过分挑剔/难以满足,fussy/picky/fastidious/choosy/hard to please,CanTong Lexicon 2026,Colloquial,curse
-L664,奄尖夹聲悶,jim1 zim1 gaap3 seng1 mun6,0,挑剔/腌尖/难以取悦/过分挑剔/难以满足,fussy/picky/fastidious/choosy/hard to please,CanTong Lexicon 2026,Colloquial,curse
-L665,俹簁,aa1 sai1,0,随意/不上心/马虎/疏忽/粗心/粗心大意,careless/sloppy/slapdash/slipshod/,CanTong Lexicon 2026,Colloquial,curse
-L666,大意,daai6 ji3,0,随意/不上心/马虎/疏忽/粗心/粗心大意,careless/sloppy/slapdash/slipshod/,CanTong Lexicon 2026,Formal,curse
-L667,潦草,lou4 cou2,0,随意/不上心/马虎/疏忽/粗心/粗心大意,careless/sloppy/slapdash/slipshod/,CanTong Lexicon 2026,Colloquial,curse
-L668,馬虎,maa5 fu2,0,随意/不上心/马虎/疏忽/粗心/粗心大意,careless/sloppy/slapdash/slipshod/,CanTong Lexicon 2026,Formal,curse
-L669,疏忽,so1 fat1,0,随意/不上心/马虎/疏忽/粗心/粗心大意,careless/sloppy/slapdash/slipshod/,CanTong Lexicon 2026,Formal,curse
-L670,粗心,cou1 sam1,0,随意/不上心/马虎/疏忽/粗心/粗心大意,careless/sloppy/slapdash/slipshod/,CanTong Lexicon 2026,Formal,curse
-L671,粗心大意,cou1 sam1 daai6 ji3,0,随意/不上心/马虎/疏忽/粗心/粗心大意,careless/sloppy/slapdash/slipshod/,CanTong Lexicon 2026,Formal,curse
-L672,歎世界,taan3 sai3 gaai3,0,"享受生活/享受人生/享福/享清福
+L597,收爹,sau1 deoi1,0,闭嘴/住口/别吵/不要吵/别烦/不要闹/不要闹了/别闹/别闹了,Shut up/shut your mouth/piss off/knock it off/hush,CanTong Lexicon 2026,Colloquial,curse
+L598,收声,sau1 seng1,0,闭嘴/住口/别吵/不要吵/别烦/不要闹/不要闹了/别闹/别闹了,Shut up/shut your mouth/piss off/knock it off/hush,CanTong Lexicon 2026,Colloquial,curse
+L599,屌你,diu2 nei5,1,去你的/操你/草泥马/叼你/法克鱿/福建鱼/去你的/恭喜发财/恭喜你,fuck you/fucking you/fu*king you/fu*k u/fu*k you/Fujian U,CanTong Lexicon 2026,Colloquial,curse
+L600,屌柒你,diu2 cat1 nei5,1,去你的/操你/草泥马/叼你/法克鱿/福建鱼/去你的/恭喜发财/恭喜你,fuck you/fucking you/fu*king you/fu*k u/fu*k you/Fujian U,CanTong Lexicon 2026,Colloquial,curse
+L601,屌鳩你,diu2 gau1 nei5,1,去你的/操你/草泥马/叼你/法克鱿/福建鱼/恭喜发财/恭喜你,fuck you/fucking you/fu*king you/fu*k u/fu*k you/Fujian U,CanTong Lexicon 2026,Colloquial,curse
+L602,屌你老母,diu2 nei5 lou5 mou2,1,操你妈/草泥马/叼你老母/问候你娘亲/你妈/你妈的/去你的,fuck your mum/fucking your mum/fu*king your mum/fu*k your mum/Fujian U/fuck your mother/fucking your mother/What the fuck?/What the fuck/Motherfucker,CanTong Lexicon 2026,Colloquial,curse
+L603,問候你娘親,man6 hau6 nei5 noeng4 can1,0,操你妈/草泥马/叼你老母/问候你娘亲/你妈/你妈的/去你的,fuck your mum/fucking your mum/fu*king your mum/fu*k your mum/Fujian U/fuck your mother/fucking your mother/What the fuck?/What the fuck/Motherfucker,CanTong Lexicon 2026,Colloquial,curse
+L604,屌你老味,diu2 nei5 lou5 mei6,1,操你妈/草泥马/叼你老母/问候你娘亲/你妈/你妈的/去你的,fuck your mum/fucking your mum/fu*king your mum/fu*k your mum/Fujian U/fuck your mother/fucking your mother/What the fuck?/What the fuck/Motherfucker,CanTong Lexicon 2026,Colloquial,curse
+L605,屌那星,diu2 naa5 sing1,1,去你的/操你妈/草泥马/叼你/法克鱿/福建鱼/去你的/恭喜发财/恭喜你,fuck your mum/fucking your mum/fu*king your mum/fu*k your mum/Fujian U/fuck your mother/fucking your mother/What the fuck?/What the fuck/Motherfucker,CanTong Lexicon 2026,Colloquial,curse
+L606,屌你鹵味,diu2 nei5 lou5 mei6,1,操你妈/草泥马/叼你老母/问候你娘亲/你妈/你妈的/去你的/恭喜发财/恭喜你,fuck your mum/fucking your mum/fu*king your mum/fu*k your mum/Fujian U/fuck your mother/fucking your mother/What the fuck?/What the fuck/Motherfucker,CanTong Lexicon 2026,Colloquial,curse
+L607,屌那妈,diu2 naa5 maa1,1,去你的/操你妈/草泥马/叼你/法克鱿/福建鱼/去你的,fuck your mum/fucking your mum/fu*king your mum/fu*k your mum/Fujian U/fuck your mother/fucking your mother/What the fuck?/What the fuck/Motherfucker,CanTong Lexicon 2026,Colloquial,curse
+L608,屌佢老母,diu2 keoi5 lou5 mou2,1,去他妈/去她妈/操他妈/操她妈/tmd/tm/他妈的/她妈的/他妈/她妈/去你的,fuck her mum/fucking her mum/fu*king her mum/fu*k her mum/fuck her mother/fucking her mother/fuck him mum/fucking him mum/fu*king him mum/fu*k him mum/fuck him mother/fucking him mother/What the fuck?/What the fuck/Motherfucker,CanTong Lexicon 2026,Colloquial,curse
+L609,問候佢娘親,man6 hau6 keoi5 noeng4 can1,1,去他妈/去她妈/操他妈/操她妈/tmd/tm/他妈的/她妈的/他妈/她妈/去你的,fuck her mum/fucking her mum/fu*king her mum/fu*k her mum/fuck her mother/fucking her mother/fuck him mum/fucking him mum/fu*king him mum/fu*k him mum/fuck him mother/fucking him mother/What the fuck?/What the fuck/Motherfucker,CanTong Lexicon 2026,Colloquial,curse
+L610,屌佢老味,diu2 keoi5 lou5 mei6,1,去他妈/去她妈/操他妈/操她妈/tmd/tm/他妈的/她妈的/他妈/她妈/去你的,fuck her mum/fucking her mum/fu*king her mum/fu*k her mum/fuck her mother/fucking her mother/fuck him mum/fucking him mum/fu*king him mum/fu*k him mum/fuck him mother/fucking him mother/What the fuck?/What the fuck/Motherfucker,CanTong Lexicon 2026,Colloquial,curse
+L611,屌佢鹵味,diu2 keoi5 lou5 mei6,1,去他妈/去她妈/操他妈/操她妈/tmd/tm/他妈的/她妈的/他妈/她妈/去你的/恭喜发财/恭喜你,fuck her mum/fucking her mum/fu*king her mum/fu*k her mum/fuck her mother/fucking her mother/fuck him mum/fucking him mum/fu*king him mum/fu*k him mum/fuck him mother/fucking him mother/What the fuck?/What the fuck/Motherfucker,CanTong Lexicon 2026,Colloquial,curse
+L612,屌到反艇,diu2 dou3 faan2 teng5,1,操到你爽/去你的,Fuck you until you're satisfied/intense sexual intercourse,CanTong Lexicon 2026,Colloquial,curse
+L613,屌到你反艇,diu2 dou3 nei5 faan2 teng5,1,操到你爽/去你的,Fuck you until you're satisfied/intense sexual intercourse,CanTong Lexicon 2026,Colloquial,curse
+L614,屌到你叫救命,diu2 dou3 nei5 giu3 gau3 meng6,1,操到你爽/去你的,Fuck you until you're satisfied/intense sexual intercourse,CanTong Lexicon 2026,Colloquial,curse
+L615,你真系搞笑,nei5 zan1 hai6 gaau2 siu3,0,你就是个笑话/你真的很搞笑,You're a joke,CanTong Lexicon 2026,Colloquial,curse
+L616,你真系好好笑,nei5 zan1 hai6 hou2 hou2 siu3,0,你就是个笑话/你真的很搞笑,You're a joke,CanTong Lexicon 2026,Colloquial,curse
+L617,你真系笑撚死我,nei5 zan1 hai6 siu3 lan2 sei2 ngo5,1,你就是个笑话/你真的很搞笑,You're a joke,CanTong Lexicon 2026,Colloquial,curse
+L618,火滚,fo2 gwan2,0,很生气,maddening/pissed off/irate,CanTong Lexicon 2026,Colloquial,
+L619,㷫,hing1,0,很生气,maddening/pissed off/irate,CanTong Lexicon 2026,Colloquial,
+L620,嬲爆爆,nou5 baau3 baau3,0,非常生气/嫐爆爆,furious/enraged/infuriated,CanTong Lexicon 2026,Colloquial,
+L621,㷫烚烚,hing1 lap6 lap6,0,非常生气/嫐爆爆/兴奋/热烘烘,furious/enraged/infuriated/very hot/so hot,CanTong Lexicon 2026,Slang,
+L622,㷫過辣雞,hing1 gwo3 laat6 gai1,0,超级无敌生气/兴过辣鸡/兴过火屎,furious/fuming/very angry/extremely angry,CanTong Lexicon 2026,Slang,
+L623,㷫過火屎,hing1 gwo3 fo2 si2,0,超级无敌生气/兴过辣鸡/兴过火屎,furious/fuming/very angry/extremely angry,CanTong Lexicon 2026,Slang,
+L624,㷫過焫雞,hing1 gwo3 jit6 gai1,0,超级无敌生气/兴过辣鸡/兴过火屎,furious/fuming/very angry/extremely angry,CanTong Lexicon 2026,Slang,
+L625,吹脹,ceoi1 zoeng3,0,气死/吹胀,to blow up/to exasperate/to irritate,CanTong Lexicon 2026,Slang,
+L626,符弗,fu4 fat1,0,方法；办法,method/tricks ,CanTong Lexicon 2026,Slang,
+L627,計仔,gai3 zai2,0,方法；办法,method/tricks ,CanTong Lexicon 2026,Colloquial,
+L628,符fit,fu4 fit1,0,方法；办法,method/tricks ,CanTong Lexicon 2026,Slang,
+L629,板斧,baan2 fu2,0,方法；办法,method/tricks ,CanTong Lexicon 2026,Slang,
+L630,辦法,baan6 faat3,0,方法；办法,method/tricks ,CanTong Lexicon 2026,Formal,
+L631,冇晒符,mou5 saai3 fu4,0,没办法/没办法了/毫无办法,no way/no other way/absolutely no solution/no solution,CanTong Lexicon 2026,Slang,
+L632,冇計,mou5 gai3,0,没办法/没办法了/毫无办法,no way/no other way/absolutely no solution/no solution,CanTong Lexicon 2026,Colloquial,
+L633,冇晒符弗,mou5 saai3 fu4 fat1,0,没办法/没办法了/毫无办法,no way/no other way/absolutely no solution/no solution,CanTong Lexicon 2026,Slang,
+L634,煞食,saat3 sik6,0,厉害/在行/牛B/牛X/牛叉/牛逼,Awesome/Expert/amazing,CanTong Lexicon 2026,Slang,
+L635,犀利,sai1 lei6,0,厉害/在行/牛B/牛X/牛叉/牛逼,Awesome/Expert/amazing,CanTong Lexicon 2026,Formal,
+L636,抽秤,cau1 cing3,0,抽称/挑刺/挑毛病,Find fault/nitpick/find defects,CanTong Lexicon 2026,Slang,
+L637,挑刺,tiu1 ci3,0,抽称/挑刺/挑毛病,Find fault/nitpick/find defects,CanTong Lexicon 2026,Formal,
+L638,瀨嘢,laai6 je5,0,中招/踩坑/倒霉,get stung/step on a mine/it was a letdown/it`s a miss/bad luck,CanTong Lexicon 2026,Slang,
+L639,瀨撚攦嘢,laai6 lan2 laai6 je5,1,中招/踩坑/倒霉,get stung/step on a mine/it was a letdown/it`s a miss/bad luck,CanTong Lexicon 2026,Colloquial,
+L640,瀨攦嘢,laai6 laai6 je5,0,中招/踩坑/倒霉,get stung/step on a mine/it was a letdown/it`s a miss/bad luck,CanTong Lexicon 2026,Colloquial,
+L641,瀨柒攦嘢,laai6 cat1 laai6 je5,1,中招/踩坑/倒霉,get stung/step on a mine/it was a letdown/it`s a miss/bad luck,CanTong Lexicon 2026,Colloquial,
+L642,瀨鳩攦嘢,laai6 gau1 laai6 je5,1,中招/踩坑/倒霉,get stung/step on a mine/it was a letdown/it`s a miss/bad luck,CanTong Lexicon 2026,Colloquial,
+L643,舐撻,lai2 taat3,0,中招/踩坑/倒霉,get stung/step on a mine/it was a letdown/it`s a miss/bad luck,CanTong Lexicon 2026,Slang,
+L644,舐閪,lai2 hai1,1,中招/踩坑/倒霉,get stung/step on a mine/it was a letdown/it`s a miss/bad luck,CanTong Lexicon 2026,Colloquial,
+L645,嬲,nou5,0,生气,angry/to get angry/to take offence/to detest,CanTong Lexicon 2026,Colloquial,
+L646,心郁郁,sam1 juk1 juk1,0,想去做,Want to do,CanTong Lexicon 2026,Slang,
+L647,心思思,sam1 si1 si1,0,渴望/念念不忘,to constantly think about/Longing/Unforgettable,CanTong Lexicon 2026,Slang,
+L648,心掛掛,sam1 gwaa3 gwaa3,0,想着某人/心挂挂/担心别人,keep thinking/missing/to worry,CanTong Lexicon 2026,Formal,
+L649,掛住​,gwaa3 zyu6,0,想着某人/心挂挂/担心别人,keep thinking/missing/to worry,CanTong Lexicon 2026,Formal,
+L650,牽腸​掛肚,hin1 coeng4 gwaa3 tou5,0,想着某人/心挂挂/担心别人,keep thinking/missing/to worry,CanTong Lexicon 2026,Formal,
+L651,擔心​,daam1 sam1,0,想着某人/心挂挂/担心别人,keep thinking/missing/to worry,CanTong Lexicon 2026,Formal,
+L652,​唔​放心,m4 fong1 sam1,0,想着某人/心挂挂/担心别人,keep thinking/missing/to worry,CanTong Lexicon 2026,Colloquial,
+L653,關​係,gwaan1 hai6,0,连结/瓜葛/关系,linkage/unresolved matters/relation/association,CanTong Lexicon 2026,Colloquial,
+L654,闷閪,mun6 hai1,1,闷骚,Surprise package/Man show,CanTong Lexicon 2026,Colloquial,curse
+L655,水蛇春咁長,seoi2 se4 ceon1 gam3 coeng4,0,超长/超级长,extremely long or lengthy,CanTong Lexicon 2026,Slang,
+L656,的式,dik1 sik1,0,小巧玲珑/精致/迷你/微缩/微型,petite/diminutive/cute and small/pocket-size/pocket/mini,CanTong Lexicon 2026,Formal,
+L657,趣​緻​,ceoi3 zi3,0,小巧玲珑/精致/迷你/微缩/微型,petite/diminutive/cute and small/pocket-size/pocket/mini,CanTong Lexicon 2026,Formal,
+L658,菂薂,dik1 dik1,0,小巧玲珑/精致/迷你/微缩/微型,petite/diminutive/cute and small/pocket-size/pocket/mini,CanTong Lexicon 2026,Formal,
+L659,的骰,dik1 sak1,0,小巧玲珑/精致/迷你/微缩/微型,petite/diminutive/cute and small/pocket-size/pocket/mini,CanTong Lexicon 2026,Formal,
+L660,奄尖,jim1 zim1,0,挑剔/腌尖/难以取悦/过分挑剔/难以满足,fussy/picky/fastidious/choosy/hard to please,CanTong Lexicon 2026,Colloquial,curse
+L661,揀擇,gaan2 zaak6,0,挑剔/腌尖/难以取悦/过分挑剔/难以满足,fussy/picky/fastidious/choosy/hard to please,CanTong Lexicon 2026,Formal,curse
+L662,奄尖聲悶,jim1 zim1 seng1 mun6,0,挑剔/腌尖/难以取悦/过分挑剔/难以满足,fussy/picky/fastidious/choosy/hard to please,CanTong Lexicon 2026,Colloquial,curse
+L663,奄尖夹聲悶,jim1 zim1 gaap3 seng1 mun6,0,挑剔/腌尖/难以取悦/过分挑剔/难以满足,fussy/picky/fastidious/choosy/hard to please,CanTong Lexicon 2026,Colloquial,curse
+L664,俹簁,aa1 sai1,0,随意/不上心/马虎/疏忽/粗心/粗心大意,careless/sloppy/slapdash/slipshod/,CanTong Lexicon 2026,Colloquial,curse
+L665,大意,daai6 ji3,0,随意/不上心/马虎/疏忽/粗心/粗心大意,careless/sloppy/slapdash/slipshod/,CanTong Lexicon 2026,Formal,curse
+L666,潦草,lou4 cou2,0,随意/不上心/马虎/疏忽/粗心/粗心大意,careless/sloppy/slapdash/slipshod/,CanTong Lexicon 2026,Colloquial,curse
+L667,馬虎,maa5 fu2,0,随意/不上心/马虎/疏忽/粗心/粗心大意,careless/sloppy/slapdash/slipshod/,CanTong Lexicon 2026,Formal,curse
+L668,疏忽,so1 fat1,0,随意/不上心/马虎/疏忽/粗心/粗心大意,careless/sloppy/slapdash/slipshod/,CanTong Lexicon 2026,Formal,curse
+L669,粗心,cou1 sam1,0,随意/不上心/马虎/疏忽/粗心/粗心大意,careless/sloppy/slapdash/slipshod/,CanTong Lexicon 2026,Formal,curse
+L670,粗心大意,cou1 sam1 daai6 ji3,0,随意/不上心/马虎/疏忽/粗心/粗心大意,careless/sloppy/slapdash/slipshod/,CanTong Lexicon 2026,Formal,curse
+L671,歎世界,taan3 sai3 gaai3,0,"享受生活/享受人生/享福/享清福
 ",to enjoy life/enjoy life/enjoy,CanTong Lexicon 2026,Colloquial,curse
-L673,嘆世界,taan3 sai3 gaai3,0,"享受生活/享受人生/享福/享清福
+L672,嘆世界,taan3 sai3 gaai3,0,"享受生活/享受人生/享福/享清福
 ",to enjoy life/enjoy life/enjoy,CanTong Lexicon 2026,Colloquial,curse
-L674,山旮旯,saan1 gaa1 laa1,0,荒芜/偏僻/偏僻的地方/很偏僻/偏远,remote/backwoods/wild/out of the way,CanTong Lexicon 2026,Slang,
-L675,隔涉,gaak3 sip3,0,荒芜/偏僻/偏僻的地方/很偏僻/偏远,remote/backwoods/wild/out of the way,CanTong Lexicon 2026,Slang,
-L676,山卡啦,saan1 kaa1 laa1,0,荒芜/偏僻/偏僻的地方/很偏僻/偏远,remote/backwoods/wild/out of the way,CanTong Lexicon 2026,Slang,
-L677,山卡罅,saan1 kaa1 laa6,0,荒芜/偏僻/偏僻的地方/很偏僻/偏远,remote/backwoods/wild/out of the way,CanTong Lexicon 2026,Slang,
-L678,山旯旮,saan1 laa1 gaa1,0,荒芜/偏僻/偏僻的地方/很偏僻/偏远,remote/backwoods/wild/out of the way,CanTong Lexicon 2026,Slang,
-L679,眼㾓,ngaan5 jau1,0,看不顺眼/感到讨厌/感到反感,I don't like it/I hate it/I feel disgusted/disgusted,CanTong Lexicon 2026,Slang,
-L680,眼冤,ngaan5 jyun1,0,看不顺眼/感到讨厌/感到反感,I don't like it/I hate it/I feel disgusted/disgusted,CanTong Lexicon 2026,Slang,
-L681,冇,mou5,0,没有,no/nothing/have not/did not/don`t/didn`t,CanTong Lexicon 2026,Formal,
-L682,撲亲,pok3 can1,0,跌倒/摔倒/扑街,Fall down,CanTong Lexicon 2026,Formal,
-L683,做乜,zou6 mat1,0,干嘛/做什么/怎么/怎么回事/怎麼了,what are you doing/what's up/why/what for,CanTong Lexicon 2026,Colloquial,ask
-L684,做乜柒,zou6 mat1 cat1 ,1,干嘛/做什么/怎么/怎么回事/做乜7/怎麼了,what are you doing/what's up/why/what for,CanTong Lexicon 2026,Colloquial,ask
-L685,做乜撚,zou6 mat1 lan2,1,干嘛/做什么/怎么/怎么回事/做乜L/怎麼了,what are you doing/what's up/why/what for,CanTong Lexicon 2026,Colloquial,ask
-L686,做乜鳩,zou6 mat1 gau1,1,干嘛/做什么/怎么/怎么回事/做乜9/怎麼了,what are you doing/what's up/why/what for,CanTong Lexicon 2026,Colloquial,ask
-L687,做乜閪,zou6 mat1 hai1,1,干嘛/做什么/怎么/怎么回事/怎麼了,what are you doing/what's up/why/what for,CanTong Lexicon 2026,Colloquial,ask
-L688,做乜嘢,zou6 mat1 je5,0,干嘛/做什么/怎么/怎么回事/做乜也,what are you doing/what's up/why/what for,CanTong Lexicon 2026,Colloquial,ask
-L689,做咩,zou6 me1,0,干嘛/做什么/怎么/怎么回事/怎麼了,what are you doing/what's up/why/what for,CanTong Lexicon 2026,Colloquial,ask
-L690,做咩啫,zou6 me1 ze1,0,干嘛/做什么/怎么/怎么回事/怎麼了,what are you doing/what's up/why/what for,CanTong Lexicon 2026,Colloquial,ask
-L691,做乜噉嘅,zou6 mat1 gam2 ge2,0,怎么会这样/为什么会这样,what are you doing/what's up/why/what for,CanTong Lexicon 2026,Colloquial,ask
-L692,做乜撚嘢, zou6 mat1 lan2 je5,1,干嘛/做什么/怎么/怎么回事/做l乜也/怎麼了,what are you doing/what's up/why/what for,CanTong Lexicon 2026,Colloquial,ask
-L693,做乜鳩嘢, zou6 mat1 gau1 je5,1,干嘛/做什么/怎么/怎么回事/做9乜也/怎麼了,what are you doing/what's up/why/what for,CanTong Lexicon 2026,Colloquial,ask
-L694,做乜柒嘢, zou6 mat1 cat1 je5,1,干嘛/做什么/怎么/怎么回事/做7乜也/怎麼了,what are you doing/what's up/why/what for,CanTong Lexicon 2026,Colloquial,ask
-L695,唔好𢫨,m4 hou2 ung2,0,不要推/别推/ong,don`t push,CanTong Lexicon 2026,Colloquial,
-L696,咪𢫨,mai1 ung2,0,不要推/别推/ong,don`t push,CanTong Lexicon 2026,Colloquial,
-L697,咪鳩𢫨,mai1 gau1 ung2,1,不要推/别推/ong,don`t push,CanTong Lexicon 2026,Colloquial,
-L698,咪撚𢫨,mai1 lan2 ung2,1,不要推/别推/ong,don`t push,CanTong Lexicon 2026,Colloquial,
-L699,咪柒𢫨,mai1 cat1 ung2,1,不要推/别推/ong,don`t push,CanTong Lexicon 2026,Colloquial,
-L700,咪閪𢫨,mai1 mat1 ung2,1,不要推/别推/ong,don`t push,CanTong Lexicon 2026,Colloquial,
-L701,𢫨你只閪,ung2 nei5 zi2 hai1,1,推你妈/不要推/别推/ong,don`t fucking push/don`t push,CanTong Lexicon 2026,Colloquial,
-L702,𢫨你老母,ung2 nei5 lou5 mou2,1,推你妈/不要推/别推/ong,don`t fucking push/don`t push,CanTong Lexicon 2026,Colloquial,
-L703,𢫨你老母吖𢫨,ung2 nei5 lou5 mou2 aa1 ung2,1,推你妈/不要推/别推/ong/推你妈啊推,don`t fucking push/don`t push,CanTong Lexicon 2026,Colloquial,
-L704,𢫨你老妈吖𢫨,ung2 nei5 lou5 maa1 aa1 ung2,1,推你妈/不要推/别推/ong/推你妈啊推,don`t fucking push/don`t push,CanTong Lexicon 2026,Colloquial,
-L705,再𢫨你就閪,zoi3 ung2 nei5 zau6 hai1,1,推你妈/不要推/别推/ong/推你妈啊推/再推你试试,Try pushing you again/don`t fucking push/don`t push,CanTong Lexicon 2026,Colloquial,
-L706,唔係,m4 hai6,0,不是,no/not,CanTong Lexicon 2026,Colloquial,
-L707,咪,mai1,0,不是,no/not,CanTong Lexicon 2026,Colloquial,
-L708,唔撚係,m4 lan2 hai6,1,不是/不是吧,No way/no/not,CanTong Lexicon 2026,Colloquial,
-L709,唔閪係,m4 hai1 hai6,1,不是/不是吧,No way/no/not,CanTong Lexicon 2026,Colloquial,
-L710,唔柒係,m4 cat1 hai6,1,不是/不是吧,No way/no/not,CanTong Lexicon 2026,Colloquial,
-L711,唔鳩係,m4 gau1 hai6,1,不是/不是吧,No way/no/not,CanTong Lexicon 2026,Colloquial,
-L712,唔撚係吖嘛,m4 nan2 hai6 aa1 maa3,1,不是/不是吧,No way/no/not,CanTong Lexicon 2026,Colloquial,
-L713,唔閪係吖嘛,m4 hai1 hai6 aa1 maa3,1,不是/不是吧,No way/no/not,CanTong Lexicon 2026,Colloquial,
-L714,唔柒係吖嘛,m4 cat1 hai6 aa1 maa3,1,不是/不是吧,No way/no/not,CanTong Lexicon 2026,Colloquial,
-L715,唔鳩係吖嘛,m4 gau1 hai6 aa1 maa3,1,不是/不是吧,No way/no/not,CanTong Lexicon 2026,Colloquial,
-L716,唔係吖嘛,m4 hai6 aa1 maa3,0,不是/不是吧,No way/no/not,CanTong Lexicon 2026,Colloquial,
-L717,係閪,hai6 hai1,1,是个鬼/才不是呢/才不是,"It's a ghost/No, it's not/It's not.",CanTong Lexicon 2026,Colloquial,
-L718,係鳩,hai6 gau1 ,1,是个鬼/才不是呢/才不是,"It's a ghost/No, it's not/It's not.",CanTong Lexicon 2026,Colloquial,
-L719,係鬼,hai6 gwai2,0,不就是/可不是/难道不是吗/可不是嘛/不都是/难道不是/可不是吗/难道不是嘛/不就是嘛/不就是吗,"It's a ghost/No, it's not/It's not.",CanTong Lexicon 2026,Colloquial,
-L720,咪係,mai6 hai6,0,不就是/可不是/难道不是吗/可不是嘛/不都是/难道不是/可不是吗/难道不是嘛/不就是嘛/不就是吗,Isn't that right/Isn't it just/That's right/that's it,CanTong Lexicon 2026,Colloquial,
-L721,咪就係,mai6 zau6 hai6,0,不就是/可不是/难道不是吗/可不是嘛/不都是/难道不是/可不是吗/难道不是嘛/不就是嘛/不就是吗,Isn't that right/Isn't it just/That's right/that's it,CanTong Lexicon 2026,Colloquial,
-L722,咪又係,mai6 jau6 hai6,0,不又是/难道不是/可不是/不都是,Isn't that right/Isn't it just/That's right,CanTong Lexicon 2026,Colloquial,
-L723,之唔係,zi1 m4 hai6,0,不就是/可不是/难道不是吗/可不是嘛/不都是/难道不是/可不是吗/难道不是嘛/不就是嘛/不就是吗,Isn't that right/Isn't it just/That's right/that's it,CanTong Lexicon 2026,Colloquial,
-L724,水人, seoi2 jan4,0,存心误导人/忽悠/骗人/欺骗人,to mislead someone deliberately/lying/deceiving/boasting/talking nonsense/blathering/cheating/telling lies/to lie/lie/fleecing us/a chump/cheat/to cheat/to trick/trick/deceive/lie/cheat/to swindle,CanTong Lexicon 2026,Colloquial,
-L725,水鳩人, seoi2 gau1 jan4,1,存心误导人/忽悠/骗人/欺骗人,to mislead someone deliberately/lying/deceiving/boasting/talking nonsense/blathering/cheating/telling lies/to lie/lie/fleecing us/a chump/cheat/to cheat/to trick/trick/deceive/lie/cheat/to swindle,CanTong Lexicon 2026,Colloquial,
-L726,水柒人, seoi2 cat1 jan4,1,存心误导人/忽悠/骗人/欺骗人,to mislead someone deliberately/lying/deceiving/boasting/talking nonsense/blathering/cheating/telling lies/to lie/lie/fleecing us/a chump/cheat/to cheat/to trick/trick/deceive/lie/cheat/to swindle,CanTong Lexicon 2026,Colloquial,
-L727,氹你入局,tam3 nei5 jap6 guk6,0,骗人进圈套/忽悠/骗人/欺骗人/入圈套/把人骗进来,deceiving people into a trap/luring/scamming/deceiving/falling into a trap/luring people in,CanTong Lexicon 2026,Colloquial,
-L728,氹佢入局,tam3 keoi5 jap6 guk6,0,骗人进圈套/忽悠/骗人/欺骗人/入圈套/把人骗进来,deceiving people into a trap/luring/scamming/deceiving/falling into a trap/luring people in,CanTong Lexicon 2026,Colloquial,
-L729,呃鳩人,ngaak1 gau1 jan4,1,存心误导人/忽悠/骗人/欺骗人,to mislead someone deliberately/lying/deceiving/boasting/talking nonsense/blathering/cheating/telling lies/to lie/lie/fleecing us/a chump/cheat/to cheat/to trick/trick/deceive/lie/cheat/to swindle,CanTong Lexicon 2026,Colloquial,
-L730,呃人,ngaak1 jan4,0,存心误导人/忽悠/骗人/欺骗人,to mislead someone deliberately/lying/deceiving/boasting/talking nonsense/blathering/cheating/telling lies/to lie/lie/fleecing us/a chump/cheat/to cheat/to trick/trick/deceive/lie/cheat/to swindle,CanTong Lexicon 2026,Colloquial,
-L731,呃柒人,ngaak1 cat1 jan4,1,存心误导人/忽悠/骗人/欺骗人,to mislead someone deliberately/lying/deceiving/boasting/talking nonsense/blathering/cheating/telling lies/to lie/lie/fleecing us/a chump/cheat/to cheat/to trick/trick/deceive/lie/cheat/to swindle,CanTong Lexicon 2026,Colloquial,
-L732,呃閪人,ngaak1 cat1  jan4,1,存心误导人/忽悠/骗人/欺骗人,to mislead someone deliberately/lying/deceiving/boasting/talking nonsense/blathering/cheating/telling lies/to lie/lie/fleecing us/a chump/cheat/to cheat/to trick/trick/deceive/lie/cheat/to swindle,CanTong Lexicon 2026,Colloquial,
-L733,替死鬼,tai3 sei2 gwai2,0,替罪羊/代罪羔羊,scapegoat/fall guy/a patsy,CanTong Lexicon 2026,slang,
-L734,抽水,cau1 seoi2,0,占便宜/浑水摸鱼/调戏妇女/性骚扰/剥削, scrounge/to make use of/to exploit/make use of/Harassing women/sexual harassment,CanTong Lexicon 2026,slang,
-L735,佔便宜,zim3 pin4 ji4,0,占便宜/浑水摸鱼/调戏妇女/性骚扰/剥削, scrounge/to make use of/to exploit/make use of/Harassing women/sexual harassment,CanTong Lexicon 2026,Formal,
-L736,揩油,haai1 jau4,0,占便宜/浑水摸鱼/调戏妇女/性骚扰, scrounge/to make use of/to exploit/make use of/Harassing women/sexual harassment,CanTong Lexicon 2026,slang,
-L737,剾草,au1 cou2,0,占便宜/浑水摸鱼/利用, scrounge/to make use of/to exploit/make use of,CanTong Lexicon 2026,slang,
-L738,利用,lei6 jung6,0,占便宜/浑水摸鱼/利用/剥削, scrounge/to make use of/to exploit/make use of,CanTong Lexicon 2026,Formal,
-L740,打斧頭,daa2 fu2 tau4,0,挪用公款/偷钱/私吞/私吞公款,embezzlement/to embezzle/embezzle funds/Steal money/Embezzlement/misappropriation of public funds,CanTong Lexicon 2026,slang,
-L741,穿櫃桶底,cyun1 gwai6 tung2 dai2,0,挪用公款/消化肠道/肠道消化/偷钱/私吞/私吞公款,embezzlement/to embezzle/embezzle funds/Steal money/Embezzlement/misappropriation of public funds,CanTong Lexicon 2026,slang,
-L742,落格,lok6 gaak3,0,挪用公款/消化肠道/肠道消化/偷钱/私吞/私吞公款,embezzlement/to embezzle/embezzle funds/Digestive Gut/Intestinal Digestion/Steal money/Embezzlement/misappropriation of public funds,CanTong Lexicon 2026,slang,
-L743,该煨,goi1 wui1,0,糟糕/糟糕的/倒霉的/倒霉/运气不好的/可怜的/悲惨的/活该/该死/自作自受的/咎由自取/活该的/自找的/我的天哪/我的老天爷/,"terrible/to be down on one's luck/to be out of luck; pitiful/tragic/serves one right, deserved/damnable/to have brought it upon oneself/to have it coming/deserving of the consquences/to have asked for it(interjection) oh my god/my goodness/goodness me/my word/oh my/omg",CanTong Lexicon 2026,slang,
-L744,折墮,zit3 do6,0,糟糕/糟糕的/倒霉的/倒霉/运气不好的/可怜的/悲惨的/活该/该死/自作自受的/咎由自取/活该的/自找的/我的天哪/我的老天爷/,"terrible/to be down on one's luck/to be out of luck; pitiful/tragic/serves one right, deserved/damnable/to have brought it upon oneself/to have it coming/deserving of the consquences/to have asked for it(interjection) oh my god/my goodness/goodness me/my word/oh my/omg",CanTong Lexicon 2026,slang,
-L745,撞鬼囖,zong2 gwai2 lo1,0,糟糕/糟糕的/倒霉的/倒霉/运气不好的/可怜的/悲惨的/活该/该死/自作自受的/咎由自取/活该的/自找的/我的天哪/我的老天爷/,"terrible/to be down on one's luck/to be out of luck; pitiful/tragic/serves one right, deserved/damnable/to have brought it upon oneself/to have it coming/deserving of the consquences/to have asked for it(interjection) oh my god/my goodness/goodness me/my word/oh my/omg",CanTong Lexicon 2026,Colloquial,
-L746,折鳩墮,zit3 gau1 do6,1,糟糕/糟糕的/倒霉的/倒霉/运气不好的/可怜的/悲惨的/活该/该死/自作自受的/咎由自取/活该的/自找的/我的天哪/我的老天爷/,"terrible/to be down on one's luck/to be out of luck; pitiful/tragic/serves one right, deserved/damnable/to have brought it upon oneself/to have it coming/deserving of the consquences/to have asked for it(interjection) oh my god/my goodness/goodness me/my word/oh my/omg",CanTong Lexicon 2026,slang,
-L747,该煨囖,goi1 wui1 lo1,0,糟糕/糟糕的/倒霉的/倒霉/运气不好的/可怜的/悲惨的/活该/该死/自作自受的/咎由自取/活该的/自找的/我的天哪/我的老天爷/,"terrible/to be down on one's luck/to be out of luck; pitiful/tragic/serves one right, deserved/damnable/to have brought it upon oneself/to have it coming/deserving of the consquences/to have asked for it(interjection) oh my god/my goodness/goodness me/my word/oh my/omg",CanTong Lexicon 2026,slang,
-L748,心悒,sam1 ngap1,0,心up/难过/不安/伤心/心烦/郁闷,Feeling up/sad/anxious/heartbroken/annoyed/depressed,CanTong Lexicon 2026,slang,
-L749,心噏,sam1 ngap1,0,心up/难过/不安/伤心/心烦/郁闷,Feeling up/sad/anxious/heartbroken/annoyed/depressed,CanTong Lexicon 2026,slang,
-L750,一口咬定,at1 hau2 ngaau5 ding6,0,一口咬定/坚决/肯定,to arbitrarily assert/to allege/to stick to one's statement/to cling to one's view,CanTong Lexicon 2026,Formal,
-L751,作賊心虛,zok3 caak3 sam1 heoi1,0,做贼心虚/心虚/不安乐,Have a guilty conscience/Guilty,CanTong Lexicon 2026,Formal,
-L752,心虚,sam1 heoi1,0,做贼心虚/心虚/不安乐,Have a guilty conscience/Guilty,CanTong Lexicon 2026,Formal,
-L753,唔安樂,m4 ngon1 lok6,0,心虚/不安乐/不放心/心里不安/担心,uncomfortable/Guilty/Worry,CanTong Lexicon 2026,Colloquial,
-L754,唔放心,m4 fong3 sam1,0,心虚/不安乐/不放心/心里不安/担心,uncomfortable/Guilty/Worry,CanTong Lexicon 2026,Formal,
-L755,擔心,daam1 sam1,0,心虚/不安乐/不放心/心里不安/担心,uncomfortable/Guilty/Worry,CanTong Lexicon 2026,Formal,
-L756,放心,ngon1 lok6,0,安乐/放心/舒畅/安心/安宁/快乐/满足/愉快,Peace of mind/Reassurance/Comfort/Peace of mind/Tranquility/Happiness/Satisfaction/Joy,CanTong Lexicon 2026,Formal,
-L757,安樂,fong3 sam1,0,安乐/放心/舒畅/安心/安宁/快乐/满足/愉快,Peace of mind/Reassurance/Comfort/Peace of mind/Tranquility/Happiness/Satisfaction/Joy,CanTong Lexicon 2026,slang,
-L758,呢度,nei4 dou6,0,这里/此地/这/这边,here/over here,CanTong Lexicon 2026,Colloquial,
-L759,呢頭,ne1 tau4,0,这边/这一边/这里,over here/This side/This side,CanTong Lexicon 2026,Colloquial,
-L760,呢頭近,ne1 tau4 kan5,0,快死/时间差不多了/这边比较近,nearing death/death is near/close to the age of death/This side is closer,CanTong Lexicon 2026,slang,curse
-L761,呢便,nei4 bin6,0,这边/这一边/这儿/这/这里,over here/This side/This side/here,CanTong Lexicon 2026,Colloquial,
-L762,呢边,nei4 bin6,0,这边/这一边/这儿/这/这里,over here/This side/This side/here,CanTong Lexicon 2026,Colloquial,
-L763,呢處,nei4 cyu3,0,这里/此地,here/over here,CanTong Lexicon 2026,slang,
-L764,行返呢頭,haang4 faan1 nei1 tau4,0,回来这边/回去这一边,walk back in this direction/Come back here / Go back to this side,CanTong Lexicon 2026,Colloquial,
-L765,嗰度,go2 dou6 ,,那里/那/那边,there/over there,CanTong Lexicon 2026,Colloquial,
-L766,嗰边,go2 bin6,0,那里/那一边/那/那边,There/That side/over there,CanTong Lexicon 2026,Colloquial,
-L767,嗰便,go2 bin6,0,那里/那一边/那/那边,There/That side/over there,CanTong Lexicon 2026,Colloquial,
-L768,嗰處,o2 syu3,0,那里/那一边/那边,there/over there,CanTong Lexicon 2026,slang,
-L769,嗰頭,go2 tau4,0,那里/那一边/那边,There/That side/over there,CanTong Lexicon 2026,Colloquial,
-L770,行返嗰頭,haang4 faan1 nei1 tau4,0,回去那边/回去那一边/往回走,walk back in there  direction/Go back there / Go back to that side,CanTong Lexicon 2026,Colloquial,
-L771,嗰頭近,go2 tau4 kan5,0,快死/时间差不多了/那边比较近,nearing death/death is near/close to the age of deathThat side is closer,CanTong Lexicon 2026,slang,curse
-,,,,,,,,
-,,,,,,,,
-,,,,,,,,
-,,,,,,,,
-,,,,,,,,
+L673,山旮旯,saan1 gaa1 laa1,0,荒芜/偏僻/偏僻的地方/很偏僻/偏远,remote/backwoods/wild/out of the way,CanTong Lexicon 2026,Slang,
+L674,隔涉,gaak3 sip3,0,荒芜/偏僻/偏僻的地方/很偏僻/偏远,remote/backwoods/wild/out of the way,CanTong Lexicon 2026,Slang,
+L675,山卡啦,saan1 kaa1 laa1,0,荒芜/偏僻/偏僻的地方/很偏僻/偏远,remote/backwoods/wild/out of the way,CanTong Lexicon 2026,Slang,
+L676,山卡罅,saan1 kaa1 laa6,0,荒芜/偏僻/偏僻的地方/很偏僻/偏远,remote/backwoods/wild/out of the way,CanTong Lexicon 2026,Slang,
+L677,山旯旮,saan1 laa1 gaa1,0,荒芜/偏僻/偏僻的地方/很偏僻/偏远,remote/backwoods/wild/out of the way,CanTong Lexicon 2026,Slang,
+L678,眼㾓,ngaan5 jau1,0,看不顺眼/感到讨厌/感到反感,I don't like it/I hate it/I feel disgusted/disgusted,CanTong Lexicon 2026,Slang,
+L679,眼冤,ngaan5 jyun1,0,看不顺眼/感到讨厌/感到反感,I don't like it/I hate it/I feel disgusted/disgusted,CanTong Lexicon 2026,Slang,
+L680,冇,mou5,0,没有,no/nothing/have not/did not/don`t/didn`t,CanTong Lexicon 2026,Formal,
+L681,撲亲,pok3 can1,0,跌倒/摔倒/扑街,Fall down,CanTong Lexicon 2026,Formal,
+L682,做乜,zou6 mat1,0,干嘛/做什么/怎么/怎么回事/怎麼了,what are you doing/what's up/why/what for,CanTong Lexicon 2026,Colloquial,ask
+L683,做乜柒,zou6 mat1 cat1 ,1,干嘛/做什么/怎么/怎么回事/做乜7/怎麼了,what are you doing/what's up/why/what for,CanTong Lexicon 2026,Colloquial,ask
+L684,做乜撚,zou6 mat1 lan2,1,干嘛/做什么/怎么/怎么回事/做乜L/怎麼了,what are you doing/what's up/why/what for,CanTong Lexicon 2026,Colloquial,ask
+L685,做乜鳩,zou6 mat1 gau1,1,干嘛/做什么/怎么/怎么回事/做乜9/怎麼了,what are you doing/what's up/why/what for,CanTong Lexicon 2026,Colloquial,ask
+L686,做乜閪,zou6 mat1 hai1,1,干嘛/做什么/怎么/怎么回事/怎麼了,what are you doing/what's up/why/what for,CanTong Lexicon 2026,Colloquial,ask
+L687,做乜嘢,zou6 mat1 je5,0,干嘛/做什么/怎么/怎么回事/做乜也,what are you doing/what's up/why/what for,CanTong Lexicon 2026,Colloquial,ask
+L688,做咩,zou6 me1,0,干嘛/做什么/怎么/怎么回事/怎麼了,what are you doing/what's up/why/what for,CanTong Lexicon 2026,Colloquial,ask
+L689,做咩啫,zou6 me1 ze1,0,干嘛/做什么/怎么/怎么回事/怎麼了,what are you doing/what's up/why/what for,CanTong Lexicon 2026,Colloquial,ask
+L690,做乜噉嘅,zou6 mat1 gam2 ge2,0,怎么会这样/为什么会这样,what are you doing/what's up/why/what for,CanTong Lexicon 2026,Colloquial,ask
+L691,做乜撚嘢, zou6 mat1 lan2 je5,1,干嘛/做什么/怎么/怎么回事/做l乜也/怎麼了,what are you doing/what's up/why/what for,CanTong Lexicon 2026,Colloquial,ask
+L692,做乜鳩嘢, zou6 mat1 gau1 je5,1,干嘛/做什么/怎么/怎么回事/做9乜也/怎麼了,what are you doing/what's up/why/what for,CanTong Lexicon 2026,Colloquial,ask
+L693,做乜柒嘢, zou6 mat1 cat1 je5,1,干嘛/做什么/怎么/怎么回事/做7乜也/怎麼了,what are you doing/what's up/why/what for,CanTong Lexicon 2026,Colloquial,ask
+L694,唔好𢫨,m4 hou2 ung2,0,不要推/别推/ong,don`t push,CanTong Lexicon 2026,Colloquial,
+L695,咪𢫨,mai1 ung2,0,不要推/别推/ong,don`t push,CanTong Lexicon 2026,Colloquial,
+L696,咪鳩𢫨,mai1 gau1 ung2,1,不要推/别推/ong,don`t push,CanTong Lexicon 2026,Colloquial,
+L697,咪撚𢫨,mai1 lan2 ung2,1,不要推/别推/ong,don`t push,CanTong Lexicon 2026,Colloquial,
+L698,咪柒𢫨,mai1 cat1 ung2,1,不要推/别推/ong,don`t push,CanTong Lexicon 2026,Colloquial,
+L699,咪閪𢫨,mai1 mat1 ung2,1,不要推/别推/ong,don`t push,CanTong Lexicon 2026,Colloquial,
+L700,𢫨你只閪,ung2 nei5 zi2 hai1,1,推你妈/不要推/别推/ong,don`t fucking push/don`t push,CanTong Lexicon 2026,Colloquial,
+L701,𢫨你老母,ung2 nei5 lou5 mou2,1,推你妈/不要推/别推/ong,don`t fucking push/don`t push,CanTong Lexicon 2026,Colloquial,
+L702,𢫨你老母吖𢫨,ung2 nei5 lou5 mou2 aa1 ung2,1,推你妈/不要推/别推/ong/推你妈啊推,don`t fucking push/don`t push,CanTong Lexicon 2026,Colloquial,
+L703,𢫨你老妈吖𢫨,ung2 nei5 lou5 maa1 aa1 ung2,1,推你妈/不要推/别推/ong/推你妈啊推,don`t fucking push/don`t push,CanTong Lexicon 2026,Colloquial,
+L704,再𢫨你就閪,zoi3 ung2 nei5 zau6 hai1,1,推你妈/不要推/别推/ong/推你妈啊推/再推你试试,Try pushing you again/don`t fucking push/don`t push,CanTong Lexicon 2026,Colloquial,
+L705,唔係,m4 hai6,0,不是,no/not,CanTong Lexicon 2026,Colloquial,
+L706,咪,mai1,0,不是,no/not,CanTong Lexicon 2026,Colloquial,
+L707,唔撚係,m4 lan2 hai6,1,不是/不是吧,No way/no/not,CanTong Lexicon 2026,Colloquial,
+L708,唔閪係,m4 hai1 hai6,1,不是/不是吧,No way/no/not,CanTong Lexicon 2026,Colloquial,
+L709,唔柒係,m4 cat1 hai6,1,不是/不是吧,No way/no/not,CanTong Lexicon 2026,Colloquial,
+L710,唔鳩係,m4 gau1 hai6,1,不是/不是吧,No way/no/not,CanTong Lexicon 2026,Colloquial,
+L711,唔撚係吖嘛,m4 nan2 hai6 aa1 maa3,1,不是/不是吧,No way/no/not,CanTong Lexicon 2026,Colloquial,
+L712,唔閪係吖嘛,m4 hai1 hai6 aa1 maa3,1,不是/不是吧,No way/no/not,CanTong Lexicon 2026,Colloquial,
+L713,唔柒係吖嘛,m4 cat1 hai6 aa1 maa3,1,不是/不是吧,No way/no/not,CanTong Lexicon 2026,Colloquial,
+L714,唔鳩係吖嘛,m4 gau1 hai6 aa1 maa3,1,不是/不是吧,No way/no/not,CanTong Lexicon 2026,Colloquial,
+L715,唔係吖嘛,m4 hai6 aa1 maa3,0,不是/不是吧,No way/no/not,CanTong Lexicon 2026,Colloquial,
+L716,係閪,hai6 hai1,1,是个鬼/才不是呢/才不是,"It's a ghost/No, it's not/It's not.",CanTong Lexicon 2026,Colloquial,
+L717,係鳩,hai6 gau1 ,1,是个鬼/才不是呢/才不是,"It's a ghost/No, it's not/It's not.",CanTong Lexicon 2026,Colloquial,
+L718,係鬼,hai6 gwai2,0,不就是/可不是/难道不是吗/可不是嘛/不都是/难道不是/可不是吗/难道不是嘛/不就是嘛/不就是吗,"It's a ghost/No, it's not/It's not.",CanTong Lexicon 2026,Colloquial,
+L719,咪係,mai6 hai6,0,不就是/可不是/难道不是吗/可不是嘛/不都是/难道不是/可不是吗/难道不是嘛/不就是嘛/不就是吗,Isn't that right/Isn't it just/That's right/that's it,CanTong Lexicon 2026,Colloquial,
+L720,咪就係,mai6 zau6 hai6,0,不就是/可不是/难道不是吗/可不是嘛/不都是/难道不是/可不是吗/难道不是嘛/不就是嘛/不就是吗,Isn't that right/Isn't it just/That's right/that's it,CanTong Lexicon 2026,Colloquial,
+L721,咪又係,mai6 jau6 hai6,0,不又是/难道不是/可不是/不都是,Isn't that right/Isn't it just/That's right,CanTong Lexicon 2026,Colloquial,
+L722,之唔係,zi1 m4 hai6,0,不就是/可不是/难道不是吗/可不是嘛/不都是/难道不是/可不是吗/难道不是嘛/不就是嘛/不就是吗,Isn't that right/Isn't it just/That's right/that's it,CanTong Lexicon 2026,Colloquial,
+L723,水人, seoi2 jan4,0,存心误导人/忽悠/骗人/欺骗人,to mislead someone deliberately/lying/deceiving/boasting/talking nonsense/blathering/cheating/telling lies/to lie/lie/fleecing us/a chump/cheat/to cheat/to trick/trick/deceive/lie/cheat/to swindle,CanTong Lexicon 2026,Colloquial,
+L724,水鳩人, seoi2 gau1 jan4,1,存心误导人/忽悠/骗人/欺骗人,to mislead someone deliberately/lying/deceiving/boasting/talking nonsense/blathering/cheating/telling lies/to lie/lie/fleecing us/a chump/cheat/to cheat/to trick/trick/deceive/lie/cheat/to swindle,CanTong Lexicon 2026,Colloquial,
+L725,水柒人, seoi2 cat1 jan4,1,存心误导人/忽悠/骗人/欺骗人,to mislead someone deliberately/lying/deceiving/boasting/talking nonsense/blathering/cheating/telling lies/to lie/lie/fleecing us/a chump/cheat/to cheat/to trick/trick/deceive/lie/cheat/to swindle,CanTong Lexicon 2026,Colloquial,
+L726,氹你入局,tam3 nei5 jap6 guk6,0,骗人进圈套/忽悠/骗人/欺骗人/入圈套/把人骗进来,deceiving people into a trap/luring/scamming/deceiving/falling into a trap/luring people in,CanTong Lexicon 2026,Colloquial,
+L727,氹佢入局,tam3 keoi5 jap6 guk6,0,骗人进圈套/忽悠/骗人/欺骗人/入圈套/把人骗进来,deceiving people into a trap/luring/scamming/deceiving/falling into a trap/luring people in,CanTong Lexicon 2026,Colloquial,
+L728,呃鳩人,ngaak1 gau1 jan4,1,存心误导人/忽悠/骗人/欺骗人,to mislead someone deliberately/lying/deceiving/boasting/talking nonsense/blathering/cheating/telling lies/to lie/lie/fleecing us/a chump/cheat/to cheat/to trick/trick/deceive/lie/cheat/to swindle,CanTong Lexicon 2026,Colloquial,
+L729,呃人,ngaak1 jan4,0,存心误导人/忽悠/骗人/欺骗人,to mislead someone deliberately/lying/deceiving/boasting/talking nonsense/blathering/cheating/telling lies/to lie/lie/fleecing us/a chump/cheat/to cheat/to trick/trick/deceive/lie/cheat/to swindle,CanTong Lexicon 2026,Colloquial,
+L730,呃柒人,ngaak1 cat1 jan4,1,存心误导人/忽悠/骗人/欺骗人,to mislead someone deliberately/lying/deceiving/boasting/talking nonsense/blathering/cheating/telling lies/to lie/lie/fleecing us/a chump/cheat/to cheat/to trick/trick/deceive/lie/cheat/to swindle,CanTong Lexicon 2026,Colloquial,
+L731,呃閪人,ngaak1 hai1  jan4,1,存心误导人/忽悠/骗人/欺骗人,to mislead someone deliberately/lying/deceiving/boasting/talking nonsense/blathering/cheating/telling lies/to lie/lie/fleecing us/a chump/cheat/to cheat/to trick/trick/deceive/lie/cheat/to swindle,CanTong Lexicon 2026,Colloquial,
+L732,替死鬼,tai3 sei2 gwai2,0,替罪羊/代罪羔羊,scapegoat/fall guy/a patsy,CanTong Lexicon 2026,slang,
+L733,抽水,cau1 seoi2,0,占便宜/浑水摸鱼/调戏妇女/性骚扰/剥削, scrounge/to make use of/to exploit/make use of/Harassing women/sexual harassment,CanTong Lexicon 2026,slang,
+L734,佔便宜,zim3 pin4 ji4,0,占便宜/浑水摸鱼/调戏妇女/性骚扰/剥削, scrounge/to make use of/to exploit/make use of/Harassing women/sexual harassment,CanTong Lexicon 2026,Formal,
+L735,揩油,haai1 jau4,0,占便宜/浑水摸鱼/调戏妇女/性骚扰, scrounge/to make use of/to exploit/make use of/Harassing women/sexual harassment,CanTong Lexicon 2026,slang,
+L736,剾草,au1 cou2,0,占便宜/浑水摸鱼/利用, scrounge/to make use of/to exploit/make use of,CanTong Lexicon 2026,slang,
+L737,利用,lei6 jung6,0,占便宜/浑水摸鱼/利用/剥削, scrounge/to make use of/to exploit/make use of,CanTong Lexicon 2026,Formal,
+L738,打斧頭,daa2 fu2 tau4,0,挪用公款/偷钱/私吞/私吞公款,embezzlement/to embezzle/embezzle funds/Steal money/Embezzlement/misappropriation of public funds,CanTong Lexicon 2026,slang,
+L739,穿櫃桶底,cyun1 gwai6 tung2 dai2,0,挪用公款/消化肠道/肠道消化/偷钱/私吞/私吞公款,embezzlement/to embezzle/embezzle funds/Steal money/Embezzlement/misappropriation of public funds,CanTong Lexicon 2026,slang,
+L740,落格,lok6 gaak3,0,挪用公款/消化肠道/肠道消化/偷钱/私吞/私吞公款,embezzlement/to embezzle/embezzle funds/Digestive Gut/Intestinal Digestion/Steal money/Embezzlement/misappropriation of public funds,CanTong Lexicon 2026,slang,
+L741,该煨,goi1 wui1,0,糟糕/糟糕的/倒霉的/倒霉/运气不好的/可怜的/悲惨的/活该/该死/自作自受的/咎由自取/活该的/自找的/我的天哪/我的老天爷/,"terrible/to be down on one's luck/to be out of luck; pitiful/tragic/serves one right, deserved/damnable/to have brought it upon oneself/to have it coming/deserving of the consquences/to have asked for it(interjection) oh my god/my goodness/goodness me/my word/oh my/omg",CanTong Lexicon 2026,slang,
+L742,折墮,zit3 do6,0,糟糕/糟糕的/倒霉的/倒霉/运气不好的/可怜的/悲惨的/活该/该死/自作自受的/咎由自取/活该的/自找的/我的天哪/我的老天爷/,"terrible/to be down on one's luck/to be out of luck; pitiful/tragic/serves one right, deserved/damnable/to have brought it upon oneself/to have it coming/deserving of the consquences/to have asked for it(interjection) oh my god/my goodness/goodness me/my word/oh my/omg",CanTong Lexicon 2026,slang,
+L743,撞鬼囖,zong2 gwai2 lo1,0,糟糕/糟糕的/倒霉的/倒霉/运气不好的/可怜的/悲惨的/活该/该死/自作自受的/咎由自取/活该的/自找的/我的天哪/我的老天爷/,"terrible/to be down on one's luck/to be out of luck; pitiful/tragic/serves one right, deserved/damnable/to have brought it upon oneself/to have it coming/deserving of the consquences/to have asked for it(interjection) oh my god/my goodness/goodness me/my word/oh my/omg",CanTong Lexicon 2026,Colloquial,
+L744,折鳩墮,zit3 gau1 do6,1,糟糕/糟糕的/倒霉的/倒霉/运气不好的/可怜的/悲惨的/活该/该死/自作自受的/咎由自取/活该的/自找的/我的天哪/我的老天爷/,"terrible/to be down on one's luck/to be out of luck; pitiful/tragic/serves one right, deserved/damnable/to have brought it upon oneself/to have it coming/deserving of the consquences/to have asked for it(interjection) oh my god/my goodness/goodness me/my word/oh my/omg",CanTong Lexicon 2026,slang,
+L745,该煨囖,goi1 wui1 lo1,0,糟糕/糟糕的/倒霉的/倒霉/运气不好的/可怜的/悲惨的/活该/该死/自作自受的/咎由自取/活该的/自找的/我的天哪/我的老天爷/,"terrible/to be down on one's luck/to be out of luck; pitiful/tragic/serves one right, deserved/damnable/to have brought it upon oneself/to have it coming/deserving of the consquences/to have asked for it(interjection) oh my god/my goodness/goodness me/my word/oh my/omg",CanTong Lexicon 2026,slang,
+L746,心悒,sam1 ngap1,0,心up/难过/不安/伤心/心烦/郁闷,Feeling up/sad/anxious/heartbroken/annoyed/depressed,CanTong Lexicon 2026,slang,
+L747,心噏,sam1 ngap1,0,心up/难过/不安/伤心/心烦/郁闷,Feeling up/sad/anxious/heartbroken/annoyed/depressed,CanTong Lexicon 2026,slang,
+L748,一口咬定,at1 hau2 ngaau5 ding6,0,一口咬定/坚决/肯定,to arbitrarily assert/to allege/to stick to one's statement/to cling to one's view,CanTong Lexicon 2026,Formal,
+L749,作賊心虛,zok3 caak3 sam1 heoi1,0,做贼心虚/心虚/不安乐,Have a guilty conscience/Guilty,CanTong Lexicon 2026,Formal,
+L750,心虚,sam1 heoi1,0,做贼心虚/心虚/不安乐,Have a guilty conscience/Guilty,CanTong Lexicon 2026,Formal,
+L751,唔安樂,m4 ngon1 lok6,0,心虚/不安乐/不放心/心里不安/担心,uncomfortable/Guilty/Worry,CanTong Lexicon 2026,Colloquial,
+L752,唔放心,m4 fong3 sam1,0,心虚/不安乐/不放心/心里不安/担心,uncomfortable/Guilty/Worry,CanTong Lexicon 2026,Formal,
+L753,擔心,daam1 sam1,0,心虚/不安乐/不放心/心里不安/担心,uncomfortable/Guilty/Worry,CanTong Lexicon 2026,Formal,
+L754,放心,ngon1 lok6,0,安乐/放心/舒畅/安心/安宁/快乐/满足/愉快,Peace of mind/Reassurance/Comfort/Peace of mind/Tranquility/Happiness/Satisfaction/Joy,CanTong Lexicon 2026,Formal,
+L755,安樂,fong3 sam1,0,安乐/放心/舒畅/安心/安宁/快乐/满足/愉快,Peace of mind/Reassurance/Comfort/Peace of mind/Tranquility/Happiness/Satisfaction/Joy,CanTong Lexicon 2026,slang,
+L756,呢度,nei4 dou6,0,这里/此地/这/这边,here/over here,CanTong Lexicon 2026,Colloquial,
+L757,呢頭,ne1 tau4,0,这边/这一边/这里,over here/This side/This side,CanTong Lexicon 2026,Colloquial,
+L758,呢頭近,ne1 tau4 kan5,0,快死/时间差不多了/这边比较近,nearing death/death is near/close to the age of death/This side is closer,CanTong Lexicon 2026,slang,curse
+L759,呢便,nei4 bin6,0,这边/这一边/这儿/这/这里,over here/This side/This side/here,CanTong Lexicon 2026,Colloquial,
+L760,呢边,nei4 bin6,0,这边/这一边/这儿/这/这里,over here/This side/This side/here,CanTong Lexicon 2026,Colloquial,
+L761,呢處,nei4 cyu3,0,这里/此地,here/over here,CanTong Lexicon 2026,slang,
+L762,行返呢頭,haang4 faan1 nei1 tau4,0,回来这边/回去这一边,walk back in this direction/Come back here / Go back to this side,CanTong Lexicon 2026,Colloquial,
+L763,嗰度,go2 dou6 ,,那里/那/那边,there/over there,CanTong Lexicon 2026,Colloquial,
+L764,嗰边,go2 bin6,0,那里/那一边/那/那边,There/That side/over there,CanTong Lexicon 2026,Colloquial,
+L765,嗰便,go2 bin6,0,那里/那一边/那/那边,There/That side/over there,CanTong Lexicon 2026,Colloquial,
+L766,嗰處,o2 syu3,0,那里/那一边/那边,there/over there,CanTong Lexicon 2026,slang,
+L767,嗰頭,go2 tau4,0,那里/那一边/那边,There/That side/over there,CanTong Lexicon 2026,Colloquial,
+L768,行返嗰頭,haang4 faan1 nei1 tau4,0,回去那边/回去那一边/往回走,walk back in there  direction/Go back there / Go back to that side,CanTong Lexicon 2026,Colloquial,
+L769,嗰頭近,go2 tau4 kan5,0,快死/时间差不多了/那边比较近,nearing death/death is near/close to the age of deathThat side is closer,CanTong Lexicon 2026,slang,curse
+L770,屌你令壽堂,diu2 nei5 ling6 sau6 tong4,1,操你妈/草泥马/叼你老母/问候你娘亲/你妈/你妈的/去你的,fuck your mum/fucking your mum/fu*king your mum/fu*k your mum/Fujian U/fuck your mother/fucking your mother/What the fuck?/What the fuck/Motherfucker,CanTong Lexicon 2026,Colloquial,curse
+L771,屌佢令壽堂,diu2 keoi5 ling6 sau6 tong4,1,去他妈/去她妈/操他妈/操她妈/tmd/tm/去你的,fuck her mum/fucking her mum/fu*king her mum/fu*k her mum/fuck her mother/fucking her mother/fuck him mum/fucking him mum/fu*king him mum/fu*k him mum/fuck him mother/fucking him mother/What the fuck?/What the fuck/Motherfucker,CanTong Lexicon 2026,Colloquial,curse
+L772,契弟,kai3 dai6,0,死小子/孙子/臭小子/混蛋/王八蛋/反贼/反骨/讨厌的人/叛徒/白眼狼/忘恩负义/因将仇报,Bastard/Asshole/shithead/traitor/betrayer,CanTong Lexicon 2026,Colloquial,curse
+L773,陀地,to4 dei6,0,当地人/当地的/保护费/流氓/恶霸,Locals/local protection money/thugs/bullies,CanTong Lexicon 2026,slang,
+L774,真係唔易,zan1 hai6 m4 ji6,0,真不容易,that`s rough,CanTong Lexicon 2026,Colloquial,
+L775,真係唔简单,zan1 hai6 m4 gaan2 daan1,0,真不容易,that`s rough,CanTong Lexicon 2026,Colloquial,
+L776,難到我囖,naan4 dou2 ngo5 lo1,0,你把我难住了,you got me,CanTong Lexicon 2026,Colloquial,
+L777,你考起我喇,nei5 haau2 hei2 ngo5 laa3,0,你把我难住了,you got me,CanTong Lexicon 2026,Colloquial,
+L778,冇搞喇,mou5 gaau2 laa3,1,别闹/别闹了/别,cut it out,CanTong Lexicon 2026,Colloquial,
+L779,冇搞咁多嘢喇,mou5 gaau2 gam2 do1 je5 laa3,0,别闹/别闹了/别,cut it out,CanTong Lexicon 2026,Colloquial,
+L780,呢嗰乜嘢嚟咖,nei1 go2 mat1 je5 lai4 gaa3,0,这是什么/这是什么鬼,what the heck,CanTong Lexicon 2026,Colloquial,
+L781,乜鬼嘢嚟咖,mat1 gwai2 je5 lai4 gaa3,0,这是什么/这是什么鬼,what the heck,CanTong Lexicon 2026,Colloquial,
+L782,乜Q嘢嚟咖,mat1 Q je5 lai4 gaa3,0,这是什么/这是什么鬼,what the heck,CanTong Lexicon 2026,Colloquial,
+L783,濕碎,sap1 seoi3,0,小菜一碟/简单啦/小事/简单事情/小事一桩/简单,piece of cake/trivial/bits and pieces/easy/trifle,CanTong Lexicon 2026,Colloquial,
+L784,濕濕碎,sap1 sap1 seoi3,0,小菜一碟/简单啦/小事/简单事情/小事一桩/简单,piece of cake/trivial/bits and pieces/easy/trifle,CanTong Lexicon 2026,Colloquial,
+L785,瑣碎,so2 seoi3,0,小菜一碟/简单啦/小事/简单事情/小事一桩/简单,piece of cake/trivial/bits and pieces/easy/trifle,CanTong Lexicon 2026,Colloquial,
+L786,濕碎嘢,sap1 seoi3 je5,0,小菜一碟/简单啦/小事/简单事情/小事一桩/简单,piece of cake/trivial/bits and pieces/easy/trifle,CanTong Lexicon 2026,Colloquial,
+L787,小事,siu2 si6,0,小菜一碟/简单啦/小事/简单事情/小事一桩/简单,piece of cake/trivial/bits and pieces/easy/trifle,CanTong Lexicon 2026,Formal,
+L788,簡單,gaan2 daan1,0,小菜一碟/简单啦/小事/简单事情/小事一桩/简单,piece of cake/trivial/bits and pieces/easy/trifle,CanTong Lexicon 2026,Colloquial,
+L789,細囈,sai3 ngai1,0,小菜一碟/简单啦/小事/简单事情/小事一桩/简单,a miser/miser,CanTong Lexicon 2026,Colloquial,
+L790,算死草,syun3 sei2 cou2,0,铁公鸡/抠门/吝啬/寒酸/小气/精明,piece of cake/trivial/bits and pieces/easy/trifle/cheapskate/cent easily/scrooge/stingy,CanTong Lexicon 2026,slang,
+L791,鐵公雞, tit3 gung1 gai1,0,铁公鸡/抠门/吝啬/寒酸/小气/精明,piece of cake/trivial/bits and pieces/easy/trifle/cheapskate/cent easily/scrooge/stingy,CanTong Lexicon 2026,slang,
+L792,孤寒鬼,gu1 hon4 gwai2,0,铁公鸡/抠门/吝啬/寒酸/小气鬼,piece of cake/trivial/bits and pieces/easy/trifle/cheapskate/cent easily/scrooge/stingy,CanTong Lexicon 2026,Colloquial,
+L793,孤寒,gu1 hon4,0,铁公鸡/抠门/吝啬/寒酸/小气,piece of cake/trivial/bits and pieces/easy/trifle/cheapskate/cent easily/scrooge/stingy,CanTong Lexicon 2026,Colloquial,
+L794,孤鳩寒,gu1 gau1 hon4,1,铁公鸡/抠门/吝啬/寒酸/小气,piece of cake/trivial/bits and pieces/easy/trifle/cheapskate/cent easily/scrooge/stingy,CanTong Lexicon 2026,Colloquial,
+L795,孤閪寒,gu1 hai1 hon4,1,铁公鸡/抠门/吝啬/寒酸/小气,piece of cake/trivial/bits and pieces/easy/trifle/cheapskate/cent easily/scrooge/stingy,CanTong Lexicon 2026,Colloquial,
+L796,孤寒佬,gu1 hon4 lou2,0,铁公鸡/抠门/吝啬/寒酸/小气鬼,piece of cake/trivial/bits and pieces/easy/trifle/cheapskate/cent easily/scrooge/stingy,CanTong Lexicon 2026,Colloquial,
+L797,寒酸,hon4 syun1,0,铁公鸡/抠门/吝啬/寒酸,piece of cake/trivial/bits and pieces/easy/trifle/cheapskate/cent easily/scrooge/stingy,CanTong Lexicon 2026,Colloquial,
+L798,鐸叔,dok6 suk1,0,铁公鸡/抠门/吝啬/寒酸/小气/精明,piece of cake/trivial/bits and pieces/easy/trifle/cheapskate/cent easily/scrooge/stingy,CanTong Lexicon 2026,Colloquial,
+L799,計到尽,gai3 dou3 zeon6,0,铁公鸡/抠门/吝啬/寒酸/小气/精明,piece of cake/trivial/bits and pieces/easy/trifle/cheapskate/cent easily/scrooge/stingy,CanTong Lexicon 2026,slang,
+L800,夠喇,gau3 laa3,0,够了,enough is enough,CanTong Lexicon 2026,Colloquial,
+L801,夠皮,gau3 pei2,0,足夠/滿足,enough/adequate,CanTong Lexicon 2026,Colloquial,
+L802,夠皮未？,gau3 pei2 mei6,0,足够了吗/满足了吗,are you ok/Is that enough,CanTong Lexicon 2026,Colloquial,
+L803,梗係,gang2 hai6,0,当然,for sure/ of course/certainly/undoubtedly,CanTong Lexicon 2026,Colloquial,
+L804,實係,sat6 hai6 ,0,当然,for sure/ of course/certainly/undoubtedly,CanTong Lexicon 2026,Colloquial,
+L805,唔忿氣,m4 fan6 hei3,0,不服输/明知错不认/不认错/死撑,So proud/try to bear/hardly stand for something/So full of himself/Has to save face,CanTong Lexicon 2026,Colloquial,
+L806,冇嘈,mou5 cou4,0,闭嘴/住口/别吵/不要吵/别烦/不要闹/不要闹了/别闹/别闹了,Shut up/shut your mouth/piss off/knock it off/hush,CanTong Lexicon 2026,Colloquial,
+L807,冇閪嘈,mou5 hai1 cou4,1,闭嘴/住口/别吵/不要吵/别烦/不要闹/不要闹了/别闹/别闹了,Shut up/shut your mouth/piss off/knock it off/hush,CanTong Lexicon 2026,Colloquial,
+L808,冇柒嘈,mou5 cat6 cou4,1,闭嘴/住口/别吵/不要吵/别烦/不要闹/不要闹了/别闹/别闹了,Shut up/shut your mouth/piss off/knock it off/hush,CanTong Lexicon 2026,Colloquial,
+L809,冇撚嘈,mou5  lan2 cou4,1,闭嘴/住口/别吵/不要吵/别烦/不要闹/不要闹了/别闹/别闹了,Shut up/shut your mouth/piss off/knock it off/hush,CanTong Lexicon 2026,Colloquial,
+L810,冇鳩嘈,mou5 gau1 cou4,1,闭嘴/住口/别吵/不要吵/别烦/不要闹/不要闹了/别闹/别闹了,Shut up/shut your mouth/piss off/knock it off/hush,CanTong Lexicon 2026,Colloquial,
+L811,手頭緊,sau2 tau4 gan2,0,手头有点紧/手头紧/缺钱/没钱/穷/经济拮据,on a budget/short of money/hard up/short of money/poor,CanTong Lexicon 2026,Colloquial,
+L812,我手頭緊,ngo5 sau2 tau4 gan2,0,我手头有点紧/我手头紧/我缺钱,I`m on a budget/on a budget/short of money/ hard up/I`m short of money,CanTong Lexicon 2026,Colloquial,
+L813,我手頭有啲緊,ngo5 sau2 tau4 jau5 di1 gan2,0,我手头有点紧/我手头紧/我缺钱,I`m on a budget/on a budget/short of money/ hard up/I`m short of money,CanTong Lexicon 2026,Colloquial,
+L814,我手頭有D緊,ngo5 sau2 tau4 jau5 D gan2,0,我手头有点紧/我手头紧/我缺钱,I`m on a budget/on a budget/short of money/ hard up/I`m short of money,CanTong Lexicon 2026,Colloquial,
+L815,唔​夠錢​使,m4 gau3 cin4 sai2,0,手头有点紧/手头紧/缺钱/没钱/穷/经济拮据,on a budget/short of money/hard up/short of money/poor,CanTong Lexicon 2026,Colloquial,
+L816,冇​咩​錢,mou5 me1 cin2,0,手头有点紧/手头紧/缺钱/没钱/穷/经济拮据,on a budget/short of money/hard up/short of money/poor,CanTong Lexicon 2026,Colloquial,
+L817,冇​​錢,mou5 cin2,0,手头有点紧/手头紧/缺钱/没钱/穷/经济拮据,on a budget/short of money/hard up/short of money/poor,CanTong Lexicon 2026,Colloquial,
+L818,冇银 ,mou5 ngan2,0,手头有点紧/手头紧/缺钱/没钱/穷/经济拮据,on a budget/short of money/hard up/short of money/poor,CanTong Lexicon 2026,Colloquial,
+L819,冇晒钱,mou5 saai3 cin2,0,钱花光了/全花光/缺钱/没钱/穷/经济拮据/全花没了/破产,All the money is gone/short of money/no money/poor/financially strapped/all gone/bankrupt on a budget/hard up,CanTong Lexicon 2026,Colloquial,
+L820,手緊,sau2 gan2,0,手头有点紧/手头紧/缺钱/没钱/穷/经济拮据,on a budget/short of money/hard up/short of money/poor,CanTong Lexicon 2026,Colloquial,
+L821,等錢使,dang2 cin2 sai2,0,手头有点紧/手头紧/缺钱/没钱/穷/经济拮据,on a budget/short of money/hard up/short of money/poor,CanTong Lexicon 2026,Colloquial,
+L822,我無能為力,ngo5 mou4 nang4 wai4 lik6,0,我无能为力,my hands are tied/hands are tied/helpless/impotent,CanTong Lexicon 2026,Formal,
+L823,無能為力,mou4 nang4 wai4 lik6,0,我无能为力,my hands are tied/hands are tied/helpless/impotent,CanTong Lexicon 2026,Formal,
+L824,揸緊车,zaa1 gan2 ce1,0,在开车,Driving,CanTong Lexicon 2026,Formal,
+L825,过緊嚟,gwo3 gan2 lai4,0,在路上/正在过来,On the way/coming soon,CanTong Lexicon 2026,Formal,
+L826,整緊路,zing2 gan2 lou6,0,路有个工程/路在施工/路面有施工,There is a project on the road/The road is under construction/The road surface is under construction,CanTong Lexicon 2026,Formal,
+,,,0,,,,,
+,,,0,,,,,
