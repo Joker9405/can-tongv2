@@ -545,7 +545,7 @@ L543,二五仔,ji6 ng5 zai2,0,死小子/孙子/臭小子/混蛋/王八蛋/反贼
 L544,食碗麵，反碗底,"sik6 wun2 min6, faan2 wun2 dai2",0,死小子/孙子/臭小子/混蛋/王八蛋/反贼/反骨/讨厌的人/叛徒/白眼狼/忘恩负义/因将仇报/吃里扒外的货,to return one's kindess with ingratitude and betrayal/Bastard/Asshole/shithead/traitor/betrayer/utterly ungrateful,CanTong Lexicon 2026,Slang,curse
 L545,恩將仇報,jan1 zoeng1 cau4 bou3,0,死小子/孙子/臭小子/混蛋/王八蛋/反贼/反骨/讨厌的人/叛徒/白眼狼/忘恩负义/因将仇报/吃里扒外的货,Bastard/Asshole/shithead/traitor/betrayer/utterly ungrateful,CanTong Lexicon 2026,Formal,curse
 L546,忘恩負義,mong4 jan1 fu6 ji6,0,死小子/孙子/臭小子/混蛋/王八蛋/反贼/反骨/讨厌的人/叛徒/白眼狼/忘恩负义/因将仇报/吃里扒外的货,Bastard/Asshole/shithead/traitor/betrayer/utterly ungrateful,CanTong Lexicon 2026,Formal,curse
-L547,撲街,pok3 gaai1,0,该死/出大事了/跌倒/王八蛋/完了/完蛋了/倒霉了/扑街/糟糕了/糟糕,damn it/something terrible happened/I fell/bastard/It's over/I'm doomed/I'm doomed/I'm unlucky/poor guy,CanTong Lexicon 2026,Colloquial,curse
+L547,撲街,pok3 gaai1,0,该死/出大事了/跌倒/王八蛋/完了/完蛋了/倒霉了/扑街/糟糕了/糟糕/出大事,damn it/something terrible happened/I fell/bastard/It's over/I'm doomed/I'm doomed/I'm unlucky/poor guy/Go to hell,CanTong Lexicon 2026,Colloquial,curse
 L548,正撲街,zing3 pok3 gaai1,0,真该死/真的是王八蛋/正扑街/正一扑街,damn it/He's such a bastard/scoundrel,CanTong Lexicon 2026,Colloquial,curse
 L549,正一撲街,zing3 jat1 pok3 gaai1,0,真该死/真的是王八蛋/正扑街/正一扑街,damn it/He's such a bastard/scoundrel,CanTong Lexicon 2026,Colloquial,curse
 L550,食屎,sik6 si2,0,去死吧/吃屎去,Go to hell,CanTong Lexicon 2026,Colloquial,curse
@@ -557,7 +557,7 @@ L555,攔坦,laan4 taan2,0,死小子/孙子/臭小子/混蛋/王八蛋/反贼/反
 L556,死你就去,sei2 nei5 zau6 heoi3,0,去死吧你/吃屎去,Go to hell,CanTong Lexicon 2026,Colloquial,curse
 L557,大镬,daai6 wok6,0,该死/出大事了/完了/完蛋了/倒霉了/扑街/糟糕了/糟糕/出大事,Go to hell,CanTong Lexicon 2026,Colloquial,
 L558,趁地淋,can3 dei6 lam4,0,去死吧/吃屎去,Go to hell,CanTong Lexicon 2026,Colloquial,curse
-L559,屌閪喇,diu2 hai1 laa3,1,该死/出大事了/完了/完蛋了/倒霉了/扑街/糟糕了/糟糕,Go to hell,CanTong Lexicon 2026,Colloquial,
+L559,屌閪喇,diu2 hai1 laa3,1,该死/出大事了/完了/完蛋了/倒霉了/扑街/糟糕了/糟糕/出大事,Go to hell,CanTong Lexicon 2026,Colloquial,
 L560,龜缩,gwai1 suk1,0,笨蛋/蠢货/笨7/笨叱/浪费机会/错失良机,dumb person/dumb/imbecile/incredibly stupid/brain dead/silly/dickhead/miss the boat/stupid/stupid prick,CanTong Lexicon 2026,Slang,curse
 L561,嘥料,saai1 liu6,0,笨蛋/蠢货/笨7/笨叱/浪费机会/错失良机,dumb person/dumb/imbecile/incredibly stupid/brain dead/silly/dickhead/miss the boat/stupid/stupid prick,CanTong Lexicon 2026,Colloquial,curse
 L562,柒轱辘,cat1 gu1 luk6,1,笨蛋/蠢货/笨7/笨叱/浪费机会/错失良机,dumb person/dumb/imbecile/incredibly stupid/brain dead/silly/dickhead/miss the boat/stupid/stupid prick,CanTong Lexicon 2026,Colloquial,curse
@@ -888,6 +888,6 @@ L879,陣間,zan6 gaan1,0,等等/慢着/且慢/等一下/一会/一会儿/一阵�
 L880,鳩​噏,gau1 ngap1,1,闲聊/开玩笑/吹水/信口开河/乱说/不负责任的说/随便说说,"chat/to chat/gossip/to banter/banter/to gossip/ to talk casually/to talk big
 talk big/talk casually/Speaking carelessly/Talking nonsense/Speaking irresponsibly/Saying whatever comes to mind",CanTong Lexicon 2026,Colloquial,
 L881,大檸樂,daai6 ning4 lok6,0,该死/出大事了/完了/完蛋了/倒霉了/扑街/糟糕了/糟糕/出大事,Go to hell,CanTong Lexicon 2026,Colloquial,
-,,,0,,,,,
-,,,0,,,,,
+L882,閪曬,hai1 saai3,1,该死/出大事了/完了/完蛋了/倒霉了/扑街/糟糕了/糟糕/出大事,Go to hell,CanTong Lexicon 2026,Colloquial,
+L883,碌柒,luk1 cat1,1,该死/出大事了/完了/完蛋了/倒霉了/扑街/糟糕了/糟糕/出大事,Go to hell,CanTong Lexicon 2026,Colloquial,
 ,,,0,,,,,
