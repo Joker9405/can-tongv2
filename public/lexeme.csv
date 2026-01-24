@@ -847,9 +847,9 @@ L843,咩啊,me1 aa3,0,什么意思/什么事/有事吗,What does that mean?/What
 L844,咩啊，咩啊，咩啊,me1 aa3，me1 aa3，me1 aa3,0,什么，那又怎么样/那又怎么样/奈我又如何/你想怎么样,What? So what? So what? What can you do to me? What do you want?,CanTong Lexicon 2026,Colloquial,ask
 L845,點啊,dim2 aa3,0,怎么样,How about it/How about,CanTong Lexicon 2026,Colloquial,ask
 L846,點啊，點啊，點啊,dim2 aa3，dim2 aa3，dim2 aa3,0,怎么样，怎么样/你想怎么样,"So, so/What do you want",CanTong Lexicon 2026,Colloquial,ask，impatient
-L847,來啊,loi6 aa3,0,来啊/过来啊/你过来啊,Come here/Come here/Come here,CanTong Lexicon 2026,Colloquial,Arrogant
-L848,來囖,loi6 aa3,0,来吧/放马过来,Come on/Bring it on,CanTong Lexicon 2026,Colloquial,Disdain
-L849,來啊，來啊，來來來啊,loi6 aa3，loi6 aa3，loi6 loi6 loi6 aa3,0,有本事你就来/放马过来,Come on/if you dare,CanTong Lexicon 2026,Colloquial,Arrogant
+L847,嚟啊,lei4 aa3,0,来啊/过来啊/你过来啊,Come here/Come here/Come here,CanTong Lexicon 2026,Colloquial,Arrogant
+L848,嚟囖,lei4 aa3,0,来吧/放马过来,Come on/Bring it on,CanTong Lexicon 2026,Colloquial,Disdain
+L849,嚟啊，嚟啊，嚟嚟嚟啊,lei4 aa3，lei4 aa3，lei4 lei4 lei4 aa3,0,有本事你就来/放马过来,Come on/if you dare,CanTong Lexicon 2026,Colloquial,Arrogant
 L850,喂,wei3,0,喂/你好/不是吧,Hello/No way,CanTong Lexicon 2026,Colloquial,
 L851,喂啊,wei3 aa3,0,不要这样/不要这样好不好/别搞/别闹/别这样,"Don't do this/Don't do this, okay?/Stop it/Stop messing around/Stop doing this",CanTong Lexicon 2026,Colloquial,ask，impatient
 L852,喂，喂，喂,wei3，wei3，wei3,0,喂/这样不好吧/你这样好吗/不是吧/想怎么样/你想怎么样,"Hey/This isn't good, is it?/Are you sure this is okay?/Really?/What do you want?/What do you want to do?",CanTong Lexicon 2026,Colloquial,ask，warn
@@ -885,7 +885,8 @@ L876,一陣,jat1 zan2,0,等等/慢着/且慢/等一下/一会/一会儿/一阵�
 L877,等陣間,dang2 zan6 gaan1,0,等等/慢着/且慢/等一下/一会/一会儿/一阵子/一段时间后/迟一点/迟点,Wait/Wait a minute/Please wait/Wait a while/In a little while/A while/After a period of time/Later/Later/a while/a moment/hold on/hold it,CanTong Lexicon 2026,Colloquial,
 L878,遲啲,ci4 di1 ,0,等等/慢着/且慢/等一下/一会/一会儿/一阵子/一段时间后/迟一点/迟点,Wait/Wait a minute/Please wait/Wait a while/In a little while/A while/After a period of time/Later/Later/a while/a moment/hold on/hold it,CanTong Lexicon 2026,Colloquial,
 L879,陣間,zan6 gaan1,0,等等/慢着/且慢/等一下/一会/一会儿/一阵子/一段时间后/迟一点/迟点,Wait/Wait a minute/Please wait/Wait a while/In a little while/A while/After a period of time/Later/Later/a while/a moment/hold on/hold it,CanTong Lexicon 2026,Colloquial,
-,,,0,,,,,
+L880,鳩​噏,gau1 ngap1,1,闲聊/开玩笑/吹水/信口开河/乱说/不负责任的说/随便说说,"chat/to chat/gossip/to banter/banter/to gossip/ to talk casually/to talk big
+talk big/talk casually/Speaking carelessly/Talking nonsense/Speaking irresponsibly/Saying whatever comes to mind",CanTong Lexicon 2026,Colloquial,
 ,,,0,,,,,
 ,,,0,,,,,
 ,,,0,,,,,
