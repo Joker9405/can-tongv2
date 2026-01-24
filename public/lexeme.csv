@@ -839,7 +839,52 @@ L835,西芹,sai1 kan4,0,芹菜,celery,CanTong Lexicon 2026,Formal,noun
 L836,芹菜,kan4 coi3,0,芹菜,celery,CanTong Lexicon 2026,Formal,noun
 L837,蔥,cung1,0,葱/香葱,scallion,CanTong Lexicon 2026,Formal,noun
 L838,阿支阿左,aa3 zi1 aa3 zo2,0,叽叽歪歪/唧唧歪歪/指手画脚/唠唠叨叨,to gesticulate/to make gestures/naggy/yammering,CanTong Lexicon 2026,Colloquial,
-,米高佐治,mai5 gou1 zo2 zi6,1,走开/起开/滚/一边去,get out of here/fuck off/get lost/get out of here/beat it/get out,CanTong Lexicon 2026,Colloquial,
+L839,米高佐治,mai5 gou1 zo2 zi6,1,走开/起开/滚/一边去,get out of here/fuck off/get lost/get out of here/beat it/get out,CanTong Lexicon 2026,Colloquial,
+L840,靠害,kaau3 hoi6,0,害人/存心害人/陷害,Harmful/Intentionally Harmful/Framed,CanTong Lexicon 2026,Colloquial,
+L841,靠害咩,kaau3 hoi6 me1 ,0,害人吗/害死人了/想我死/被你害惨了,Are you trying to harm me / You've killed me / You want me dead/ You've ruined my life,CanTong Lexicon 2026,Colloquial,ask
+L842,咩,me1,0,什么意思/什么事/有事吗,What does that mean?/What's wrong?/Is something the matter?,CanTong Lexicon 2026,Colloquial,ask
+L843,咩啊,me1 aa3,0,什么意思/什么事/有事吗,What does that mean?/What's wrong?/Is something the matter?,CanTong Lexicon 2026,Colloquial,ask，impatient
+L844,咩啊，咩啊，咩啊,me1 aa3，me1 aa3，me1 aa3,0,什么，那又怎么样/那又怎么样/奈我又如何/你想怎么样,What? So what? So what? What can you do to me? What do you want?,CanTong Lexicon 2026,Colloquial,ask
+L845,點啊,dim2 aa3,0,怎么样,How about it/How about,CanTong Lexicon 2026,Colloquial,ask
+L846,點啊，點啊，點啊,dim2 aa3，dim2 aa3，dim2 aa3,0,怎么样，怎么样/你想怎么样,"So, so/What do you want",CanTong Lexicon 2026,Colloquial,ask，impatient
+L847,來啊,loi6 aa3,0,来啊/过来啊/你过来啊,Come here/Come here/Come here,CanTong Lexicon 2026,Colloquial,Arrogant
+L848,來囖,loi6 aa3,0,来吧/放马过来,Come on/Bring it on,CanTong Lexicon 2026,Colloquial,Disdain
+L849,來啊，來啊，來來來啊,loi6 aa3，loi6 aa3，loi6 loi6 loi6 aa3,0,有本事你就来/放马过来,Come on/if you dare,CanTong Lexicon 2026,Colloquial,Arrogant
+L850,喂,wei3,0,喂/你好/不是吧,Hello/No way,CanTong Lexicon 2026,Colloquial,
+L851,喂啊,wei3 aa3,0,不要这样/不要这样好不好/别搞/别闹/别这样,"Don't do this/Don't do this, okay?/Stop it/Stop messing around/Stop doing this",CanTong Lexicon 2026,Colloquial,ask，impatient
+L852,喂，喂，喂,wei3，wei3，wei3,0,喂/这样不好吧/你这样好吗/不是吧/想怎么样/你想怎么样,"Hey/This isn't good, is it?/Are you sure this is okay?/Really?/What do you want?/What do you want to do?",CanTong Lexicon 2026,Colloquial,ask，warn
+L853,哎呀,ai1 aa1,0,哎呀/你这小伙子,oops/Oh dear/you young man!,CanTong Lexicon 2026,Colloquial,
+L854,哎呀，哎呀呀呀，哎呀,ai1 aa1，ai1 aa1 aa1 aa1，ai1 aa1,0,哎呀/你居然/居然/你居然敢这样/敬酒不喝喝罚酒/我不发威不行,"oops/You actually/unexpectedly/How dare you do this/If you refuse a toast, you'll have to drink a penalty shot/I have to show my power.",CanTong Lexicon 2026,Colloquial,ask
+L855,順攤,seon6 taan1,0,事情意外顺利/顺利/随和的态度/不慌不忙/平稳,an easy going attitude/not fussed/smoothly,CanTong Lexicon 2026,slang,
+L856,補數,ou2 sou3,0,补数/补偿/ 弥补,complementary numbe/compensation,CanTong Lexicon 2026,slang,
+L857,彌補,mei4 bou2,0,补数/补偿/ 弥补,complementary numbe/compensation,CanTong Lexicon 2026,Formal,
+L858,補鍋,bou2 wo1,0,补救/补偿/ 弥补/补锅,Remedy/Compensation/Make amends/Repair the pot,CanTong Lexicon 2026,slang,
+L859,落力,lok6 lik6,0,尽力/加油/认真/勤奋,working hard/exerting effort/to exert oneself/to make an effort,CanTong Lexicon 2026,slang,
+L860,俾心機,bei2 sam1 gei1,0,尽力/加油/认真/勤奋,working hard/exerting effort/to exert oneself/to make an effort/trying hard,CanTong Lexicon 2026,Colloquial,
+L861,打牙骹,daa2 ngaa4 gaau3,0,闲聊/开玩笑/闲谈/吹水,"chat/to chat/gossip/to banter/banter/to gossip/ to talk casually/to talk big
+talk big/talk casually",CanTong Lexicon 2026,slang,
+L862,傾閒偈,king1 haan4 gai2,0,闲聊/开玩笑/闲谈/吹水,"chat/to chat/gossip/to banter/banter/to gossip/ to talk casually/to talk big
+talk big/talk casually",CanTong Lexicon 2026,Colloquial,
+L863,吹水,ceoi1 seoi2,0,闲聊/开玩笑/闲谈/吹水,"chat/to chat/gossip/to banter/banter/to gossip/ to talk casually/to talk big
+talk big/talk casually",CanTong Lexicon 2026,Colloquial,
+L864,隨口​噏,ceoi4 hau2 ngap1,0,闲聊/开玩笑/吹水/信口开河/乱说/不负责任的说/随便说说,"chat/to chat/gossip/to banter/banter/to gossip/ to talk casually/to talk big
+talk big/talk casually/Speaking carelessly/Talking nonsense/Speaking irresponsibly/Saying whatever comes to mind",CanTong Lexicon 2026,Colloquial,
+L865,鳩吹,gau1 ceoi1,1,闲聊/开玩笑/吹水/信口开河/乱说/不负责任的说/随便说说,"chat/to chat/gossip/to banter/banter/to gossip/ to talk casually/to talk big
+talk big/talk casually/Speaking carelessly/Talking nonsense/Speaking irresponsibly/Saying whatever comes to mind",CanTong Lexicon 2026,Colloquial,
+L866,打龍通,daa2 lung4 tung1,0,合谋欺骗/陷害某人/设局/制造圈套,to gang up together to trick / set someone up/gang up together to trick,CanTong Lexicon 2026,slang,
+L867,扯貓尾,ce2 maau1 mei5,0,合谋欺骗/陷害某人/设局/制造圈套,to gang up together to trick / set someone up/gang up together to trick,CanTong Lexicon 2026,slang,
+L868,唱雙簧,coeng3 soeng1 wong2,0,合谋欺骗/陷害某人/设局/制造圈套,to gang up together to trick / set someone up/gang up together to trick,CanTong Lexicon 2026,slang,
+L869,夾埋,gaap3 maai4,0,合谋欺骗/陷害某人/设局/制造圈套/一起/连同/同/合共/包括/预先准备好/一共,to gang up together to trick / set someone up/gang up together to trick/Together with/along with/in total/ including/ prepared in advance/total,CanTong Lexicon 2026,slang,
+L870,夾夾埋埋,gaap3 gaap3 maai4 maai4,0,合谋欺骗/陷害某人/设局/制造圈套/一起/连同/同/合共/包括/预先准备好/一共,to gang up together to trick / set someone up/gang up together to trick/Together with/along with/in total/ including/ prepared in advance/total,CanTong Lexicon 2026,slang,
+L871,紧,gan2,0,紧/正在进行/紧张/紧急/捉襟见肘/缺钱/资金紧张,tight/urgent/hard up/short of money/tighten/ing,CanTong Lexicon 2026,Colloquial,
+L872,住,zi6,0,着/住,live/dwell/stay/reside/stop,CanTong Lexicon 2026,Colloquial,
+L873,咪住,mi1 zyu6,0,等等/慢着/且慢/等一下,hold on/hold it/Wait/Wait a minute,CanTong Lexicon 2026,Colloquial,
+L874,等陣,dang2 zan6,0,等等/慢着/且慢/等一下,hold on/hold it/Wait/Wait a minute,CanTong Lexicon 2026,Colloquial,
+L875,咪住先,mi1 zyu6 sin1 ,0,等等/慢着/且慢/等一下,hold on/hold it/Wait/Wait a minute,CanTong Lexicon 2026,Colloquial,
+L876,一陣,jat1 zan2,0,等等/慢着/且慢/等一下/一会/一会儿/一阵子/一段时间后/迟一点/迟点,Wait/Wait a minute/Please wait/Wait a while/In a little while/A while/After a period of time/Later/Later/a while/a moment/hold on/hold it,CanTong Lexicon 2026,Colloquial,
+L877,等陣間,dang2 zan6 gaan1,0,等等/慢着/且慢/等一下/一会/一会儿/一阵子/一段时间后/迟一点/迟点,Wait/Wait a minute/Please wait/Wait a while/In a little while/A while/After a period of time/Later/Later/a while/a moment/hold on/hold it,CanTong Lexicon 2026,Colloquial,
+L878,遲啲,ci4 di1 ,0,等等/慢着/且慢/等一下/一会/一会儿/一阵子/一段时间后/迟一点/迟点,Wait/Wait a minute/Please wait/Wait a while/In a little while/A while/After a period of time/Later/Later/a while/a moment/hold on/hold it,CanTong Lexicon 2026,Colloquial,
+L879,陣間,zan6 gaan1,0,等等/慢着/且慢/等一下/一会/一会儿/一阵子/一段时间后/迟一点/迟点,Wait/Wait a minute/Please wait/Wait a while/In a little while/A while/After a period of time/Later/Later/a while/a moment/hold on/hold it,CanTong Lexicon 2026,Colloquial,
 ,,,0,,,,,
 ,,,0,,,,,
 ,,,0,,,,,
