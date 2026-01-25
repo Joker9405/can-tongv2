@@ -1,17 +1,54 @@
 // api/translate.js
-// Lexicon exact match (crossmap.csv -> lexeme.csv). If miss, Gemini fallback.
+// Lexicon lookup (lexeme.csv + optional crossmap.csv). If miss, multi-LLM fallback (DeepSeek/OpenAI/Gemini).
 // Fix: robust CSV parser (quotes/newlines/commas), flexible column mapping, safer term splitting.
+// NEW: works even if crossmap.csv is missing (index from lexeme.csv). LLM fallback returns Cantonese + jyutping.
 
 const fs = require('fs');
 const path = require('path');
 const https = require('https');
+
+// ---------------- HTTP helper ----------------
+function httpPostJson({ hostname, path: reqPath, headers = {}, bodyObj, timeoutMs = 20000 }) {
+  return new Promise((resolve, reject) => {
+    const body = JSON.stringify(bodyObj || {});
+    const options = {
+      method: 'POST',
+      hostname,
+      path: reqPath,
+      headers: Object.assign(
+        {
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(body),
+        },
+        headers
+      ),
+    };
+
+    const req = https.request(options, (res) => {
+      let data = '';
+      res.on('data', (d) => (data += d));
+      res.on('end', () => {
+        let json;
+        try { json = JSON.parse(data || '{}'); } catch { json = null; }
+        resolve({ status: res.statusCode || 0, json, raw: data });
+      });
+    });
+
+    req.on('error', reject);
+    req.setTimeout(timeoutMs, () => {
+      req.destroy(new Error('request_timeout'));
+    });
+    req.write(body);
+    req.end();
+  });
+}
 
 // ---------------- Gemini ----------------
 function geminiGenerate({ apiKey, model, promptText }) {
   return new Promise((resolve, reject) => {
     const body = JSON.stringify({
       contents: [{ role: 'user', parts: [{ text: promptText }] }],
-      generationConfig: { temperature: 0.4, maxOutputTokens: 256 },
+      generationConfig: { temperature: 0.3, maxOutputTokens: 256 },
     });
 
     const options = {
@@ -49,7 +86,7 @@ function geminiGenerate({ apiKey, model, promptText }) {
   });
 }
 
-function buildGeminiPrompt(input, lang) {
+function buildCantonesePrompt(input, lang) {
   const langHint =
     lang === 'en' ? '輸入係英文'
     : lang === 'chs' ? '輸入係中文'
@@ -57,9 +94,12 @@ function buildGeminiPrompt(input, lang) {
     : '輸入語言不確定（自動判斷）';
 
   return [
-    '你係一個講地道口語粵語嘅助理。',
-    '請把以下輸入改寫成地道、自然、口語嘅粵語正字（繁體）。',
-    '只輸出最終粵語一句/一段（不要解釋、不要加標題、不要列表、不要輸出粵拼）。',
+    '你係一個講地道口語粵語嘅助理（香港用字，繁體）。',
+    '請把以下輸入改寫成地道、自然、口語嘅粵語正字（繁體），保留原意。',
+    '硬性要求：',
+    '1) 只輸出最終粵語一句/一段（不要解釋、不要加標題、不要列表）。',
+    '2) 禁止輸出普通話書面語句式（例如：我們/你們/正在/沒有/怎麼/什麼/但是…）。',
+    '3) 輸出必須係香港常用粵語用字（例如：我哋/你哋/佢哋/喺/冇/咗/緊/啫/啦/喎/咩/嘅…）。',
     `(${langHint})`,
     '',
     `輸入：${input}`,
@@ -68,20 +108,127 @@ function buildGeminiPrompt(input, lang) {
   ].join('\n');
 }
 
+function getGeminiKey() {
+  return (
+    process.env.GOOGLE_GENERATIVE_AI_API_KEY ||
+    process.env.GEMINI_API_KEY ||
+    process.env.GOOGLE_API_KEY ||
+    process.env.GOOGLE_AI_API_KEY ||
+    ''
+  ).trim();
+}
+
 async function geminiFallbackTranslate(query, lang = 'auto') {
-  const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || process.env.GOOGLE_AI_API_KEY;
-  if (!apiKey) return { yue: null, model: null, error: 'missing_key' };
+  const apiKey = getGeminiKey();
+  if (!apiKey) return { yue: null, provider: 'gemini', model: null, error: 'missing_key' };
 
   const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
-  const promptText = buildGeminiPrompt(query, lang);
+  const promptText = buildCantonesePrompt(query, lang);
 
   try {
     const yue = await geminiGenerate({ apiKey, model, promptText });
     const out = String(yue || '').trim();
-    return { yue: out || null, model, error: out ? null : 'empty' };
+    return { yue: out || null, provider: 'gemini', model, error: out ? null : 'empty' };
   } catch (e) {
-    return { yue: null, model, error: String(e && e.message ? e.message : e) };
+    return { yue: null, provider: 'gemini', model, error: String(e && e.message ? e.message : e) };
   }
+}
+
+// ---------------- OpenAI ----------------
+async function openaiTranslate(query, lang = 'auto') {
+  const apiKey = String(process.env.OPENAI_API_KEY || '').trim();
+  if (!apiKey) return { yue: null, provider: 'openai', model: null, error: 'missing_key' };
+
+  const model = process.env.OPENAI_MODEL || 'gpt-4o-mini';
+  const system = '你係粵語翻譯器。請用香港常用繁體口語粵語改寫輸入，保留原意。只輸出最終粵語，不要解釋，不要列表。';
+  const user = buildCantonesePrompt(query, lang);
+
+  const { status, json } = await httpPostJson({
+    hostname: 'api.openai.com',
+    path: '/v1/chat/completions',
+    headers: { Authorization: `Bearer ${apiKey}` },
+    bodyObj: {
+      model,
+      temperature: 0.3,
+      max_tokens: 256,
+      messages: [
+        { role: 'system', content: system },
+        { role: 'user', content: user },
+      ],
+    },
+  });
+
+  if (status >= 400) {
+    const msg = json?.error?.message || `OpenAI HTTP ${status}`;
+    return { yue: null, provider: 'openai', model, error: msg };
+  }
+
+  const text = String(json?.choices?.[0]?.message?.content || '').trim();
+  return { yue: text || null, provider: 'openai', model, error: text ? null : 'empty' };
+}
+
+// ---------------- DeepSeek (OpenAI-compatible) ----------------
+async function deepseekTranslate(query, lang = 'auto') {
+  const apiKey = String(process.env.DEEPSEEK_API_KEY || '').trim();
+  if (!apiKey) return { yue: null, provider: 'deepseek', model: null, error: 'missing_key' };
+
+  const model = process.env.DEEPSEEK_MODEL || 'deepseek-chat';
+  const system = '你係粵語翻譯器。請用香港常用繁體口語粵語改寫輸入，保留原意。只輸出最終粵語，不要解釋，不要列表。';
+  const user = buildCantonesePrompt(query, lang);
+
+  const { status, json } = await httpPostJson({
+    hostname: 'api.deepseek.com',
+    path: '/v1/chat/completions',
+    headers: { Authorization: `Bearer ${apiKey}` },
+    bodyObj: {
+      model,
+      temperature: 0.3,
+      max_tokens: 256,
+      messages: [
+        { role: 'system', content: system },
+        { role: 'user', content: user },
+      ],
+    },
+  });
+
+  if (status >= 400) {
+    const msg = json?.error?.message || `DeepSeek HTTP ${status}`;
+    return { yue: null, provider: 'deepseek', model, error: msg };
+  }
+
+  const text = String(json?.choices?.[0]?.message?.content || '').trim();
+  return { yue: text || null, provider: 'deepseek', model, error: text ? null : 'empty' };
+}
+
+// ---------------- Cantonese quality gate ----------------
+function looksLikeCantonese(text) {
+  const s = String(text || '').trim();
+  if (!s) return false;
+
+  const must = ['唔', '冇', '喺', '咗', '緊', '嘅', '佢', '我哋', '你哋', '佢哋', '咩', '喎', '啫', '呀', '啦'];
+  const bad = ['我們', '你們', '他們', '正在', '沒有', '怎麼', '什麼', '但是', '這裡', '那裡'];
+
+  const hitMust = must.some((w) => s.includes(w));
+  const hitBad = bad.some((w) => s.includes(w));
+  return hitMust && !hitBad;
+}
+
+// ---------------- Jyutping generator ----------------
+function toJyutpingSafe(zhh) {
+  const s = String(zhh || '').trim();
+  if (!s) return '';
+  try {
+    // prefer commonjs require
+    const ToJyutping = require('to-jyutping');
+    if (ToJyutping && typeof ToJyutping.getJyutpingText === 'function') {
+      return String(ToJyutping.getJyutpingText(s) || '').trim();
+    }
+    // some builds export default
+    if (ToJyutping && ToJyutping.default && typeof ToJyutping.default.getJyutpingText === 'function') {
+      return String(ToJyutping.default.getJyutpingText(s) || '').trim();
+    }
+  } catch (_) {}
+  return '';
 }
 
 // ---------------- Robust CSV parser ----------------
@@ -171,23 +318,43 @@ function splitTerms(s) {
     .filter(Boolean);
 }
 
+function findFirstExisting(paths) {
+  for (const p of paths) {
+    if (p && fs.existsSync(p)) return p;
+  }
+  return null;
+}
+
 // ---------------- CSV lookup ----------------
 let CACHE = null;
 
-function buildData() {
+function buildDataSafe() {
   if (CACHE) return CACHE;
 
-  const dataDir = path.join(process.cwd(), 'data');
-  const crossmapPath = path.join(dataDir, 'crossmap.csv');
-  const lexemePath = path.join(dataDir, 'lexeme.csv');
-  const examplesPath = path.join(dataDir, 'examples.csv');
+  const cwd = process.cwd();
+  const dataDir = path.join(cwd, 'data');
 
-  if (!fs.existsSync(crossmapPath)) throw new Error('未找到 data/crossmap.csv，请确认文件路径');
-  if (!fs.existsSync(lexemePath)) throw new Error('未找到 data/lexeme.csv，请确认文件路径');
+  const lexemePath = findFirstExisting([
+    path.join(dataDir, 'lexeme.csv'),
+    path.join(cwd, 'lexeme.csv'),
+    path.join(cwd, 'public', 'lexeme.csv'),
+  ]);
 
-  const crossmapRows = csvToObjects(fs.readFileSync(crossmapPath, 'utf8'));
-  const lexemeRows = csvToObjects(fs.readFileSync(lexemePath, 'utf8'));
-  const exampleRows = fs.existsSync(examplesPath) ? csvToObjects(fs.readFileSync(examplesPath, 'utf8')) : [];
+  const crossmapPath = findFirstExisting([
+    path.join(dataDir, 'crossmap.csv'),
+    path.join(cwd, 'crossmap.csv'),
+    path.join(cwd, 'public', 'crossmap.csv'),
+  ]);
+
+  const examplesPath = findFirstExisting([
+    path.join(dataDir, 'examples.csv'),
+    path.join(cwd, 'examples.csv'),
+    path.join(cwd, 'public', 'examples.csv'),
+  ]);
+
+  const lexemeRows = lexemePath ? csvToObjects(fs.readFileSync(lexemePath, 'utf8')) : [];
+  const crossmapRows = crossmapPath ? csvToObjects(fs.readFileSync(crossmapPath, 'utf8')) : [];
+  const exampleRows = examplesPath ? csvToObjects(fs.readFileSync(examplesPath, 'utf8')) : [];
 
   // Build lexeme map
   const lexemeById = new Map();
@@ -208,52 +375,76 @@ function buildData() {
 
   // Index map: term -> Set<lexemeId>
   const termIndex = new Map();
-  const termCols = ['term', 'terms', 'key_text', 'key', 'query', 'chs', 'en', 'text']; // try these
-  const idCols = ['target_id', 'targetId', 'lexeme_id', 'lexemeId', 'to_id', 'id'];
 
-  for (const row of crossmapRows) {
-    // find id
-    let targetId = '';
-    for (const c of idCols) {
-      if (row[c]) { targetId = String(row[c]).trim(); break; }
-    }
-    if (!targetId) continue;
+  if (crossmapRows.length) {
+    // Use crossmap if present
+    const termCols = ['term', 'terms', 'key_text', 'key', 'query', 'chs', 'en', 'text']; // try these
+    const idCols = ['target_id', 'targetId', 'lexeme_id', 'lexemeId', 'to_id', 'id'];
 
-    // collect terms
-    let collected = [];
-    for (const c of termCols) {
-      if (row[c]) collected = collected.concat(splitTerms(row[c]));
-    }
-    // fallback: if none, try any column that looks like a term list
-    if (!collected.length) {
-      for (const [k, v] of Object.entries(row)) {
-        if (!v) continue;
-        const kk = k.toLowerCase();
-        if (kk.includes('term') || kk.includes('key')) {
-          collected = collected.concat(splitTerms(v));
+    for (const row of crossmapRows) {
+      // find id
+      let targetId = '';
+      for (const c of idCols) {
+        if (row[c]) { targetId = String(row[c]).trim(); break; }
+      }
+      if (!targetId) continue;
+
+      // collect terms
+      let collected = [];
+      for (const c of termCols) {
+        if (row[c]) collected = collected.concat(splitTerms(row[c]));
+      }
+      // fallback: if none, try any column that looks like a term list
+      if (!collected.length) {
+        for (const [k, v] of Object.entries(row)) {
+          if (!v) continue;
+          const kk = k.toLowerCase();
+          if (kk.includes('term') || kk.includes('key')) {
+            collected = collected.concat(splitTerms(v));
+          }
         }
       }
-    }
-    if (!collected.length) continue;
+      if (!collected.length) continue;
 
-    for (const t of collected) {
-      const key = normalizeKey(t);
-      if (!key) continue;
-      if (!termIndex.has(key)) termIndex.set(key, new Set());
-      termIndex.get(key).add(targetId);
+      for (const t of collected) {
+        const key = normalizeKey(t);
+        if (!key) continue;
+        if (!termIndex.has(key)) termIndex.set(key, new Set());
+        termIndex.get(key).add(targetId);
+      }
+    }
+  } else {
+    // No crossmap: index directly from lexeme columns (MVP-friendly)
+    const cols = ['zhh', 'alias_zhh', 'alias_zhh_r18', 'chs', 'en'];
+    for (const row of lexemeRows) {
+      const id = (row.id || row.lexeme_id || row.lexemeId || '').trim();
+      if (!id) continue;
+
+      let collected = [];
+      for (const c of cols) {
+        if (row[c]) collected = collected.concat(splitTerms(row[c]));
+      }
+      // Also index zhh_pron as query if user types jyutping
+      if (row.zhh_pron) collected = collected.concat(splitTerms(row.zhh_pron));
+
+      for (const t of collected) {
+        const key = normalizeKey(t);
+        if (!key) continue;
+        if (!termIndex.has(key)) termIndex.set(key, new Set());
+        termIndex.get(key).add(id);
+      }
     }
   }
 
-  CACHE = { termIndex, lexemeById, examplesByLexemeId, crossmapRows };
+  CACHE = { termIndex, lexemeById, examplesByLexemeId, crossmapRows, hasCrossmap: !!crossmapRows.length, hasLexeme: !!lexemeRows.length };
   return CACHE;
 }
 
 function lookupLexemeItemsByQuery(query) {
-  const { termIndex, lexemeById, examplesByLexemeId, crossmapRows } = buildData();
+  const { termIndex, lexemeById, examplesByLexemeId } = buildDataSafe();
   const key = normalizeKey(query);
   if (!key) return [];
 
-  // 1) indexed exact match
   const idSet = termIndex.get(key);
   if (idSet && idSet.size) {
     const out = [];
@@ -266,28 +457,7 @@ function lookupLexemeItemsByQuery(query) {
     }
     if (out.length) return out;
   }
-
-  // 2) brute-force exact match (in case columns differ or index missed something)
-  const out2 = [];
-  const idCols = ['target_id', 'targetId', 'lexeme_id', 'lexemeId', 'to_id', 'id'];
-  for (const row of crossmapRows) {
-    const values = Object.values(row).map((v) => normalizeKey(v));
-    if (!values.includes(key)) continue;
-
-    let targetId = '';
-    for (const c of idCols) {
-      if (row[c]) { targetId = String(row[c]).trim(); break; }
-    }
-    if (!targetId) continue;
-
-    const lexeme = lexemeById.get(targetId);
-    if (!lexeme) continue;
-
-    const item = Object.assign({}, lexeme);
-    item.examples = examplesByLexemeId[targetId] || [];
-    out2.push(item);
-  }
-  return out2;
+  return [];
 }
 
 // ---------------- helpers ----------------
@@ -306,7 +476,8 @@ function readJsonBody(req) {
 }
 
 function getQueryFromReq(req, body) {
-  const qFromQuery = req.query?.q || req.query?.query || req.query?.term || req.query?.keyword;
+  const qFromQuery =
+    req.query?.q || req.query?.query || req.query?.term || req.query?.keyword || req.query?.text;
   const qFromBody = body?.q || body?.query || body?.term || body?.keyword || body?.input || body?.text;
   return String(qFromQuery || qFromBody || '').trim();
 }
@@ -314,6 +485,51 @@ function getQueryFromReq(req, body) {
 function getLangFromReq(req, body) {
   const l = req.query?.lang || req.query?.language || body?.lang || body?.language || 'auto';
   return String(l || 'auto');
+}
+
+// ---------------- Multi-LLM fallback ----------------
+function hash32(str) {
+  let h = 2166136261;
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+async function multiLLMFallback(query, lang) {
+  // Build provider pool based on available keys
+  const pool = [];
+  if (String(process.env.DEEPSEEK_API_KEY || '').trim()) pool.push('deepseek');
+  if (String(process.env.OPENAI_API_KEY || '').trim()) pool.push('openai');
+  if (getGeminiKey()) pool.push('gemini');
+
+  if (!pool.length) {
+    return { yue: null, jyutping: '', provider: null, model: null, error: 'no_provider_key' };
+  }
+
+  // pseudo-random start per query (stable, but feels random across different queries)
+  const start = hash32(query) % pool.length;
+
+  const tried = [];
+  for (let k = 0; k < pool.length; k++) {
+    const provider = pool[(start + k) % pool.length];
+    tried.push(provider);
+
+    let r;
+    if (provider === 'deepseek') r = await deepseekTranslate(query, lang);
+    else if (provider === 'openai') r = await openaiTranslate(query, lang);
+    else r = await geminiFallbackTranslate(query, lang);
+
+    const yue = String(r?.yue || '').trim();
+    if (!yue) continue;
+    if (!looksLikeCantonese(yue)) continue;
+
+    const jyutping = toJyutpingSafe(yue);
+    return { yue, jyutping, provider: r.provider, model: r.model, error: null, tried };
+  }
+
+  return { yue: null, jyutping: '', provider: tried[tried.length - 1] || null, model: null, error: 'all_failed', tried };
 }
 
 // ---------------- handler ----------------
@@ -335,7 +551,7 @@ module.exports = async (req, res) => {
 
     if (!query) {
       res.statusCode = 200;
-      res.end(JSON.stringify({ ok: true, from: 'crossmap-exact', query: '', count: 0, items: [] }));
+      res.end(JSON.stringify({ ok: true, from: 'empty', query: '', count: 0, items: [] }));
       return;
     }
 
@@ -343,18 +559,19 @@ module.exports = async (req, res) => {
 
     if (items && items.length > 0) {
       res.statusCode = 200;
-      res.end(JSON.stringify({ ok: true, from: 'crossmap-exact', query, count: items.length, items }));
+      res.end(JSON.stringify({ ok: true, from: 'lexeme-csv', query, count: items.length, items }));
       return;
     }
 
-    // Miss -> Gemini fallback
-    const fb = await geminiFallbackTranslate(query, lang);
+    // Miss -> multi-LLM fallback (DeepSeek/OpenAI/Gemini)
+    const fb = await multiLLMFallback(query, lang);
     const yue = fb?.yue ? String(fb.yue).trim() : '';
+    const jyutping = fb?.jyutping ? String(fb.jyutping).trim() : '';
 
     const item = {
       id: 'CT-FALLBACK',
       zhh: yue || '（未收錄：你可以提交更地道嘅講法）',
-      zhh_pron: '',
+      zhh_pron: jyutping,
       alias_zhh: '',
       alias_zhh_r18: '',
       chs: '',
@@ -365,12 +582,14 @@ module.exports = async (req, res) => {
       variants_en: '',
       examples: [],
       _fallback_error: fb?.error || null,
+      _fallback_tried: fb?.tried || [],
     };
 
     res.statusCode = 200;
     res.end(JSON.stringify({
       ok: true,
-      from: 'gemini-fallback',
+      from: 'llm-fallback',
+      provider: fb?.provider || null,
       model: fb?.model || null,
       query,
       count: 1,
