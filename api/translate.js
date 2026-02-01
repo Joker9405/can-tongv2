@@ -108,25 +108,42 @@ function httpPostJson({ hostname, reqPath, headers = {}, bodyObj, timeoutMs = 20
 }
 
 // ----------------- Supabase REST insert (telemetry) -----------------
-async function supabaseInsert(table, row) {
+async function supabaseInsert(table, row, timeoutMs = 2000) {
   const urlBase = trimSlash(process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '');
   const key =
-    String(process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '').trim();
+    String(
+      process.env.SUPABASE_SERVICE_ROLE_KEY ||
+      process.env.SUPABASE_SERVICE_KEY ||
+      process.env.SUPABASE_ANON_KEY ||
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+      ''
+    ).trim();
 
   if (!urlBase || !key) return { ok: false, error: 'missing_supabase_env' };
 
+  let hostname = '';
+  let basePath = '';
+  try {
+    const u = new URL(urlBase);
+    hostname = u.host;
+    basePath = (u.pathname && u.pathname !== '/') ? u.pathname.replace(/\/+$/, '') : '';
+  } catch {
+    // fallback: treat as hostname-only
+    hostname = urlBase.replace(/^https?:\/\//, '').split('/')[0];
+    basePath = '';
+  }
+
   const { status, json, raw } = await httpPostJson({
-    hostname: urlBase.replace(/^https?:\/\//, '').split('/')[0],
-    reqPath: urlBase.replace(/^https?:\/\//, '').includes('/')
-      ? ('/' + urlBase.replace(/^https?:\/\//, '').split('/').slice(1).join('/') + `/rest/v1/${encodeURIComponent(table)}`)
-      : (`/rest/v1/${encodeURIComponent(table)}`),
+    hostname,
+    reqPath: `${basePath}/rest/v1/${encodeURIComponent(table)}`,
     headers: {
       apikey: key,
       Authorization: `Bearer ${key}`,
       Prefer: 'return=minimal',
+      Accept: 'application/json',
     },
     bodyObj: row,
-    timeoutMs: 8000,
+    timeoutMs,
   });
 
   if (status >= 400) return { ok: false, error: `supabase_http_${status}`, detail: json?.message || raw || '' };
@@ -534,15 +551,44 @@ module.exports = async (req, res) => {
   const langHdr = getLang(req);
   const ua = String(getHeader(req, 'user-agent') || '');
 
-  // record PV (best-effort, never break translate)
-  supabaseInsert('telemetry_pv', {
+  const u0 = parseUrl(req);
+  const debug = u0.searchParams.get('debug') === '1';
+
+  // record PV (best-effort, never break translate) — IMPORTANT: await later so serverless won't drop it
+  const pvPromise = supabaseInsert('telemetry_pv', {
     sid,
     path: pagePath || '',
     referrer: String(getHeader(req, 'referer') || getHeader(req, 'referrer') || ''),
     lang: langHdr,
     ua,
     country,
-  }).catch(() => {});
+  }, 2000);
+
+  async function flushTelemetry(searchPromise) {
+    const ps = [pvPromise];
+    if (searchPromise) ps.push(searchPromise);
+
+    const settled = await Promise.allSettled(ps);
+
+    if (!debug) return null;
+
+    const pvS = settled[0];
+    const searchS = settled.length > 1 ? settled[1] : null;
+
+    const pvR = pvS.status === 'fulfilled'
+      ? pvS.value
+      : { ok: false, error: 'pv_exception', detail: String(pvS.reason?.message || pvS.reason || '') };
+
+    const sR = searchS
+      ? (searchS.status === 'fulfilled'
+          ? searchS.value
+          : { ok: false, error: 'search_exception', detail: String(searchS.reason?.message || searchS.reason || '') })
+      : null;
+
+    return { pv: pvR, search: sR };
+  }
+
+
 
   try {
     const body = method === 'POST' ? await readJsonBody(req) : {};
@@ -550,8 +596,11 @@ module.exports = async (req, res) => {
     const lang = getLangFromReq(req, body);
 
     if (!query) {
+      const _telemetry = await flushTelemetry(null);
+      const payload = { ok: true, from: 'empty', query: '', count: 0, items: [] };
+      if (_telemetry) payload._telemetry = _telemetry;
       res.statusCode = 200;
-      res.end(JSON.stringify({ ok: true, from: 'empty', query: '', count: 0, items: [] }));
+      res.end(JSON.stringify(payload));
       return;
     }
 
@@ -563,8 +612,7 @@ module.exports = async (req, res) => {
     }
 
     if (items && items.length > 0) {
-      // telemetry search
-      supabaseInsert('telemetry_search', {
+      const searchPromise = supabaseInsert('telemetry_search', {
         sid,
         q: query,
         q_norm: normalizeKey(query),
@@ -573,10 +621,15 @@ module.exports = async (req, res) => {
         from_src: 'csv',
         path: pagePath || '',
         country,
-      }).catch(() => {});
+      }, 2000);
+
+      const _telemetry = await flushTelemetry(searchPromise);
+
+      const payload = { ok: true, from: 'lexeme-exact', query, count: items.length, items };
+      if (_telemetry) payload._telemetry = _telemetry;
 
       res.statusCode = 200;
-      res.end(JSON.stringify({ ok: true, from: 'lexeme-exact', query, count: items.length, items }));
+      res.end(JSON.stringify(payload));
       return;
     }
 
@@ -605,7 +658,7 @@ module.exports = async (req, res) => {
     };
 
     // telemetry miss
-    supabaseInsert('telemetry_search', {
+    const searchPromise = supabaseInsert('telemetry_search', {
       sid,
       q: query,
       q_norm: normalizeKey(query),
@@ -614,10 +667,11 @@ module.exports = async (req, res) => {
       from_src: `llm:${fb?.provider || 'none'}`,
       path: pagePath || '',
       country,
-    }).catch(() => {});
+    }, 2000);
 
-    res.statusCode = 200;
-    res.end(JSON.stringify({
+    const _telemetry = await flushTelemetry(searchPromise);
+
+    const payload = {
       ok: true,
       from: 'llm-fallback',
       model: fb?.model || null,
@@ -625,14 +679,22 @@ module.exports = async (req, res) => {
       query,
       count: 1,
       items: [item],
-    }));
+    };
+    if (_telemetry) payload._telemetry = _telemetry;
+
+    res.statusCode = 200;
+    res.end(JSON.stringify(payload));
   } catch (err) {
-    res.statusCode = 500;
-    res.end(JSON.stringify({
+    const _telemetry = await flushTelemetry(null);
+    const payload = {
       ok: false,
       error: 'Internal Server Error',
       detail: err && err.message ? err.message : String(err),
       ts: nowIso(),
-    }));
+    };
+    if (_telemetry) payload._telemetry = _telemetry;
+
+    res.statusCode = 500;
+    res.end(JSON.stringify(payload));
   }
 };
