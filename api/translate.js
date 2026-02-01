@@ -111,39 +111,23 @@ function httpPostJson({ hostname, reqPath, headers = {}, bodyObj, timeoutMs = 20
 async function supabaseInsert(table, row, timeoutMs = 2000) {
   const urlBase = trimSlash(process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '');
   const key =
-    String(
-      process.env.SUPABASE_SERVICE_ROLE_KEY ||
-      process.env.SUPABASE_SERVICE_KEY ||
-      process.env.SUPABASE_ANON_KEY ||
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-      ''
-    ).trim();
+    String(process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '').trim();
 
   if (!urlBase || !key) return { ok: false, error: 'missing_supabase_env' };
 
-  let hostname = '';
-  let basePath = '';
-  try {
-    const u = new URL(urlBase);
-    hostname = u.host;
-    basePath = (u.pathname && u.pathname !== '/') ? u.pathname.replace(/\/+$/, '') : '';
-  } catch {
-    // fallback: treat as hostname-only
-    hostname = urlBase.replace(/^https?:\/\//, '').split('/')[0];
-    basePath = '';
-  }
-
   const { status, json, raw } = await httpPostJson({
-    hostname,
-    reqPath: `${basePath}/rest/v1/${encodeURIComponent(table)}`,
+    hostname: urlBase.replace(/^https?:\/\//, '').split('/')[0],
+    reqPath: urlBase.replace(/^https?:\/\//, '').includes('/')
+      ? ('/' + urlBase.replace(/^https?:\/\//, '').split('/').slice(1).join('/') + `/rest/v1/${encodeURIComponent(table)}`)
+      : (`/rest/v1/${encodeURIComponent(table)}`),
     headers: {
       apikey: key,
       Authorization: `Bearer ${key}`,
       Prefer: 'return=minimal',
-      Accept: 'application/json',
     },
     bodyObj: row,
     timeoutMs,
+  
   });
 
   if (status >= 400) return { ok: false, error: `supabase_http_${status}`, detail: json?.message || raw || '' };
@@ -554,7 +538,7 @@ module.exports = async (req, res) => {
   const u0 = parseUrl(req);
   const debug = u0.searchParams.get('debug') === '1';
 
-  // record PV (best-effort, never break translate) — IMPORTANT: await later so serverless won't drop it
+  // record PV (best-effort). IMPORTANT: we keep it short and we *await* it later so serverless won't drop it.
   const pvPromise = supabaseInsert('telemetry_pv', {
     sid,
     path: pagePath || '',
@@ -562,32 +546,17 @@ module.exports = async (req, res) => {
     lang: langHdr,
     ua,
     country,
-  }, 2000);
+  }, 1200).catch((e) => ({ ok: false, error: 'pv_exception', detail: String(e?.message || e || '') }));
 
   async function flushTelemetry(searchPromise) {
-    const ps = [pvPromise];
-    if (searchPromise) ps.push(searchPromise);
-
-    const settled = await Promise.allSettled(ps);
-
-    if (!debug) return null;
-
-    const pvS = settled[0];
-    const searchS = settled.length > 1 ? settled[1] : null;
-
-    const pvR = pvS.status === 'fulfilled'
-      ? pvS.value
-      : { ok: false, error: 'pv_exception', detail: String(pvS.reason?.message || pvS.reason || '') };
-
-    const sR = searchS
-      ? (searchS.status === 'fulfilled'
-          ? searchS.value
-          : { ok: false, error: 'search_exception', detail: String(searchS.reason?.message || searchS.reason || '') })
+    const pv = await pvPromise;
+    const search = searchPromise
+      ? await searchPromise.catch((e) => ({ ok: false, error: 'search_exception', detail: String(e?.message || e || '') }))
       : null;
 
-    return { pv: pvR, search: sR };
+    // Only attach debug details when debug=1.
+    return debug ? { pv, search } : null;
   }
-
 
 
   try {
@@ -599,6 +568,7 @@ module.exports = async (req, res) => {
       const _telemetry = await flushTelemetry(null);
       const payload = { ok: true, from: 'empty', query: '', count: 0, items: [] };
       if (_telemetry) payload._telemetry = _telemetry;
+
       res.statusCode = 200;
       res.end(JSON.stringify(payload));
       return;
@@ -621,10 +591,9 @@ module.exports = async (req, res) => {
         from_src: 'csv',
         path: pagePath || '',
         country,
-      }, 2000);
+      }, 1200);
 
       const _telemetry = await flushTelemetry(searchPromise);
-
       const payload = { ok: true, from: 'lexeme-exact', query, count: items.length, items };
       if (_telemetry) payload._telemetry = _telemetry;
 
@@ -667,7 +636,7 @@ module.exports = async (req, res) => {
       from_src: `llm:${fb?.provider || 'none'}`,
       path: pagePath || '',
       country,
-    }, 2000);
+    }, 1200);
 
     const _telemetry = await flushTelemetry(searchPromise);
 
@@ -698,3 +667,4 @@ module.exports = async (req, res) => {
     res.end(JSON.stringify(payload));
   }
 };
+
