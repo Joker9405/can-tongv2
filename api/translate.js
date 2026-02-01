@@ -328,16 +328,29 @@ function findFirstExisting(paths) {
 
 
 // ---------------- telemetry (Supabase REST) ----------------
-function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
 
 function getOrSetSid(req, res) {
+  // Backward compatible:
+  // - Prefer `cid` (shared with telemetry endpoints)
+  // - Fall back to older `ct_sid` cookie if present
   const cookie = String(req.headers?.cookie || '');
-  const m = cookie.match(/(?:^|;\s*)ct_sid=([^;]+)/);
-  let sid = m ? decodeURIComponent(m[1]) : '';
-  if (!sid) {
-    sid = crypto.randomUUID ? crypto.randomUUID() : crypto.randomBytes(16).toString('hex');
-    // 1 year
-    res.setHeader('Set-Cookie', `ct_sid=${encodeURIComponent(sid)}; Path=/; Max-Age=31536000; SameSite=Lax`);
+  const mCid = cookie.match(/(?:^|;\s*)cid=([^;]+)/);
+  const mOld = cookie.match(/(?:^|;\s*)ct_sid=([^;]+)/);
+  let sid = mCid ? decodeURIComponent(mCid[1]) : (mOld ? decodeURIComponent(mOld[1]) : '');
+  if (!sid) sid = (crypto.randomUUID ? crypto.randomUUID() : crypto.randomBytes(16).toString('hex'));
+
+  // 180 days (avoid permanent tracking)
+  const maxAge = 180 * 24 * 60 * 60;
+  const cookieStr = `cid=${encodeURIComponent(sid)}; Path=/; Max-Age=${maxAge}; SameSite=Lax; Secure; HttpOnly`;
+  const existing = res.getHeader('Set-Cookie');
+  if (!existing) {
+    res.setHeader('Set-Cookie', cookieStr);
+  } else if (Array.isArray(existing)) {
+    if (!existing.some(v => String(v).includes('cid='))) {
+      res.setHeader('Set-Cookie', existing.concat([cookieStr]));
+    }
+  } else if (!String(existing).includes('cid=')) {
+    res.setHeader('Set-Cookie', [String(existing), cookieStr]);
   }
   return sid;
 }
@@ -348,20 +361,23 @@ function getClientMeta(req) {
   const country =
     String(req.headers?.['x-vercel-ip-country'] || req.headers?.['cf-ipcountry'] || '') || '';
 
+  const region = String(req.headers?.['x-vercel-ip-country-region'] || '') || '';
+  const city = String(req.headers?.['x-vercel-ip-city'] || '') || '';
+
   const ref = String(req.headers?.referer || req.headers?.referrer || '');
   let path = '';
   try { path = ref ? (new URL(ref)).pathname : ''; } catch { path = ''; }
 
-  return { ua, lang, country, referrer: ref, path };
+  return { ua, lang, country, region, city, referrer: ref, path };
 }
 
 function getSupabaseEnv() {
   const url = (process.env.SUPABASE_URL || '').trim();
-  const key = (process.env.SUPABASE_ANON_KEY || '').trim();
+  const key = (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || '').trim();
   return { url, key };
 }
 
-async function supabaseInsert(table, rowObj, timeoutMs = 1200) {
+async function supabaseInsert(table, rowObj, timeoutMs = 1500) {
   const { url, key } = getSupabaseEnv();
   if (!url || !key) return { ok: false, error: 'missing_supabase_env' };
 
@@ -373,13 +389,14 @@ async function supabaseInsert(table, rowObj, timeoutMs = 1200) {
     'prefer': 'return=minimal',
   };
 
-  const bodyObj = rowObj; // object
+  // PostgREST is happiest with an array for inserts.
+  const bodyObj = Array.isArray(rowObj) ? rowObj : [rowObj];
   const p = httpPostJson({
     hostname: u.hostname,
     path: `${u.pathname.replace(/\/+$/, '')}/rest/v1/${table}`,
     headers,
     bodyObj,
-    timeoutMs: Math.max(20000, timeoutMs + 5000),
+    timeoutMs: Math.max(1000, timeoutMs),
   }).then((resp) => {
     // Supabase REST insert returns 201/204 typically, body may be empty
     const sc = resp?.status || 0;
@@ -387,12 +404,13 @@ async function supabaseInsert(table, rowObj, timeoutMs = 1200) {
     return { ok: false, status: sc, body: (resp?.raw || '') };
   }).catch((e) => ({ ok: false, error: e?.message || String(e) }));
 
-  // Don't block forever; but DO wait briefly so serverless doesn't exit early.
-  return await Promise.race([p, sleep(timeoutMs).then(() => ({ ok: false, error: 'timeout' }))]);
+  // IMPORTANT: In serverless, do NOT "fire-and-forget" network writes.
+  // If we return before the request finishes, Vercel may freeze the function and the insert never happens.
+  return await p;
 }
 
 async function logTelemetry({ sid, meta, q, hit, count, fromSrc }) {
-  const pvRow = {
+  const pvRowA = {
     sid,
     path: meta.path || '',
     referrer: meta.referrer || '',
@@ -402,7 +420,7 @@ async function logTelemetry({ sid, meta, q, hit, count, fromSrc }) {
   };
 
   const qNorm = normalizeKey(q);
-  const searchRow = {
+  const searchRowA = {
     sid,
     q,
     q_norm: qNorm,
@@ -413,8 +431,44 @@ async function logTelemetry({ sid, meta, q, hit, count, fromSrc }) {
     country: meta.country || '',
   };
 
-  const pv = await supabaseInsert('telemetry_pv', pvRow);
-  const search = await supabaseInsert('telemetry_search', searchRow);
+  // Alternate schema (older/newer iterations). Best-effort fallback if the primary insert fails.
+  const pvRowB = {
+    cid: sid,
+    path: meta.path || '',
+    ref: meta.referrer || '',
+    ua: (meta.ua || '').slice(0, 180),
+    device: /mobile|android|iphone|ipad|ipod/i.test(meta.ua || '') ? 'mobile' : 'desktop',
+    ip_hash: '',
+    country: meta.country || '',
+    region: meta.region || '',
+    city: meta.city || '',
+  };
+  const searchRowB = {
+    cid: sid,
+    ip_hash: '',
+    device: /mobile|android|iphone|ipad|ipod/i.test(meta.ua || '') ? 'mobile' : 'desktop',
+    path: meta.path || '',
+    q_prefix: String(q || '').slice(0, 3),
+    q_len: String(q || '').length,
+    q_hash: sha256Hex(qNorm),
+    lang: meta.lang || '',
+    hit_count: Number.isFinite(count) ? count : 0,
+    hit_id: '',
+    is_zero: !hit,
+    country: meta.country || '',
+    region: meta.region || '',
+    city: meta.city || '',
+  };
+
+  let pv = await supabaseInsert('telemetry_pv', pvRowA);
+  if (!pv.ok && (pv.body || '').includes('column') ) {
+    pv = await supabaseInsert('telemetry_pv', pvRowB);
+  }
+
+  let search = await supabaseInsert('telemetry_search', searchRowA);
+  if (!search.ok && (search.body || '').includes('column')) {
+    search = await supabaseInsert('telemetry_search', searchRowB);
+  }
   return { pv, search };
 }
 
@@ -672,10 +726,14 @@ module.exports = async (req, res) => {
       id: 'CT-FALLBACK',
       zhh: yue || '（未收錄：你可以提交更地道嘅講法）',
       zhh_pron: jyutping,
+      is_r18: 0,
       alias_zhh: '',
       alias_zhh_r18: '',
       chs: '',
       en: '',
+      owner_tag: fb?.provider ? `llm:${fb.provider}` : 'llm',
+      register: 'colloquial',
+      intent: 'fallback',
       note_chs: '',
       note_en: '',
       variants_chs: '',

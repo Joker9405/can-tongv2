@@ -15,7 +15,8 @@ function sha256Hex(input) {
 }
 
 function getSalt() {
-  return env('TELEMETRY_SALT', true);
+  // Optional: only used for hashing IP. If missing, we skip ip_hash.
+  return process.env.TELEMETRY_SALT ? String(process.env.TELEMETRY_SALT) : '';
 }
 
 function ipFromReq(req) {
@@ -53,14 +54,23 @@ function ensureClientId(req, res) {
     // lightweight random id (not PII)
     cid = crypto.randomBytes(16).toString('hex');
     // 180 days
-    res.setHeader('Set-Cookie', `cid=${encodeURIComponent(cid)}; Path=/; Max-Age=${180*24*60*60}; SameSite=Lax; Secure`);
+    const cookieStr = `cid=${encodeURIComponent(cid)}; Path=/; Max-Age=${180*24*60*60}; SameSite=Lax; Secure`;
+    const existing = res.getHeader('Set-Cookie');
+    if (!existing) {
+      res.setHeader('Set-Cookie', cookieStr);
+    } else if (Array.isArray(existing)) {
+      res.setHeader('Set-Cookie', existing.concat([cookieStr]));
+    } else {
+      res.setHeader('Set-Cookie', [String(existing), cookieStr]);
+    }
   }
   return cid;
 }
 
 async function insertRow(table, row) {
   const url = env('SUPABASE_URL', true).replace(/\/+$/, '');
-  const key = env('SUPABASE_SERVICE_ROLE_KEY', true);
+  const key = String(process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || '').trim();
+  if (!key) throw new Error('Missing env: SUPABASE_SERVICE_ROLE_KEY (recommended) or SUPABASE_ANON_KEY');
 
   const endpoint = `${url}/rest/v1/${table}`;
   const r = await fetch(endpoint, {
@@ -90,7 +100,7 @@ function buildCommon(req, res) {
     cid,
     ua_trunc: ua.slice(0, 180),
     device: deviceFromUA(ua),
-    ip_hash: ip ? sha256Hex(`${salt}:${ip}`) : '',
+    ip_hash: (salt && ip) ? sha256Hex(`${salt}:${ip}`) : '',
     // Vercel geo headers (best-effort; may be empty)
     country: String(req.headers['x-vercel-ip-country'] || ''),
     region: String(req.headers['x-vercel-ip-country-region'] || ''),
