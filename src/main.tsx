@@ -1,12 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './index.css'; 
-import App from './App'; 
+import './index.css';
+import App from './App';
 
 // --- Telemetry bootstrap (PV + Search) ---
-// 1) Sends a PV event once per load
-// 2) Wraps fetch() so every /api/translate request is logged in a try/finally
-//    (records hit/miss, duration, source, etc.)
+// Sends PV once per load, and logs each /api/translate via try/finally
 function initTelemetry() {
   if (typeof window === 'undefined') return;
   const w = window as any;
@@ -16,21 +14,29 @@ function initTelemetry() {
   const originalFetch: typeof window.fetch | undefined = window.fetch?.bind(window);
   if (!originalFetch) return;
 
-  const getPath = () => `${window.location.pathname}${window.location.search}`;
-  const getReferrer = () => document.referrer || '';
-  const getTZ = () => {
+  // Stable sid in localStorage
+  const getSid = () => {
     try {
-      return Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+      const k = 'ct_sid';
+      let sid = localStorage.getItem(k) || '';
+      if (!sid) {
+        sid = (crypto as any)?.randomUUID?.() || Math.random().toString(36).slice(2) + Date.now().toString(36);
+        localStorage.setItem(k, sid);
+      }
+      return sid;
     } catch {
       return '';
     }
   };
 
+  const getPath = () => `${window.location.pathname}${window.location.search}`;
+  const getReferrer = () => document.referrer || '';
+
   const commonContext = () => ({
+    sid: getSid(),
     path: getPath(),
     referrer: getReferrer(),
     lang: navigator.language || '',
-    tz: getTZ(),
   });
 
   const postTelemetry = (endpoint: string, payload: Record<string, any>) => {
@@ -88,26 +94,17 @@ function initTelemetry() {
       return originalFetch(input as any, init);
     }
 
-    const start = performance.now();
-    let res: Response | undefined;
-
     // Extract query from URL or request body
     const extractQuery = (): string => {
       if (url) {
-        const q0 =
-          url.searchParams.get('q') ||
-          url.searchParams.get('query') ||
-          url.searchParams.get('text') ||
-          '';
+        const q0 = url.searchParams.get('q') || url.searchParams.get('query') || url.searchParams.get('text') || '';
         if (q0) return q0;
       }
       const body = init?.body as any;
       if (!body) return '';
 
-      // JSON string
       if (typeof body === 'string') {
         const s = body.trim();
-        // Try JSON
         if (s.startsWith('{') && s.endsWith('}')) {
           try {
             const obj = JSON.parse(s);
@@ -116,73 +113,54 @@ function initTelemetry() {
             return '';
           }
         }
-        // Try querystring-ish
         try {
           const usp = new URLSearchParams(s);
-          return (
-            usp.get('q') || usp.get('query') || usp.get('text') || ''
-          ).toString();
+          return (usp.get('q') || usp.get('query') || usp.get('text') || '').toString();
         } catch {
           return '';
         }
       }
 
-      // URLSearchParams
       if (body instanceof URLSearchParams) {
-        return (
-          body.get('q') || body.get('query') || body.get('text') || ''
-        ).toString();
+        return (body.get('q') || body.get('query') || body.get('text') || '').toString();
       }
 
-      // FormData
       if (typeof FormData !== 'undefined' && body instanceof FormData) {
-        return (
-          body.get('q') || body.get('query') || body.get('text') || ''
-        )?.toString();
+        return (body.get('q') || body.get('query') || body.get('text') || '')?.toString() || '';
       }
 
       return '';
     };
 
     let q = (extractQuery() || '').toString().trim();
-    let ok = false;
-    let from = '';
-    let count = 0;
-    let status = 0;
+    let res: Response | undefined;
+
+    let from_src = 'unknown';
+    let result_count = 0;
+    let hit = false;
 
     try {
       res = await originalFetch(input as any, init);
-      ok = res.ok;
-      status = res.status;
-
-      // Try read translate JSON (without consuming the original response)
       const data: any = await res.clone().json().catch(() => null);
       if (data && typeof data === 'object') {
         if (!q && typeof data.query === 'string') q = data.query.trim();
-        if (typeof data.ok === 'boolean') ok = data.ok;
-        if (typeof data.from === 'string') from = data.from;
+        if (typeof data.from === 'string' && data.from) from_src = data.from;
         if (typeof data.count === 'number' && Number.isFinite(data.count)) {
-          count = data.count;
+          result_count = data.count;
         } else if (Array.isArray(data.items)) {
-          count = data.items.length;
+          result_count = data.items.length;
         }
       }
-
+      hit = result_count > 0;
       return res;
-    } catch (e) {
-      ok = false;
-      if (!from) from = 'translate_error';
-      throw e;
     } finally {
-      const ms = Math.round(performance.now() - start);
       if (q) {
         postTelemetry('/api/telemetry/search', {
           q,
-          ok,
-          from: from || 'unknown',
-          count,
-          ms,
-          status,
+          q_norm: q,
+          hit,
+          result_count,
+          from_src,
         });
       }
     }

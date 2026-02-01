@@ -1,5 +1,6 @@
-// api/telemetry/search.js
-import { createClient } from "@supabase/supabase-js";
+// api/telemetry/search.js (CommonJS, Vercel Node Function)
+const { createClient } = require('@supabase/supabase-js');
+const crypto = require('crypto');
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -7,69 +8,86 @@ const supabase = createClient(
   { auth: { persistSession: false } }
 );
 
+function safeJsonParse(str) {
+  try { return JSON.parse(str); } catch { return null; }
+}
+
+async function readBody(req) {
+  if (req.body && typeof req.body === 'object' && !Buffer.isBuffer(req.body)) return req.body;
+  if (typeof req.body === 'string') return safeJsonParse(req.body) || {};
+  if (Buffer.isBuffer(req.body)) return safeJsonParse(req.body.toString('utf8')) || {};
+  return await new Promise((resolve) => {
+    let raw = '';
+    req.on('data', (c) => (raw += c));
+    req.on('end', () => resolve(safeJsonParse(raw) || {}));
+    req.on('error', () => resolve({}));
+  });
+}
+
 function inferFromHeaders(req) {
-  const referer = req.headers.referer || "";
-  let path = "";
+  const referer = req.headers.referer || '';
+  let path = '';
   try {
-    if (referer) path = new URL(referer).pathname + (new URL(referer).search || "");
-  } catch (_) {}
+    if (referer) {
+      const u = new URL(referer);
+      path = u.pathname + (u.search || '');
+    }
+  } catch {}
   return { referer, path };
 }
 
-export default async function handler(req, res) {
-  if (req.method !== "POST") return res.status(405).json({ ok: false, error: "Method Not Allowed" });
+function ensureNonEmpty(v, fallback) {
+  const s = (v ?? '').toString().trim();
+  if (!s || s.toUpperCase() === 'EMPTY') return (fallback ?? '').toString();
+  return s;
+}
 
-  // Vercel Functions may pass body as object, string, or Buffer depending on client
-  let body = req.body || {};
-  if (typeof body === "string") {
-    try {
-      body = JSON.parse(body);
-    } catch {
-      body = {};
-    }
-  } else if (Buffer.isBuffer(body)) {
-    try {
-      body = JSON.parse(body.toString("utf8"));
-    } catch {
-      body = {};
-    }
+function toInt(n, d = 0) {
+  const x = Number(n);
+  return Number.isFinite(x) ? x : d;
+}
+
+module.exports = async function handler(req, res) {
+  if (req.method !== 'POST') {
+    res.statusCode = 405;
+    return res.json({ ok: false, error: 'Method Not Allowed' });
   }
+
+  const body = await readBody(req);
   const inferred = inferFromHeaders(req);
 
-  const path = (body.path || inferred.path || "/").toString();
-  const referrer = (body.referrer ?? inferred.referer ?? "").toString();
+  const sid = ensureNonEmpty(body.sid, '') || (crypto.randomUUID ? crypto.randomUUID() : crypto.randomBytes(16).toString('hex'));
+  const path = ensureNonEmpty(body.path, inferred.path) || '/';
 
-  const q = (body.q || "").toString().trim();
-
-  const payload = {
-    q,
-    path,
-    referrer,
-    ok: body.ok ?? true,
-    from: body.from || "",
-    count: Number.isFinite(body.count) ? body.count : Number(body.count || 0),
-    ms: Number.isFinite(body.ms) ? body.ms : Number(body.ms || 0),
-    ua: req.headers["user-agent"] || "",
-  };
-
-  const { error } = await supabase.from("telemetry_search").insert(payload);
-  if (error) return res.status(500).json({ ok: false, error: error.message });
-
-  // 可选：如果你有 telemetry_zero 表，未命中就顺手写一条
-  if (payload.count === 0 && q) {
-    try {
-      const { error: zerr } = await supabase.from("telemetry_zero").insert({
-        q,
-        path,
-        referrer,
-        from: payload.from || "zero",
-      });
-      // Ignore telemetry_zero errors to avoid breaking primary logging
-      void zerr;
-    } catch {
-      // ignore
-    }
+  const q = ensureNonEmpty(body.q, '').trim();
+  if (!q) {
+    res.statusCode = 200;
+    return res.json({ ok: true, skipped: true });
   }
 
-  return res.status(200).json({ ok: true });
-}
+  const q_norm = ensureNonEmpty(body.q_norm, q);
+  const result_count = toInt(body.result_count ?? body.count, 0);
+  const from_src = ensureNonEmpty(body.from_src, body.from) || 'unknown';
+
+  // Prefer explicit hit; else derive from result_count
+  const hit = typeof body.hit === 'boolean' ? body.hit : result_count > 0;
+
+  const payload = {
+    sid,
+    q,
+    q_norm,
+    hit,
+    result_count,
+    from_src,
+    path,
+  };
+
+  const { error } = await supabase.from('telemetry_search').insert(payload);
+  if (error) {
+    res.statusCode = 500;
+    return res.json({ ok: false, error: error.message });
+  }
+
+  res.statusCode = 200;
+  return res.json({ ok: true });
+};

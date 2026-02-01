@@ -1,5 +1,6 @@
-// api/telemetry/pv.js
-import { createClient } from "@supabase/supabase-js";
+// api/telemetry/pv.js (CommonJS, Vercel Node Function)
+const { createClient } = require('@supabase/supabase-js');
+const crypto = require('crypto');
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -7,49 +8,75 @@ const supabase = createClient(
   { auth: { persistSession: false } }
 );
 
+function safeJsonParse(str) {
+  try { return JSON.parse(str); } catch { return null; }
+}
+
+async function readBody(req) {
+  // Vercel may give req.body as object already
+  if (req.body && typeof req.body === 'object' && !Buffer.isBuffer(req.body)) return req.body;
+
+  if (typeof req.body === 'string') return safeJsonParse(req.body) || {};
+  if (Buffer.isBuffer(req.body)) return safeJsonParse(req.body.toString('utf8')) || {};
+
+  // Fallback: read raw stream
+  return await new Promise((resolve) => {
+    let raw = '';
+    req.on('data', (c) => (raw += c));
+    req.on('end', () => resolve(safeJsonParse(raw) || {}));
+    req.on('error', () => resolve({}));
+  });
+}
+
 function inferFromHeaders(req) {
-  const referer = req.headers.referer || "";
-  let path = "";
+  const referer = req.headers.referer || '';
+  let path = '';
   try {
-    if (referer) path = new URL(referer).pathname + (new URL(referer).search || "");
-  } catch (_) {}
+    if (referer) {
+      const u = new URL(referer);
+      path = u.pathname + (u.search || '');
+    }
+  } catch {}
   return { referer, path };
 }
 
-export default async function handler(req, res) {
-  if (req.method !== "POST") return res.status(405).json({ ok: false, error: "Method Not Allowed" });
+function ensureNonEmpty(v, fallback) {
+  const s = (v ?? '').toString().trim();
+  if (!s || s.toUpperCase() === 'EMPTY') return (fallback ?? '').toString();
+  return s;
+}
 
-  // Vercel Functions may pass body as object, string, or Buffer depending on client
-  let body = req.body || {};
-  if (typeof body === "string") {
-    try {
-      body = JSON.parse(body);
-    } catch {
-      body = {};
-    }
-  } else if (Buffer.isBuffer(body)) {
-    try {
-      body = JSON.parse(body.toString("utf8"));
-    } catch {
-      body = {};
-    }
+module.exports = async function handler(req, res) {
+  if (req.method !== 'POST') {
+    res.statusCode = 405;
+    return res.json({ ok: false, error: 'Method Not Allowed' });
   }
+
+  const body = await readBody(req);
   const inferred = inferFromHeaders(req);
 
-  const path = (body.path || inferred.path || "/").toString();
-  const referrer = (body.referrer ?? inferred.referer ?? "").toString();
+  const sid = ensureNonEmpty(body.sid, '') || (crypto.randomUUID ? crypto.randomUUID() : crypto.randomBytes(16).toString('hex'));
+  const path = ensureNonEmpty(body.path, inferred.path) || '/';
+  const referrer = ensureNonEmpty(body.referrer, inferred.referer) || '';
+
+  // Vercel geo headers (when available)
+  const country = (req.headers['x-vercel-ip-country'] || body.country || '').toString();
 
   const payload = {
+    sid,
     path,
     referrer,
-    // 可选：你表里如果有这些列就会写入；没有也不会报错（Supabase 会提示列不存在）
-    ua: req.headers["user-agent"] || "",
-    lang: body.lang || "",
-    tz: body.tz || "",
+    lang: (body.lang || req.headers['accept-language'] || '').toString(),
+    ua: (req.headers['user-agent'] || '').toString(),
+    country,
   };
 
-  const { error } = await supabase.from("telemetry_pv").insert(payload);
-  if (error) return res.status(500).json({ ok: false, error: error.message });
+  const { error } = await supabase.from('telemetry_pv').insert(payload);
+  if (error) {
+    res.statusCode = 500;
+    return res.json({ ok: false, error: error.message });
+  }
 
-  return res.status(200).json({ ok: true });
-}
+  res.statusCode = 200;
+  return res.json({ ok: true });
+};
