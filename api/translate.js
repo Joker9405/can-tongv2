@@ -382,9 +382,9 @@ async function supabaseInsert(table, rowObj, timeoutMs = 1200) {
     timeoutMs: Math.max(20000, timeoutMs + 5000),
   }).then((resp) => {
     // Supabase REST insert returns 201/204 typically, body may be empty
-    const sc = resp?.statusCode || 0;
+    const sc = resp?.status || 0;
     if (sc >= 200 && sc < 300) return { ok: true, status: sc };
-    return { ok: false, status: sc, body: resp?.body || '' };
+    return { ok: false, status: sc, body: (resp?.raw || '') };
   }).catch((e) => ({ ok: false, error: e?.message || String(e) }));
 
   // Don't block forever; but DO wait briefly so serverless doesn't exit early.
