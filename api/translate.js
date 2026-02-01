@@ -1,82 +1,15 @@
 // api/translate.js
-// CanTong v2: CSV lexicon lookup + optional Supabase-approved suggestions + multi-LLM fallback.
-// Also: server-side telemetry logging (telemetry_pv + telemetry_search) via Supabase REST API.
-// Works even if crossmap.csv is missing; searches directly in lexeme.csv.
-// Compatible query params: q / query / text / input / term / keyword (GET) and same keys in JSON body (POST).
+// Lexicon lookup (lexeme.csv + optional crossmap.csv). If miss, multi-LLM fallback (DeepSeek/OpenAI/Gemini).
+// Fix: robust CSV parser (quotes/newlines/commas), flexible column mapping, safer term splitting.
+// NEW: works even if crossmap.csv is missing (index from lexeme.csv). LLM fallback returns Cantonese + jyutping.
 
 const fs = require('fs');
 const path = require('path');
 const https = require('https');
 const crypto = require('crypto');
 
-// ----------------- small utils -----------------
-function nowIso() { return new Date().toISOString(); }
-
-function trimSlash(s) { return String(s || '').replace(/\/+$/, ''); }
-
-function normalizeKey(s) {
-  return String(s || '')
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, ' ');
-}
-
-function splitTerms(s) {
-  const raw = String(s || '').trim();
-  if (!raw) return [];
-  return raw
-    .split(/[/;；|、\n\r\t]+/g)
-    .map((x) => x.trim())
-    .filter(Boolean);
-}
-
-function safeJsonParse(s) {
-  try { return JSON.parse(s); } catch { return null; }
-}
-
-function getHeader(req, name) {
-  const v = req.headers?.[name] || req.headers?.[name.toLowerCase()];
-  return Array.isArray(v) ? v[0] : v;
-}
-
-function parseUrl(req) {
-  // Vercel provides req.url as path+query. We add a base for URL parsing.
-  const u = String(req.url || '/');
-  try { return new URL(u, 'http://localhost'); } catch { return new URL('http://localhost/'); }
-}
-
-function getOrSetSid(req, res) {
-  const cookie = String(getHeader(req, 'cookie') || '');
-  const m = cookie.match(/(?:^|;\s*)ct_sid=([^;]+)/);
-  let sid = m ? decodeURIComponent(m[1]) : '';
-  if (!sid) {
-    // stable but random
-    sid = (crypto.randomUUID ? crypto.randomUUID() : crypto.randomBytes(16).toString('hex'));
-    // 1 year
-    res.setHeader('Set-Cookie', `ct_sid=${encodeURIComponent(sid)}; Path=/; Max-Age=31536000; SameSite=Lax`);
-  }
-  return sid;
-}
-
-function parseRefPath(req) {
-  const ref = String(getHeader(req, 'referer') || getHeader(req, 'referrer') || '');
-  if (!ref) return '';
-  try { return new URL(ref).pathname || ''; } catch { return ''; }
-}
-
-function getCountry(req) {
-  // Vercel header
-  return String(getHeader(req, 'x-vercel-ip-country') || getHeader(req, 'x-vercel-ip-country-region') || '').trim();
-}
-
-function getLang(req) {
-  const al = String(getHeader(req, 'accept-language') || '');
-  // keep short
-  return al ? al.split(',')[0].trim() : '';
-}
-
-// ----------------- HTTP helper -----------------
-function httpPostJson({ hostname, reqPath, headers = {}, bodyObj, timeoutMs = 20000 }) {
+// ---------------- HTTP helper ----------------
+function httpPostJson({ hostname, path: reqPath, headers = {}, bodyObj, timeoutMs = 20000 }) {
   return new Promise((resolve, reject) => {
     const body = JSON.stringify(bodyObj || {});
     const options = {
@@ -96,242 +29,22 @@ function httpPostJson({ hostname, reqPath, headers = {}, bodyObj, timeoutMs = 20
       let data = '';
       res.on('data', (d) => (data += d));
       res.on('end', () => {
-        resolve({ status: res.statusCode || 0, json: safeJsonParse(data || '{}'), raw: data });
+        let json;
+        try { json = JSON.parse(data || '{}'); } catch { json = null; }
+        resolve({ status: res.statusCode || 0, json, raw: data });
       });
     });
 
     req.on('error', reject);
-    req.setTimeout(timeoutMs, () => req.destroy(new Error('request_timeout')));
+    req.setTimeout(timeoutMs, () => {
+      req.destroy(new Error('request_timeout'));
+    });
     req.write(body);
     req.end();
   });
 }
 
-// ----------------- Supabase REST insert (telemetry) -----------------
-async function supabaseInsert(table, row, timeoutMs = 2000) {
-  const urlBase = trimSlash(process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '');
-  const key =
-    String(process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '').trim();
-
-  if (!urlBase || !key) return { ok: false, error: 'missing_supabase_env' };
-
-  const { status, json, raw } = await httpPostJson({
-    hostname: urlBase.replace(/^https?:\/\//, '').split('/')[0],
-    reqPath: urlBase.replace(/^https?:\/\//, '').includes('/')
-      ? ('/' + urlBase.replace(/^https?:\/\//, '').split('/').slice(1).join('/') + `/rest/v1/${encodeURIComponent(table)}`)
-      : (`/rest/v1/${encodeURIComponent(table)}`),
-    headers: {
-      apikey: key,
-      Authorization: `Bearer ${key}`,
-      Prefer: 'return=minimal',
-    },
-    bodyObj: row,
-    timeoutMs,
-  
-  });
-
-  if (status >= 400) return { ok: false, error: `supabase_http_${status}`, detail: json?.message || raw || '' };
-  return { ok: true };
-}
-
-// ----------------- CSV parsing (robust enough for quoted commas/newlines) -----------------
-function parseCSV(csvText) {
-  const text = String(csvText || '');
-  const rows = [];
-  let curRow = [];
-  let curField = '';
-  let inQuotes = false;
-
-  for (let i = 0; i < text.length; i++) {
-    const ch = text[i];
-
-    if (ch === '"') {
-      if (inQuotes && text[i + 1] === '"') { curField += '"'; i++; continue; }
-      inQuotes = !inQuotes;
-      continue;
-    }
-
-    if (!inQuotes && ch === ',') {
-      curRow.push(curField);
-      curField = '';
-      continue;
-    }
-
-    if (!inQuotes && (ch === '\n')) {
-      curRow.push(curField);
-      rows.push(curRow);
-      curRow = [];
-      curField = '';
-      continue;
-    }
-
-    if (!inQuotes && ch === '\r') continue;
-    curField += ch;
-  }
-
-  curRow.push(curField);
-  rows.push(curRow);
-
-  while (rows.length && rows[rows.length - 1].every((c) => String(c || '').trim() === '')) rows.pop();
-  return rows;
-}
-
-function csvToObjects(csvText) {
-  const rows = parseCSV(csvText || '');
-  if (!rows.length) return [];
-  const headers = rows[0].map((h) => String(h || '').trim());
-  const out = [];
-  for (let r = 1; r < rows.length; r++) {
-    const row = rows[r];
-    if (!row || row.every((c) => String(c || '').trim() === '')) continue;
-    const obj = {};
-    for (let i = 0; i < headers.length; i++) obj[headers[i]] = String(row[i] ?? '').trim();
-    out.push(obj);
-  }
-  return out;
-}
-
-// ----------------- data loading + indexing -----------------
-let CACHE = null;
-
-function findFile(filename) {
-  const candidates = [
-    path.join(process.cwd(), 'data', filename),
-    path.join(process.cwd(), 'public', filename),
-    path.join(process.cwd(), filename),
-  ];
-  for (const p of candidates) {
-    if (fs.existsSync(p)) return p;
-  }
-  return '';
-}
-
-function buildData() {
-  if (CACHE) return CACHE;
-
-  const lexemePath = findFile('lexeme.csv');
-  const crossmapPath = findFile('crossmap.csv'); // optional
-  const examplesPath = findFile('examples.csv'); // optional
-
-  if (!lexemePath) throw new Error('未找到 lexeme.csv（请放在 /data 或 /public 或仓库根目录）');
-
-  const lexemeRows = csvToObjects(fs.readFileSync(lexemePath, 'utf8'));
-  const crossmapRows = crossmapPath ? csvToObjects(fs.readFileSync(crossmapPath, 'utf8')) : [];
-  const exampleRows = examplesPath ? csvToObjects(fs.readFileSync(examplesPath, 'utf8')) : [];
-
-  const lexemeById = new Map();
-  for (const row of lexemeRows) {
-    const id = (row.id || row.lexeme_id || row.lexemeId || '').trim();
-    if (!id) continue;
-    lexemeById.set(id, row);
-  }
-
-  const examplesByLexemeId = {};
-  for (const e of exampleRows) {
-    const lid = (e.lexeme_id || e.target_id || e.lexemeId || e.lexeme || '').trim();
-    if (!lid) continue;
-    if (!examplesByLexemeId[lid]) examplesByLexemeId[lid] = [];
-    examplesByLexemeId[lid].push(e);
-  }
-
-  // term -> Set<lexemeId>
-  const termIndex = new Map();
-
-  function addToIndex(term, id) {
-    const k = normalizeKey(term);
-    if (!k || !id) return;
-    if (!termIndex.has(k)) termIndex.set(k, new Set());
-    termIndex.get(k).add(id);
-  }
-
-  // If crossmap exists, index it (term->id)
-  if (crossmapRows.length) {
-    const termCols = ['term', 'terms', 'key_text', 'key', 'query', 'chs', 'en', 'text'];
-    const idCols = ['target_id', 'targetId', 'lexeme_id', 'lexemeId', 'to_id', 'id'];
-
-    for (const row of crossmapRows) {
-      let targetId = '';
-      for (const c of idCols) if (row[c]) { targetId = String(row[c]).trim(); break; }
-      if (!targetId) continue;
-
-      let collected = [];
-      for (const c of termCols) if (row[c]) collected = collected.concat(splitTerms(row[c]));
-      if (!collected.length) continue;
-
-      for (const t of collected) addToIndex(t, targetId);
-    }
-  }
-
-  // Always index from lexeme itself (supports your “只有一个 CSV” 运行模式)
-  const lexemeTermCols = [
-    'zhh', 'chs', 'en',
-    'alias_zhh', 'alias_zhh_r18',
-    'variants_chs', 'variants_en',
-    'note_chs', 'note_en',
-  ];
-
-  for (const row of lexemeRows) {
-    const id = (row.id || row.lexeme_id || row.lexemeId || '').trim();
-    if (!id) continue;
-    for (const col of lexemeTermCols) {
-      if (!row[col]) continue;
-      const terms = splitTerms(row[col]);
-      if (!terms.length) addToIndex(row[col], id);
-      else for (const t of terms) addToIndex(t, id);
-    }
-  }
-
-  CACHE = { termIndex, lexemeById, examplesByLexemeId };
-  return CACHE;
-}
-
-function lookupLexemeItemsByQuery(query) {
-  const { termIndex, lexemeById, examplesByLexemeId } = buildData();
-  const key = normalizeKey(query);
-  if (!key) return [];
-
-  const idSet = termIndex.get(key);
-  if (!idSet || !idSet.size) return [];
-
-  const out = [];
-  for (const id of idSet) {
-    const lexeme = lexemeById.get(id);
-    if (!lexeme) continue;
-    const item = Object.assign({}, lexeme);
-    item.examples = examplesByLexemeId[id] || [];
-    out.push(item);
-  }
-  return out;
-}
-
-// ----------------- LLM fallback (DeepSeek / OpenAI / Gemini) -----------------
-function buildCantonesePrompt(input, langHint = '') {
-  const langLine = langHint ? `（輸入語言：${langHint}）` : '（輸入語言：自動判斷）';
-  return [
-    '你係一個講地道口語粵語嘅助理（香港用字，繁體）。',
-    '請把以下輸入改寫成地道、自然、口語嘅粵語正字（繁體），保留原意。',
-    '硬性要求：',
-    '1) 只輸出最終粵語一句/一段（不要解釋、不要加標題、不要列表）。',
-    '2) 禁止輸出普通話書面語句式（例如：我們/你們/正在/沒有/怎麼/什麼/但是…）。',
-    '3) 輸出必須係香港常用粵語用字（例如：我哋/你哋/佢哋/喺/冇/咗/緊/啫/啦/喎/咩/嘅…）。',
-    langLine,
-    '',
-    `輸入：${input}`,
-    '',
-    '輸出：',
-  ].join('\n');
-}
-
-function getGeminiKey() {
-  return (
-    process.env.GOOGLE_GENERATIVE_AI_API_KEY ||
-    process.env.GEMINI_API_KEY ||
-    process.env.GOOGLE_API_KEY ||
-    process.env.GOOGLE_AI_API_KEY ||
-    ''
-  ).trim();
-}
-
+// ---------------- Gemini ----------------
 function geminiGenerate({ apiKey, model, promptText }) {
   return new Promise((resolve, reject) => {
     const body = JSON.stringify({
@@ -354,10 +67,17 @@ function geminiGenerate({ apiKey, model, promptText }) {
       let data = '';
       res.on('data', (d) => (data += d));
       res.on('end', () => {
-        const j = safeJsonParse(data || '{}') || {};
-        if (res.statusCode && res.statusCode >= 400) return reject(new Error(j.error?.message || `Gemini HTTP ${res.statusCode}`));
-        const text = j?.candidates?.[0]?.content?.parts?.map((p) => p?.text || '').join('')?.trim() || '';
-        resolve(text);
+        try {
+          const j = JSON.parse(data || '{}');
+          if (res.statusCode && res.statusCode >= 400) {
+            return reject(new Error(j.error?.message || `Gemini HTTP ${res.statusCode}`));
+          }
+          const text =
+            j?.candidates?.[0]?.content?.parts?.map((p) => p?.text || '').join('')?.trim() || '';
+          resolve(text);
+        } catch (e) {
+          reject(e);
+        }
       });
     });
 
@@ -367,33 +87,66 @@ function geminiGenerate({ apiKey, model, promptText }) {
   });
 }
 
-async function geminiTranslate(query, lang = 'auto') {
+function buildCantonesePrompt(input, lang) {
+  const langHint =
+    lang === 'en' ? '輸入係英文'
+    : lang === 'chs' ? '輸入係中文'
+    : lang === 'mix' ? '輸入係中英混合'
+    : '輸入語言不確定（自動判斷）';
+
+  return [
+    '你係一個講地道口語粵語嘅助理（香港用字，繁體）。',
+    '請把以下輸入改寫成地道、自然、口語嘅粵語正字（繁體），保留原意。',
+    '硬性要求：',
+    '1) 只輸出最終粵語一句/一段（不要解釋、不要加標題、不要列表）。',
+    '2) 禁止輸出普通話書面語句式（例如：我們/你們/正在/沒有/怎麼/什麼/但是…）。',
+    '3) 輸出必須係香港常用粵語用字（例如：我哋/你哋/佢哋/喺/冇/咗/緊/啫/啦/喎/咩/嘅…）。',
+    `(${langHint})`,
+    '',
+    `輸入：${input}`,
+    '',
+    '輸出：',
+  ].join('\n');
+}
+
+function getGeminiKey() {
+  return (
+    process.env.GOOGLE_GENERATIVE_AI_API_KEY ||
+    process.env.GEMINI_API_KEY ||
+    process.env.GOOGLE_API_KEY ||
+    process.env.GOOGLE_AI_API_KEY ||
+    ''
+  ).trim();
+}
+
+async function geminiFallbackTranslate(query, lang = 'auto') {
   const apiKey = getGeminiKey();
   if (!apiKey) return { yue: null, provider: 'gemini', model: null, error: 'missing_key' };
 
   const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
-  const promptText = buildCantonesePrompt(query, lang === 'auto' ? '' : lang);
+  const promptText = buildCantonesePrompt(query, lang);
 
   try {
     const yue = await geminiGenerate({ apiKey, model, promptText });
     const out = String(yue || '').trim();
     return { yue: out || null, provider: 'gemini', model, error: out ? null : 'empty' };
   } catch (e) {
-    return { yue: null, provider: 'gemini', model, error: String(e?.message || e) };
+    return { yue: null, provider: 'gemini', model, error: String(e && e.message ? e.message : e) };
   }
 }
 
+// ---------------- OpenAI ----------------
 async function openaiTranslate(query, lang = 'auto') {
   const apiKey = String(process.env.OPENAI_API_KEY || '').trim();
   if (!apiKey) return { yue: null, provider: 'openai', model: null, error: 'missing_key' };
 
   const model = process.env.OPENAI_MODEL || 'gpt-4o-mini';
   const system = '你係粵語翻譯器。請用香港常用繁體口語粵語改寫輸入，保留原意。只輸出最終粵語，不要解釋，不要列表。';
-  const user = buildCantonesePrompt(query, lang === 'auto' ? '' : lang);
+  const user = buildCantonesePrompt(query, lang);
 
   const { status, json } = await httpPostJson({
     hostname: 'api.openai.com',
-    reqPath: '/v1/chat/completions',
+    path: '/v1/chat/completions',
     headers: { Authorization: `Bearer ${apiKey}` },
     bodyObj: {
       model,
@@ -406,22 +159,27 @@ async function openaiTranslate(query, lang = 'auto') {
     },
   });
 
-  if (status >= 400) return { yue: null, provider: 'openai', model, error: json?.error?.message || `OpenAI HTTP ${status}` };
+  if (status >= 400) {
+    const msg = json?.error?.message || `OpenAI HTTP ${status}`;
+    return { yue: null, provider: 'openai', model, error: msg };
+  }
+
   const text = String(json?.choices?.[0]?.message?.content || '').trim();
   return { yue: text || null, provider: 'openai', model, error: text ? null : 'empty' };
 }
 
+// ---------------- DeepSeek (OpenAI-compatible) ----------------
 async function deepseekTranslate(query, lang = 'auto') {
   const apiKey = String(process.env.DEEPSEEK_API_KEY || '').trim();
   if (!apiKey) return { yue: null, provider: 'deepseek', model: null, error: 'missing_key' };
 
   const model = process.env.DEEPSEEK_MODEL || 'deepseek-chat';
   const system = '你係粵語翻譯器。請用香港常用繁體口語粵語改寫輸入，保留原意。只輸出最終粵語，不要解釋，不要列表。';
-  const user = buildCantonesePrompt(query, lang === 'auto' ? '' : lang);
+  const user = buildCantonesePrompt(query, lang);
 
   const { status, json } = await httpPostJson({
     hostname: 'api.deepseek.com',
-    reqPath: '/v1/chat/completions',
+    path: '/v1/chat/completions',
     headers: { Authorization: `Bearer ${apiKey}` },
     bodyObj: {
       model,
@@ -434,90 +192,440 @@ async function deepseekTranslate(query, lang = 'auto') {
     },
   });
 
-  if (status >= 400) return { yue: null, provider: 'deepseek', model, error: json?.error?.message || `DeepSeek HTTP ${status}` };
+  if (status >= 400) {
+    const msg = json?.error?.message || `DeepSeek HTTP ${status}`;
+    return { yue: null, provider: 'deepseek', model, error: msg };
+  }
+
   const text = String(json?.choices?.[0]?.message?.content || '').trim();
   return { yue: text || null, provider: 'deepseek', model, error: text ? null : 'empty' };
 }
 
-function pickProviderOrder(query) {
-  // deterministic shuffle based on query hash
-  const h = crypto.createHash('sha256').update(String(query || '')).digest();
-  const seed = h.readUInt32BE(0);
-  const providers = ['deepseek', 'openai', 'gemini'];
-  // Fisher–Yates with seeded RNG
-  let x = seed >>> 0;
-  function rnd() { x = (x * 1664525 + 1013904223) >>> 0; return x / 0xffffffff; }
-  for (let i = providers.length - 1; i > 0; i--) {
-    const j = Math.floor(rnd() * (i + 1));
-    [providers[i], providers[j]] = [providers[j], providers[i]];
-  }
-  return providers;
-}
-
-async function llmFallback(query, lang) {
-  const order = pickProviderOrder(query);
-  let last = null;
-  for (const p of order) {
-    if (p === 'deepseek') last = await deepseekTranslate(query, lang);
-    else if (p === 'openai') last = await openaiTranslate(query, lang);
-    else last = await geminiTranslate(query, lang);
-
-    if (last && last.yue) return last;
-  }
-  return last || { yue: null, provider: 'none', model: null, error: 'no_provider' };
-}
-
-// ----------------- jyutping helper (optional) -----------------
-async function toJyutpingSafe(text) {
+// ---------------- Cantonese quality gate ----------------
+function looksLikeCantonese(text) {
   const s = String(text || '').trim();
+  if (!s) return false;
+
+  const must = ['唔', '冇', '喺', '咗', '緊', '嘅', '佢', '我哋', '你哋', '佢哋', '咩', '喎', '啫', '呀', '啦'];
+  const bad = ['我們', '你們', '他們', '正在', '沒有', '怎麼', '什麼', '但是', '這裡', '那裡'];
+
+  const hitMust = must.some((w) => s.includes(w));
+  const hitBad = bad.some((w) => s.includes(w));
+  return hitMust && !hitBad;
+}
+
+// ---------------- Jyutping generator ----------------
+function toJyutpingSafe(zhh) {
+  const s = String(zhh || '').trim();
   if (!s) return '';
   try {
-    const mod = await import('to-jyutping');
-    const fn = mod?.toJyutping || mod?.default || null;
-    if (typeof fn !== 'function') return '';
-    return String(fn(s) || '').trim();
-  } catch {
-    return '';
-  }
+    // prefer commonjs require
+    const ToJyutping = require('to-jyutping');
+    if (ToJyutping && typeof ToJyutping.getJyutpingText === 'function') {
+      return String(ToJyutping.getJyutpingText(s) || '').trim();
+    }
+    // some builds export default
+    if (ToJyutping && ToJyutping.default && typeof ToJyutping.default.getJyutpingText === 'function') {
+      return String(ToJyutping.default.getJyutpingText(s) || '').trim();
+    }
+  } catch (_) {}
+  return '';
 }
 
-// ----------------- request parsing -----------------
+// ---------------- Robust CSV parser ----------------
+function parseCSV(text) {
+  const rows = [];
+  let curField = '';
+  let curRow = [];
+  let inQuotes = false;
+
+  // Strip BOM
+  if (text && text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+
+    if (ch === '"') {
+      // Escaped quote: ""
+      if (inQuotes && text[i + 1] === '"') {
+        curField += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+      continue;
+    }
+
+    if (!inQuotes && (ch === ',')) {
+      curRow.push(curField);
+      curField = '';
+      continue;
+    }
+
+    if (!inQuotes && (ch === '\n')) {
+      curRow.push(curField);
+      rows.push(curRow);
+      curRow = [];
+      curField = '';
+      continue;
+    }
+
+    if (!inQuotes && (ch === '\r')) {
+      continue;
+    }
+
+    curField += ch;
+  }
+
+  // last field
+  curRow.push(curField);
+  rows.push(curRow);
+
+  // remove trailing empty lines
+  while (rows.length && rows[rows.length - 1].every((c) => String(c || '').trim() === '')) {
+    rows.pop();
+  }
+  return rows;
+}
+
+function csvToObjects(csvText) {
+  const rows = parseCSV(csvText || '');
+  if (!rows.length) return [];
+  const headers = rows[0].map((h) => String(h || '').trim());
+  const out = [];
+  for (let r = 1; r < rows.length; r++) {
+    const row = rows[r];
+    if (!row || row.every((c) => String(c || '').trim() === '')) continue;
+    const obj = {};
+    for (let i = 0; i < headers.length; i++) {
+      obj[headers[i]] = String(row[i] ?? '').trim();
+    }
+    out.push(obj);
+  }
+  return out;
+}
+
+function normalizeKey(s) {
+  return String(s || '').trim().toLowerCase();
+}
+
+function splitTerms(s) {
+  const raw = String(s || '').trim();
+  if (!raw) return [];
+  // common separators: / ; ； | 、 \n
+  return raw
+    .split(/[/;；|、\n]+/g)
+    .map((x) => x.trim())
+    .filter(Boolean);
+}
+
+function findFirstExisting(paths) {
+  for (const p of paths) {
+    if (p && fs.existsSync(p)) return p;
+  }
+  return null;
+}
+
+
+// ---------------- telemetry (Supabase REST) ----------------
+function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
+
+function getOrSetSid(req, res) {
+  const cookie = String(req.headers?.cookie || '');
+  const m = cookie.match(/(?:^|;\s*)ct_sid=([^;]+)/);
+  let sid = m ? decodeURIComponent(m[1]) : '';
+  if (!sid) {
+    sid = crypto.randomUUID ? crypto.randomUUID() : crypto.randomBytes(16).toString('hex');
+    // 1 year
+    res.setHeader('Set-Cookie', `ct_sid=${encodeURIComponent(sid)}; Path=/; Max-Age=31536000; SameSite=Lax`);
+  }
+  return sid;
+}
+
+function getClientMeta(req) {
+  const ua = String(req.headers?.['user-agent'] || '');
+  const lang = String(req.headers?.['accept-language'] || '').split(',')[0] || '';
+  const country =
+    String(req.headers?.['x-vercel-ip-country'] || req.headers?.['cf-ipcountry'] || '') || '';
+
+  const ref = String(req.headers?.referer || req.headers?.referrer || '');
+  let path = '';
+  try { path = ref ? (new URL(ref)).pathname : ''; } catch { path = ''; }
+
+  return { ua, lang, country, referrer: ref, path };
+}
+
+function getSupabaseEnv() {
+  const url = (process.env.SUPABASE_URL || '').trim();
+  const key = (process.env.SUPABASE_ANON_KEY || '').trim();
+  return { url, key };
+}
+
+async function supabaseInsert(table, rowObj, timeoutMs = 1200) {
+  const { url, key } = getSupabaseEnv();
+  if (!url || !key) return { ok: false, error: 'missing_supabase_env' };
+
+  const u = new URL(url);
+  const headers = {
+    'content-type': 'application/json',
+    'apikey': key,
+    'authorization': `Bearer ${key}`,
+    'prefer': 'return=minimal',
+  };
+
+  const bodyObj = rowObj; // object
+  const p = httpPostJson({
+    hostname: u.hostname,
+    path: `${u.pathname.replace(/\/+$/, '')}/rest/v1/${table}`,
+    headers,
+    bodyObj,
+    timeoutMs: Math.max(20000, timeoutMs + 5000),
+  }).then((resp) => {
+    // Supabase REST insert returns 201/204 typically, body may be empty
+    const sc = resp?.statusCode || 0;
+    if (sc >= 200 && sc < 300) return { ok: true, status: sc };
+    return { ok: false, status: sc, body: resp?.body || '' };
+  }).catch((e) => ({ ok: false, error: e?.message || String(e) }));
+
+  // Don't block forever; but DO wait briefly so serverless doesn't exit early.
+  return await Promise.race([p, sleep(timeoutMs).then(() => ({ ok: false, error: 'timeout' }))]);
+}
+
+async function logTelemetry({ sid, meta, q, hit, count, fromSrc }) {
+  const pvRow = {
+    sid,
+    path: meta.path || '',
+    referrer: meta.referrer || '',
+    lang: meta.lang || '',
+    ua: meta.ua || '',
+    country: meta.country || '',
+  };
+
+  const qNorm = normalizeKey(q);
+  const searchRow = {
+    sid,
+    q,
+    q_norm: qNorm,
+    hit: !!hit,
+    result_count: Number.isFinite(count) ? count : 0,
+    from_src: fromSrc || '',
+    path: meta.path || '',
+    country: meta.country || '',
+  };
+
+  const pv = await supabaseInsert('telemetry_pv', pvRow);
+  const search = await supabaseInsert('telemetry_search', searchRow);
+  return { pv, search };
+}
+
+// ---------------- CSV lookup ----------------
+let CACHE = null;
+
+function buildDataSafe() {
+  if (CACHE) return CACHE;
+
+  const cwd = process.cwd();
+  const dataDir = path.join(cwd, 'data');
+
+  const lexemePath = findFirstExisting([
+    path.join(dataDir, 'lexeme.csv'),
+    path.join(cwd, 'lexeme.csv'),
+    path.join(cwd, 'public', 'lexeme.csv'),
+  ]);
+
+  const crossmapPath = findFirstExisting([
+    path.join(dataDir, 'crossmap.csv'),
+    path.join(cwd, 'crossmap.csv'),
+    path.join(cwd, 'public', 'crossmap.csv'),
+  ]);
+
+  const examplesPath = findFirstExisting([
+    path.join(dataDir, 'examples.csv'),
+    path.join(cwd, 'examples.csv'),
+    path.join(cwd, 'public', 'examples.csv'),
+  ]);
+
+  const lexemeRows = lexemePath ? csvToObjects(fs.readFileSync(lexemePath, 'utf8')) : [];
+  const crossmapRows = crossmapPath ? csvToObjects(fs.readFileSync(crossmapPath, 'utf8')) : [];
+  const exampleRows = examplesPath ? csvToObjects(fs.readFileSync(examplesPath, 'utf8')) : [];
+
+  // Build lexeme map
+  const lexemeById = new Map();
+  for (const row of lexemeRows) {
+    const id = (row.id || row.lexeme_id || row.lexemeId || '').trim();
+    if (!id) continue;
+    lexemeById.set(id, row);
+  }
+
+  // Examples map
+  const examplesByLexemeId = {};
+  for (const e of exampleRows) {
+    const lid = (e.lexeme_id || e.target_id || e.lexemeId || e.lexeme || '').trim();
+    if (!lid) continue;
+    if (!examplesByLexemeId[lid]) examplesByLexemeId[lid] = [];
+    examplesByLexemeId[lid].push(e);
+  }
+
+  // Index map: term -> Set<lexemeId>
+  const termIndex = new Map();
+
+  if (crossmapRows.length) {
+    // Use crossmap if present
+    const termCols = ['term', 'terms', 'key_text', 'key', 'query', 'chs', 'en', 'text']; // try these
+    const idCols = ['target_id', 'targetId', 'lexeme_id', 'lexemeId', 'to_id', 'id'];
+
+    for (const row of crossmapRows) {
+      // find id
+      let targetId = '';
+      for (const c of idCols) {
+        if (row[c]) { targetId = String(row[c]).trim(); break; }
+      }
+      if (!targetId) continue;
+
+      // collect terms
+      let collected = [];
+      for (const c of termCols) {
+        if (row[c]) collected = collected.concat(splitTerms(row[c]));
+      }
+      // fallback: if none, try any column that looks like a term list
+      if (!collected.length) {
+        for (const [k, v] of Object.entries(row)) {
+          if (!v) continue;
+          const kk = k.toLowerCase();
+          if (kk.includes('term') || kk.includes('key')) {
+            collected = collected.concat(splitTerms(v));
+          }
+        }
+      }
+      if (!collected.length) continue;
+
+      for (const t of collected) {
+        const key = normalizeKey(t);
+        if (!key) continue;
+        if (!termIndex.has(key)) termIndex.set(key, new Set());
+        termIndex.get(key).add(targetId);
+      }
+    }
+  } else {
+    // No crossmap: index directly from lexeme columns (MVP-friendly)
+    const cols = ['zhh', 'alias_zhh', 'alias_zhh_r18', 'chs', 'en'];
+    for (const row of lexemeRows) {
+      const id = (row.id || row.lexeme_id || row.lexemeId || '').trim();
+      if (!id) continue;
+
+      let collected = [];
+      for (const c of cols) {
+        if (row[c]) collected = collected.concat(splitTerms(row[c]));
+      }
+      // Also index zhh_pron as query if user types jyutping
+      if (row.zhh_pron) collected = collected.concat(splitTerms(row.zhh_pron));
+
+      for (const t of collected) {
+        const key = normalizeKey(t);
+        if (!key) continue;
+        if (!termIndex.has(key)) termIndex.set(key, new Set());
+        termIndex.get(key).add(id);
+      }
+    }
+  }
+
+  CACHE = { termIndex, lexemeById, examplesByLexemeId, crossmapRows, hasCrossmap: !!crossmapRows.length, hasLexeme: !!lexemeRows.length };
+  return CACHE;
+}
+
+function lookupLexemeItemsByQuery(query) {
+  const { termIndex, lexemeById, examplesByLexemeId } = buildDataSafe();
+  const key = normalizeKey(query);
+  if (!key) return [];
+
+  const idSet = termIndex.get(key);
+  if (idSet && idSet.size) {
+    const out = [];
+    for (const id of idSet) {
+      const lexeme = lexemeById.get(id);
+      if (!lexeme) continue;
+      const item = Object.assign({}, lexeme);
+      item.examples = examplesByLexemeId[id] || [];
+      out.push(item);
+    }
+    if (out.length) return out;
+  }
+  return [];
+}
+
+// ---------------- helpers ----------------
 function readJsonBody(req) {
   if (req.body && typeof req.body === 'object') return Promise.resolve(req.body);
   return new Promise((resolve, reject) => {
     let data = '';
     req.on('data', (chunk) => (data += chunk));
-    req.on('end', () => resolve(safeJsonParse(data || '{}') || {}));
+    req.on('end', () => {
+      if (!data) return resolve({});
+      try { resolve(JSON.parse(data.toString('utf8'))); }
+      catch (err) { reject(err); }
+    });
     req.on('error', (err) => reject(err));
   });
 }
 
 function getQueryFromReq(req, body) {
-  const u = parseUrl(req);
-  const q =
-    u.searchParams.get('q') ||
-    u.searchParams.get('query') ||
-    u.searchParams.get('text') ||
-    u.searchParams.get('input') ||
-    u.searchParams.get('term') ||
-    u.searchParams.get('keyword') ||
-    body?.q ||
-    body?.query ||
-    body?.text ||
-    body?.input ||
-    body?.term ||
-    body?.keyword ||
-    '';
-  return String(q || '').trim();
+  const qFromQuery =
+    req.query?.q || req.query?.query || req.query?.term || req.query?.keyword || req.query?.text;
+  const qFromBody = body?.q || body?.query || body?.term || body?.keyword || body?.input || body?.text;
+  return String(qFromQuery || qFromBody || '').trim();
 }
 
 function getLangFromReq(req, body) {
-  const u = parseUrl(req);
-  const l = u.searchParams.get('lang') || u.searchParams.get('language') || body?.lang || body?.language || 'auto';
+  const l = req.query?.lang || req.query?.language || body?.lang || body?.language || 'auto';
   return String(l || 'auto');
 }
 
-// ----------------- handler -----------------
+// ---------------- Multi-LLM fallback ----------------
+function hash32(str) {
+  let h = 2166136261;
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+async function multiLLMFallback(query, lang) {
+  // Build provider pool based on available keys
+  const pool = [];
+  if (String(process.env.DEEPSEEK_API_KEY || '').trim()) pool.push('deepseek');
+  if (String(process.env.OPENAI_API_KEY || '').trim()) pool.push('openai');
+  if (getGeminiKey()) pool.push('gemini');
+
+  if (!pool.length) {
+    return { yue: null, jyutping: '', provider: null, model: null, error: 'no_provider_key' };
+  }
+
+  // pseudo-random start per query (stable, but feels random across different queries)
+  const start = hash32(query) % pool.length;
+
+  const tried = [];
+  for (let k = 0; k < pool.length; k++) {
+    const provider = pool[(start + k) % pool.length];
+    tried.push(provider);
+
+    let r;
+    if (provider === 'deepseek') r = await deepseekTranslate(query, lang);
+    else if (provider === 'openai') r = await openaiTranslate(query, lang);
+    else r = await geminiFallbackTranslate(query, lang);
+
+    const yue = String(r?.yue || '').trim();
+    if (!yue) continue;
+    if (!looksLikeCantonese(yue)) continue;
+
+    const jyutping = toJyutpingSafe(yue);
+    return { yue, jyutping, provider: r.provider, model: r.model, error: null, tried };
+  }
+
+  return { yue: null, jyutping: '', provider: tried[tried.length - 1] || null, model: null, error: 'all_failed', tried };
+}
+
+// ---------------- handler ----------------
 module.exports = async (req, res) => {
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
   res.setHeader('Cache-Control', 'no-store');
@@ -529,89 +637,41 @@ module.exports = async (req, res) => {
     return;
   }
 
-  const sid = getOrSetSid(req, res);
-  const pagePath = parseRefPath(req);
-  const country = getCountry(req);
-  const langHdr = getLang(req);
-  const ua = String(getHeader(req, 'user-agent') || '');
-
-  const u0 = parseUrl(req);
-  const debug = u0.searchParams.get('debug') === '1';
-
-  // record PV (best-effort). IMPORTANT: we keep it short and we *await* it later so serverless won't drop it.
-  const pvPromise = supabaseInsert('telemetry_pv', {
-    sid,
-    path: pagePath || '',
-    referrer: String(getHeader(req, 'referer') || getHeader(req, 'referrer') || ''),
-    lang: langHdr,
-    ua,
-    country,
-  }, 1200).catch((e) => ({ ok: false, error: 'pv_exception', detail: String(e?.message || e || '') }));
-
-  async function flushTelemetry(searchPromise) {
-    const pv = await pvPromise;
-    const search = searchPromise
-      ? await searchPromise.catch((e) => ({ ok: false, error: 'search_exception', detail: String(e?.message || e || '') }))
-      : null;
-
-    // Only attach debug details when debug=1.
-    return debug ? { pv, search } : null;
-  }
-
-
   try {
     const body = method === 'POST' ? await readJsonBody(req) : {};
     const query = getQueryFromReq(req, body);
     const lang = getLangFromReq(req, body);
+    const u = new URL(String(req.url || '/'), 'http://localhost');
+    const debug = u.searchParams.get('debug') === '1';
+    const sid = getOrSetSid(req, res);
+    const meta = getClientMeta(req);
 
     if (!query) {
-      const _telemetry = await flushTelemetry(null);
-      const payload = { ok: true, from: 'empty', query: '', count: 0, items: [] };
-      if (_telemetry) payload._telemetry = _telemetry;
-
       res.statusCode = 200;
-      res.end(JSON.stringify(payload));
+      res.end(JSON.stringify({ ok: true, from: 'empty', query: '', count: 0, items: [] }));
       return;
     }
 
-    // 1) CSV exact match
-    let items = [];
-    try { items = lookupLexemeItemsByQuery(query); } catch (e) {
-      // If lexeme.csv path wrong, still allow LLM fallback (so product keeps working)
-      items = [];
-    }
+    const items = lookupLexemeItemsByQuery(query);
 
     if (items && items.length > 0) {
-      const searchPromise = supabaseInsert('telemetry_search', {
-        sid,
-        q: query,
-        q_norm: normalizeKey(query),
-        hit: true,
-        result_count: items.length,
-        from_src: 'csv',
-        path: pagePath || '',
-        country,
-      }, 1200);
-
-      const _telemetry = await flushTelemetry(searchPromise);
-      const payload = { ok: true, from: 'lexeme-exact', query, count: items.length, items };
-      if (_telemetry) payload._telemetry = _telemetry;
-
+      const t = await logTelemetry({ sid, meta, q: query, hit: true, count: items.length, fromSrc: 'lexeme-csv' });
+      const payload = { ok: true, from: 'lexeme-csv', query, count: items.length, items };
+      if (debug) payload._telemetry = t;
       res.statusCode = 200;
       res.end(JSON.stringify(payload));
       return;
     }
 
-    // 2) Miss -> LLM fallback (multi-provider)
-    const fb = await llmFallback(query, lang);
+    // Miss -> multi-LLM fallback (DeepSeek/OpenAI/Gemini)
+    const fb = await multiLLMFallback(query, lang);
     const yue = fb?.yue ? String(fb.yue).trim() : '';
-
-    const pron = yue ? await toJyutpingSafe(yue) : '';
+    const jyutping = fb?.jyutping ? String(fb.jyutping).trim() : '';
 
     const item = {
       id: 'CT-FALLBACK',
       zhh: yue || '（未收錄：你可以提交更地道嘅講法）',
-      zhh_pron: pron || '',
+      zhh_pron: jyutping,
       alias_zhh: '',
       alias_zhh_r18: '',
       chs: '',
@@ -621,50 +681,30 @@ module.exports = async (req, res) => {
       variants_chs: '',
       variants_en: '',
       examples: [],
-      _fallback_provider: fb?.provider || null,
-      _fallback_model: fb?.model || null,
       _fallback_error: fb?.error || null,
+      _fallback_tried: fb?.tried || [],
     };
 
-    // telemetry miss
-    const searchPromise = supabaseInsert('telemetry_search', {
-      sid,
-      q: query,
-      q_norm: normalizeKey(query),
-      hit: false,
-      result_count: 0,
-      from_src: `llm:${fb?.provider || 'none'}`,
-      path: pagePath || '',
-      country,
-    }, 1200);
-
-    const _telemetry = await flushTelemetry(searchPromise);
-
+    const fromSrc = `llm:${(fb && fb.provider) ? fb.provider : 'unknown'}`;
+    const t = await logTelemetry({ sid, meta, q: query, hit: false, count: 1, fromSrc });
     const payload = {
       ok: true,
       from: 'llm-fallback',
-      model: fb?.model || null,
       provider: fb?.provider || null,
+      model: fb?.model || null,
       query,
       count: 1,
       items: [item],
     };
-    if (_telemetry) payload._telemetry = _telemetry;
-
+    if (debug) payload._telemetry = t;
     res.statusCode = 200;
     res.end(JSON.stringify(payload));
   } catch (err) {
-    const _telemetry = await flushTelemetry(null);
-    const payload = {
+    res.statusCode = 500;
+    res.end(JSON.stringify({
       ok: false,
       error: 'Internal Server Error',
       detail: err && err.message ? err.message : String(err),
-      ts: nowIso(),
-    };
-    if (_telemetry) payload._telemetry = _telemetry;
-
-    res.statusCode = 500;
-    res.end(JSON.stringify(payload));
+    }));
   }
 };
-
