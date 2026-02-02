@@ -1,128 +1,126 @@
 // api/telemetry/search.js
-import { createClient } from "@supabase/supabase-js";
+// Purpose:
+// 1) Accept POST telemetry from the browser (including "typing debounce" events)
+// 2) If the request doesn't include a reliable hit/count, we will PROBE /api/translate?q=... to determine hit/miss
+// 3) Only record MISS (count===0) into telemetry_search (so this table shows missing terms only)
 
-/**
- * 目标：
- * - 只记录「未命中(=缺失词)」到 telemetry_zero（去重+计数）
- * - 前端无需按 Enter；输入停留 ~3 秒即可触发一次（由前端 debounce）
- * - 服务器端二次校验：会先调用 /api/translate 探测是否命中，命中则不写库
- *
- * 需要的环境变量（Vercel）：
- * - SUPABASE_URL
- * - SUPABASE_SERVICE_ROLE_KEY  （强烈建议：仅在 Serverless 使用，用于写入，避免 RLS/并发问题）
- * （若没配 service key，会退回用 SUPABASE_ANON_KEY，但你要确保 RLS 允许 insert/update）
- */
+const { createClient } = require('@supabase/supabase-js');
 
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY,
-  { auth: { persistSession: false } }
-);
+function getEnv(name) {
+  return process.env[name] || '';
+}
+
+const supabaseUrl = getEnv('SUPABASE_URL');
+const anonKey = getEnv('SUPABASE_ANON_KEY');
+const serviceKey = getEnv('SUPABASE_SERVICE_ROLE_KEY');
+
+// Prefer service role (server-side only) if provided, otherwise fall back to anon.
+const supabaseKey = serviceKey || anonKey;
+
+const supabase = createClient(supabaseUrl, supabaseKey, {
+  auth: { persistSession: false },
+});
 
 function inferFromHeaders(req) {
-  const referer = req.headers.referer || req.headers.referrer || "";
-  let path = "";
+  const refererHeader = req.headers.referer || '';
+  let path = '';
   try {
-    if (referer) {
-      const u = new URL(referer);
-      path = u.pathname + (u.search || "");
+    if (refererHeader) {
+      const u = new URL(refererHeader);
+      path = u.pathname + (u.search || '');
     }
   } catch (_) {}
-  return { referer, path };
+  return { refererHeader, path };
 }
 
-function normalizeQ(q) {
-  return (q || "")
-    .toString()
-    .trim()
-    .replace(/\s+/g, " ")
-    .toLowerCase();
+function safeParseBody(req) {
+  const body = req.body;
+  if (!body) return {};
+  if (typeof body === 'object') return body;
+  try {
+    return JSON.parse(body);
+  } catch (_) {
+    return {};
+  }
 }
 
-async function probeTranslate(req, q) {
-  // 在 Vercel serverless 内部用同域请求探测是否命中
-  const host = req.headers["x-forwarded-host"] || req.headers.host;
-  const proto = (req.headers["x-forwarded-proto"] || "https").split(",")[0].trim();
-  const url = new URL(`${proto}://${host}/api/translate`);
-  url.searchParams.set("q", q);
-  // 你原来的 /api/translate 返回结构：{ ok:true, from:"...", query:"", count:0, items:[] }
-  const r = await fetch(url.toString(), { headers: { accept: "application/json" } });
-  const j = await r.json().catch(() => ({}));
-  const count = Number(j.count ?? (Array.isArray(j.items) ? j.items.length : 0) ?? 0);
-  const from = (j.from || "").toString();
-  return { count, from, raw: j };
+async function probeTranslateCount(req, q) {
+  try {
+    const proto = (req.headers['x-forwarded-proto'] || 'https').toString();
+    const host = (req.headers['x-forwarded-host'] || req.headers.host || '').toString();
+    if (!host) return { count: 0, from: '' };
+
+    const url = `${proto}://${host}/api/translate?q=${encodeURIComponent(q)}`;
+    const r = await fetch(url, { headers: { 'x-telemetry-probe': '1' } });
+    const j = await r.json();
+    const count = Number(j.count || 0);
+    const from = (j.from || j.engine || '').toString();
+    return { count: Number.isFinite(count) ? count : 0, from };
+  } catch (_) {
+    return { count: 0, from: '' };
+  }
 }
 
-export default async function handler(req, res) {
-  if (req.method !== "POST") return res.status(405).json({ ok: false, error: "Method Not Allowed" });
+module.exports = async function handler(req, res) {
+  // Make it "not scary" when you open the endpoint in a browser.
+  if (req.method === 'GET') {
+    return res.status(200).json({
+      ok: true,
+      note: 'This endpoint records telemetry via POST. Open DevTools > Network to see POST /api/telemetry/search requests.',
+    });
+  }
 
-  const body = req.body || {};
+  if (req.method !== 'POST') {
+    return res.status(405).json({ ok: false, error: 'Method Not Allowed' });
+  }
+
+  if (!supabaseUrl || !supabaseKey) {
+    return res.status(500).json({ ok: false, error: 'Missing SUPABASE_URL / SUPABASE_*_KEY env vars' });
+  }
+
+  const body = safeParseBody(req);
   const inferred = inferFromHeaders(req);
 
-  const q = (body.q || "").toString().trim();
-  if (!q) return res.status(200).json({ ok: true, skipped: true, reason: "empty q" });
-
-  const q_norm = normalizeQ(q);
-
-  // 优先相信前端显式传入（最稳），否则用 referer 推断
-  const path = (body.path || inferred.path || "").toString();
-  const referrer = (body.referrer ?? inferred.referer ?? "").toString();
-
-  const lang = (body.lang || "").toString();
-  const tz = (body.tz || "").toString();
-  const ua = (req.headers["user-agent"] || "").toString();
-  const country = (req.headers["x-vercel-ip-country"] || body.country || "").toString();
-
-  // 服务器端探测是否命中：命中则不写库（避免 search 表出现命中词）
-  let probe;
-  try {
-    probe = await probeTranslate(req, q);
-  } catch (e) {
-    // 探测失败：为了不丢数据，可选择仍然写入；这里默认“仍写入”，但标记 from_src=probe_error
-    probe = { count: 0, from: "probe_error" };
+  const q = String(body.q || body.query || '').trim();
+  if (!q) {
+    return res.status(200).json({ ok: true, skipped: true, reason: 'empty query' });
   }
 
-  if (probe.count > 0) {
-    return res.status(200).json({ ok: true, skipped: true, hit: true, count: probe.count });
+  // Always take path/referrer from body first (browser can provide reliably)
+  const path = String(body.path || inferred.path || '/');
+  const referrer = String(body.referrer ?? body.referrer_url ?? inferred.refererHeader ?? '');
+
+  // If the client already provided count (e.g., after pressing Enter and receiving translate results), use it.
+  let count = Number(body.count);
+  let from = String(body.from || '');
+  if (!Number.isFinite(count)) {
+    const probed = await probeTranslateCount(req, q);
+    count = probed.count;
+    if (!from) from = probed.from;
   }
 
-  // 写入 telemetry_zero（去重+计数）——建议使用 SQL 创建的 RPC：log_zero_search
-  // 如果你还没建 RPC，也可以先 insert 到 telemetry_zero_raw 再做聚合；但这里优先 RPC（原子+并发安全）
-  const rpcName = (body.rpc || "log_zero_search").toString();
-  const rpcArgs = {
-    p_q: q,
-    p_q_norm: q_norm,
-    p_lang: lang,
-    p_country: country,
-    p_path: path,
-    p_referrer: referrer,
-    p_ua: ua,
-    p_from_src: probe.from || "translate",
+  // Requirement: only show missing terms in search table
+  if (count > 0) {
+    return res.status(200).json({ ok: true, skipped: true, reason: 'hit', count });
+  }
+
+  const payload = {
+    q,
+    path,
+    referrer,
+    ok: body.ok ?? true,
+    from,
+    count: 0,
+    ms: Number.isFinite(Number(body.ms)) ? Number(body.ms) : 0,
+    ua: String(req.headers['user-agent'] || ''),
+    trigger: String(body.trigger || ''),
+    ts: body.ts ? new Date(Number(body.ts)).toISOString() : null,
   };
 
-  const { error } = await supabase.rpc(rpcName, rpcArgs);
+  const { error } = await supabase.from('telemetry_search').insert(payload);
   if (error) {
-    // fallback：直接 insert（如果没有 RPC）
-    const fallback = await supabase
-      .from("telemetry_zero")
-      .insert({
-        day: new Date().toISOString().slice(0, 10),
-        q,
-        q_norm,
-        lang,
-        country,
-        path,
-        referrer,
-        ua,
-        from_src: rpcArgs.p_from_src,
-        cnt: 1,
-        first_seen_at: new Date().toISOString(),
-        last_seen_at: new Date().toISOString(),
-      });
-
-    if (fallback.error) return res.status(500).json({ ok: false, error: fallback.error.message, rpc_error: error.message });
-    return res.status(200).json({ ok: true, used: "fallback_insert" });
+    return res.status(500).json({ ok: false, error: error.message });
   }
 
-  return res.status(200).json({ ok: true, hit: false, count: 0 });
-}
+  return res.status(200).json({ ok: true, recorded: true, count: 0 });
+};
