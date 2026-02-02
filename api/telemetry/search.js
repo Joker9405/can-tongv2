@@ -1,185 +1,107 @@
-// api/telemetry/search.js
-// Robust search logger for Vercel Serverless (non-Next) + Supabase
+import { createClient } from "@supabase/supabase-js";
 
-import { createClient } from '@supabase/supabase-js';
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
 
-function respond(res, status, payload) {
-  res.statusCode = status;
-  res.setHeader('Content-Type', 'application/json; charset=utf-8');
-  res.end(JSON.stringify(payload));
-}
+// NOTE: We use the anon key and rely on RLS policies that allow INSERT.
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-function safeStr(v) {
-  if (v === null || v === undefined) return '';
-  return String(v);
-}
+function parseBody(req) {
+  const b = req.body;
+  if (!b) return {};
+  if (typeof b === "object") return b;
 
-function normalizeQuery(q) {
-  return safeStr(q).trim();
-}
-
-function coercePath(v) {
-  let s = safeStr(v).trim();
-  if (!s || s.toUpperCase() === 'EMPTY') return '/';
-  try {
-    if (s.startsWith('http://') || s.startsWith('https://')) {
-      const u = new URL(s);
-      s = `${u.pathname}${u.search}${u.hash}`;
-    }
-  } catch (_) {
-    // ignore
-  }
-  if (!s.startsWith('/')) s = `/${s}`;
-  return s;
-}
-
-async function readRawBody(req) {
-  return await new Promise((resolve) => {
-    let data = '';
-    req.on('data', (chunk) => {
-      data += chunk.toString('utf8');
-    });
-    req.on('end', () => resolve(data));
-    req.on('error', () => resolve(''));
-  });
-}
-
-async function getJsonBody(req) {
-  try {
-    if (req.body && typeof req.body === 'object' && !Buffer.isBuffer(req.body)) {
-      return req.body;
-    }
-    if (typeof req.body === 'string') {
-      try {
-        return JSON.parse(req.body);
-      } catch (_) {
-        return {};
-      }
-    }
-    if (Buffer.isBuffer(req.body)) {
-      try {
-        return JSON.parse(req.body.toString('utf8'));
-      } catch (_) {
-        return {};
-      }
-    }
-
-    const raw = await readRawBody(req);
-    if (!raw) return {};
+  // Vercel Node + navigator.sendBeacon can arrive as string
+  if (typeof b === "string") {
     try {
-      return JSON.parse(raw);
-    } catch (_) {
+      return JSON.parse(b);
+    } catch {
       return {};
     }
-  } catch (_) {
-    return {};
   }
-}
 
-function inferFromHeaders(req) {
-  const referer = safeStr(req.headers['referer'] || req.headers['referrer'] || '');
-  let path = '';
-  if (referer) {
+  // Buffer / Uint8Array
+  if (b?.toString) {
     try {
-      const u = new URL(referer);
-      path = `${u.pathname}${u.search}${u.hash}`;
-    } catch (_) {
-      // ignore
+      return JSON.parse(b.toString("utf8"));
+    } catch {
+      return {};
     }
   }
-  return { referer, path };
+
+  return {};
 }
 
-function pick(obj, keys) {
-  const out = {};
-  for (const k of keys) {
-    if (obj[k] !== undefined) out[k] = obj[k];
-  }
-  return out;
+function getHeader(req, key) {
+  return req.headers?.[key] || req.headers?.[key.toLowerCase()] || "";
 }
 
-async function insertWithSchemaFallback(supabase, table, payload, allowKeys) {
-  let { error } = await supabase.from(table).insert([payload]);
-  if (!error) return null;
-
-  const msg = safeStr(error.message).toLowerCase();
-  if (msg.includes('column') && msg.includes('does not exist')) {
-    const minimal = pick(payload, allowKeys);
-    ({ error } = await supabase.from(table).insert([minimal]));
-    if (!error) return null;
+function inferPathFromReferer(referer) {
+  if (!referer) return "";
+  try {
+    const u = new URL(referer);
+    return `${u.pathname || "/"}${u.search || ""}`;
+  } catch {
+    return "";
   }
-
-  return error;
 }
 
 export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    res.setHeader("Allow", "POST");
+    return res.status(405).json({ ok: false, error: "Method not allowed" });
+  }
+
   try {
-    if (req.method !== 'POST') {
-      res.setHeader('Allow', 'POST');
-      return respond(res, 405, { ok: false, error: 'Method Not Allowed' });
-    }
+    const body = parseBody(req);
 
-    const supabaseUrl = process.env.SUPABASE_URL;
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
+    const sid = (body.sid || "").toString() || null;
+    const q = (body.q || "").toString().trim();
+    const q_norm = (body.q_norm || q).toString().trim();
 
-    if (!supabaseUrl || !supabaseKey) {
-      return respond(res, 500, { ok: false, error: 'Missing Supabase env vars' });
-    }
+    // Accept either boolean or 0/1
+    const hit = typeof body.hit === "boolean" ? body.hit : !!body.hit;
 
-    const supabase = createClient(supabaseUrl, supabaseKey);
-    const body = await getJsonBody(req);
-    const inferred = inferFromHeaders(req);
+    const result_count_num = Number(body.result_count);
+    const result_count = Number.isFinite(result_count_num) ? result_count_num : 0;
 
-    const sid = safeStr(body.sid || '');
-    const q = normalizeQuery(body.q || body.query || body.text || body.input || '');
-    const q_norm = normalizeQuery(body.q_norm || body.qNorm || body.qn || q);
+    const from_src = (body.from_src || "").toString();
 
-    const result_count_raw = body.result_count ?? body.resultCount ?? body.count ?? 0;
-    const result_count = Number.isFinite(Number(result_count_raw)) ? Number(result_count_raw) : 0;
+    const refererHeader = getHeader(req, "referer");
+    const path = (body.path || inferPathFromReferer(refererHeader) || "/").toString();
 
-    // hit: if explicitly provided, use it; else infer from result_count
-    let hit = body.hit;
-    if (hit === undefined || hit === null) {
-      hit = result_count > 0;
-    }
-
-    const from_src = safeStr(body.from_src || body.fromSrc || body.from || body.src || 'ui');
-    const path = coercePath(body.path || inferred.path);
-
-    // Optional context (inserted only if your table has these columns)
-    const referrer = safeStr(body.referrer || body.referer || inferred.referer || '');
-    const lang = safeStr(body.lang || req.headers['accept-language'] || '');
-    const ua = safeStr(body.ua || req.headers['user-agent'] || '');
-    const country = safeStr(body.country || req.headers['x-vercel-ip-country'] || req.headers['cf-ipcountry'] || '');
-
+    // IMPORTANT: Match your existing telemetry_search schema.
+    // Based on your Supabase screenshot, telemetry_search has columns:
+    // sid, q, q_norm, hit, result_count, from_src, path
     const payload = {
-      sid: sid || null,
-      q: q || null,
-      q_norm: q_norm || null,
-      hit: !!hit,
+      sid,
+      q: q || "(empty)",
+      q_norm: q_norm || "(empty)",
+      hit,
       result_count,
-      from_src: from_src || null,
-      path,
-      referrer: referrer || null,
-      lang: lang || null,
-      ua: ua || null,
-      country: country || null,
+      from_src,
+      path: path || "/",
     };
 
-    // Try full payload; if schema differs, fallback to minimal known columns.
-    const error = await insertWithSchemaFallback(
-      supabase,
-      'telemetry_search',
-      payload,
-      ['sid', 'q', 'q_norm', 'hit', 'result_count', 'from_src', 'path']
-    );
+    const { error } = await supabase.from("telemetry_search").insert(payload);
 
     if (error) {
-      return respond(res, 500, { ok: false, error: error.message || 'insert failed' });
+      // Never 500 for telemetry; return 200 so frontend won't break.
+      return res.status(200).json({ ok: false, error: error.message });
     }
 
-    return respond(res, 200, { ok: true });
-  } catch (err) {
-    return respond(res, 500, { ok: false, error: safeStr(err?.message || err) });
+    // Optional: zero-hit backfill (best effort)
+    if (!hit && q) {
+      try {
+        await supabase.from("telemetry_zero").insert({ sid, q, q_norm, path: payload.path, from_src });
+      } catch {
+        // ignore
+      }
+    }
+
+    return res.status(200).json({ ok: true });
+  } catch (e) {
+    // Never throw 500 for telemetry
+    return res.status(200).json({ ok: false, error: e?.message || "unknown" });
   }
 }

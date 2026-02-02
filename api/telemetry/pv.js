@@ -1,160 +1,92 @@
-// api/telemetry/pv.js
-// Robust PV logger for Vercel Serverless (non-Next) + Supabase
+import { createClient } from "@supabase/supabase-js";
 
-import { createClient } from '@supabase/supabase-js';
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
 
-function respond(res, status, payload) {
-  res.statusCode = status;
-  res.setHeader('Content-Type', 'application/json; charset=utf-8');
-  res.end(JSON.stringify(payload));
-}
+// NOTE: We use the anon key and rely on RLS policies that allow INSERT.
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-function safeStr(v) {
-  if (v === null || v === undefined) return '';
-  return String(v);
-}
+function parseBody(req) {
+  const b = req.body;
+  if (!b) return {};
+  if (typeof b === "object") return b;
 
-function coercePath(v) {
-  let s = safeStr(v).trim();
-  if (!s || s.toUpperCase() === 'EMPTY') return '/';
-
-  // If client accidentally sends a full URL, normalize to pathname
-  try {
-    if (s.startsWith('http://') || s.startsWith('https://')) {
-      const u = new URL(s);
-      s = `${u.pathname}${u.search}${u.hash}`;
-    }
-  } catch {
-    // ignore
-  }
-
-  if (!s.startsWith('/')) s = `/${s}`;
-  return s;
-}
-
-async function readRawBody(req) {
-  return await new Promise((resolve) => {
-    let data = '';
-    req.on('data', (chunk) => {
-      data += chunk?.toString ? chunk.toString('utf8') : String(chunk);
-    });
-    req.on('end', () => resolve(data));
-    req.on('error', () => resolve(''));
-  });
-}
-
-async function getJsonBody(req) {
-  // Vercel runtime differs by project type; be defensive.
-  if (req.body && typeof req.body === 'object' && !Buffer.isBuffer(req.body)) return req.body;
-
-  if (typeof req.body === 'string') {
+  // Vercel Node + navigator.sendBeacon can arrive as string
+  if (typeof b === "string") {
     try {
-      return JSON.parse(req.body);
+      return JSON.parse(b);
     } catch {
       return {};
     }
   }
 
-  if (Buffer.isBuffer(req.body)) {
+  // Buffer / Uint8Array
+  if (b?.toString) {
     try {
-      return JSON.parse(req.body.toString('utf8'));
+      return JSON.parse(b.toString("utf8"));
     } catch {
       return {};
     }
   }
 
-  const raw = await readRawBody(req);
-  if (!raw) return {};
+  return {};
+}
+
+function getHeader(req, key) {
+  return req.headers?.[key] || req.headers?.[key.toLowerCase()] || "";
+}
+
+function inferPathFromReferer(referer) {
+  if (!referer) return "";
   try {
-    return JSON.parse(raw);
+    const u = new URL(referer);
+    return `${u.pathname || "/"}${u.search || ""}`;
   } catch {
-    return {};
+    return "";
   }
-}
-
-function inferFromHeaders(req) {
-  const referer = safeStr(req.headers?.referer || req.headers?.referrer || '');
-  let path = '';
-  if (referer) {
-    try {
-      const u = new URL(referer);
-      path = `${u.pathname}${u.search}${u.hash}`;
-    } catch {
-      // ignore
-    }
-  }
-  return { referer, path };
-}
-
-function stripPayload(payload, allowKeys) {
-  const out = {};
-  for (const k of allowKeys) {
-    if (payload[k] !== undefined) out[k] = payload[k];
-  }
-  return out;
-}
-
-async function insertWithSchemaFallback(supabase, table, payload, allowKeys) {
-  let { error } = await supabase.from(table).insert([payload]);
-  if (!error) return null;
-
-  const msg = safeStr(error.message).toLowerCase();
-  // When schema differs, try inserting a minimal subset (avoid “column does not exist”).
-  if (msg.includes('column') && msg.includes('does not exist')) {
-    const minimal = stripPayload(payload, allowKeys);
-    ({ error } = await supabase.from(table).insert([minimal]));
-    if (!error) return null;
-  }
-
-  return error;
 }
 
 export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    res.setHeader("Allow", "POST");
+    return res.status(405).json({ ok: false, error: "Method not allowed" });
+  }
+
   try {
-    if (req.method !== 'POST') return respond(res, 405, { ok: false, error: 'Method Not Allowed' });
+    const body = parseBody(req);
 
-    const supabaseUrl = process.env.SUPABASE_URL;
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
-    if (!supabaseUrl || !supabaseKey) {
-      return respond(res, 500, { ok: false, error: 'Missing Supabase env vars' });
-    }
+    const sid = (body.sid || "").toString() || null;
 
-    const supabase = createClient(supabaseUrl, supabaseKey);
-    const body = await getJsonBody(req);
-    const inferred = inferFromHeaders(req);
+    const refererHeader = getHeader(req, "referer");
+    const referrer = (body.referrer || refererHeader || "").toString();
 
-    const sid = safeStr(body.sid || '');
-    const path = coercePath(body.path || inferred.path);
+    // Prefer explicit body.path, else derive from referer URL, else '/'
+    const path = (body.path || inferPathFromReferer(refererHeader) || "/").toString();
 
-    // Prefer client-provided referrer; fallback to HTTP Referer
-    const referrer = safeStr(body.referrer || body.referer || inferred.referer || '');
+    const lang = (body.lang || getHeader(req, "accept-language") || "").toString();
+    const ua = (body.ua || getHeader(req, "user-agent") || "").toString();
+    const country = (body.country || getHeader(req, "x-vercel-ip-country") || "").toString();
 
-    const lang = safeStr(body.lang || req.headers['accept-language'] || '');
-    const ua = safeStr(body.ua || req.headers['user-agent'] || '');
-    const country = safeStr(body.country || req.headers['x-vercel-ip-country'] || req.headers['cf-ipcountry'] || '');
-
+    // Ensure we never insert empty strings (some schemas default to 'EMPTY')
     const payload = {
-      sid: sid || null,
-      path,
-      referrer: referrer || null,
-      lang: lang || null,
-      ua: ua || null,
-      country: country || null,
+      sid,
+      path: path || "/",
+      referrer: referrer || "(direct)",
+      lang: lang || "unknown",
+      ua: ua || "unknown",
+      country: country || "unknown",
     };
 
-    const error = await insertWithSchemaFallback(
-      supabase,
-      'telemetry_pv',
-      payload,
-      ['sid', 'path', 'referrer', 'lang', 'ua', 'country']
-    );
+    const { error } = await supabase.from("telemetry_pv").insert(payload);
 
     if (error) {
-      return respond(res, 500, { ok: false, error: error.message || 'insert failed' });
+      // Return 200 to avoid breaking user experience, but include debug info.
+      return res.status(200).json({ ok: false, error: error.message });
     }
 
-    return respond(res, 200, { ok: true });
-  } catch (err) {
-    return respond(res, 500, { ok: false, error: safeStr(err?.message || err) });
+    return res.status(200).json({ ok: true });
+  } catch (e) {
+    // Never throw 500 for telemetry
+    return res.status(200).json({ ok: false, error: e?.message || "unknown" });
   }
 }
