@@ -1,92 +1,47 @@
+// api/telemetry/pv.js
 import { createClient } from "@supabase/supabase-js";
 
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
+/**
+ * 目标：PV 必须拿到 path / referrer（不要 EMPTY）
+ * 做法：前端强制传 path/referrer；后端兜底从 headers.referer 推断
+ * 建议用 SUPABASE_SERVICE_ROLE_KEY 写入，避免 RLS 干扰
+ */
 
-// NOTE: We use the anon key and rely on RLS policies that allow INSERT.
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY,
+  { auth: { persistSession: false } }
+);
 
-function parseBody(req) {
-  const b = req.body;
-  if (!b) return {};
-  if (typeof b === "object") return b;
-
-  // Vercel Node + navigator.sendBeacon can arrive as string
-  if (typeof b === "string") {
-    try {
-      return JSON.parse(b);
-    } catch {
-      return {};
-    }
-  }
-
-  // Buffer / Uint8Array
-  if (b?.toString) {
-    try {
-      return JSON.parse(b.toString("utf8"));
-    } catch {
-      return {};
-    }
-  }
-
-  return {};
-}
-
-function getHeader(req, key) {
-  return req.headers?.[key] || req.headers?.[key.toLowerCase()] || "";
-}
-
-function inferPathFromReferer(referer) {
-  if (!referer) return "";
+function inferFromHeaders(req) {
+  const referer = req.headers.referer || req.headers.referrer || "";
+  let path = "";
   try {
-    const u = new URL(referer);
-    return `${u.pathname || "/"}${u.search || ""}`;
-  } catch {
-    return "";
-  }
+    if (referer) {
+      const u = new URL(referer);
+      path = u.pathname + (u.search || "");
+    }
+  } catch (_) {}
+  return { referer, path };
 }
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    res.setHeader("Allow", "POST");
-    return res.status(405).json({ ok: false, error: "Method not allowed" });
-  }
+  if (req.method !== "POST") return res.status(405).json({ ok: false, error: "Method Not Allowed" });
 
-  try {
-    const body = parseBody(req);
+  const body = req.body || {};
+  const inferred = inferFromHeaders(req);
 
-    const sid = (body.sid || "").toString() || null;
+  const payload = {
+    path: (body.path || inferred.path || "").toString(),
+    referrer: (body.referrer ?? inferred.referer ?? "").toString(),
+    ua: (req.headers["user-agent"] || "").toString(),
+    lang: (body.lang || "").toString(),
+    tz: (body.tz || "").toString(),
+    country: (req.headers["x-vercel-ip-country"] || body.country || "").toString(),
+  };
 
-    const refererHeader = getHeader(req, "referer");
-    const referrer = (body.referrer || refererHeader || "").toString();
+  const { error } = await supabase.from("telemetry_pv").insert(payload);
+  if (error) return res.status(500).json({ ok: false, error: error.message });
 
-    // Prefer explicit body.path, else derive from referer URL, else '/'
-    const path = (body.path || inferPathFromReferer(refererHeader) || "/").toString();
-
-    const lang = (body.lang || getHeader(req, "accept-language") || "").toString();
-    const ua = (body.ua || getHeader(req, "user-agent") || "").toString();
-    const country = (body.country || getHeader(req, "x-vercel-ip-country") || "").toString();
-
-    // Ensure we never insert empty strings (some schemas default to 'EMPTY')
-    const payload = {
-      sid,
-      path: path || "/",
-      referrer: referrer || "(direct)",
-      lang: lang || "unknown",
-      ua: ua || "unknown",
-      country: country || "unknown",
-    };
-
-    const { error } = await supabase.from("telemetry_pv").insert(payload);
-
-    if (error) {
-      // Return 200 to avoid breaking user experience, but include debug info.
-      return res.status(200).json({ ok: false, error: error.message });
-    }
-
-    return res.status(200).json({ ok: true });
-  } catch (e) {
-    // Never throw 500 for telemetry
-    return res.status(200).json({ ok: false, error: e?.message || "unknown" });
-  }
+  return res.status(200).json({ ok: true });
 }
