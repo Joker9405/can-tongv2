@@ -1,56 +1,66 @@
-// api/suggest.js
-const { buildCommon, insertRow, readJson, sha256Hex } = require('./_lib/supabase');
-
-module.exports = async (req, res) => {
-  res.setHeader('Content-Type', 'application/json; charset=utf-8');
-  res.setHeader('Cache-Control', 'no-store');
-
-  if (req.method !== 'POST') {
-    res.statusCode = 405;
-    res.end(JSON.stringify({ ok: false, error: 'Method Not Allowed' }));
-    return;
+module.exports = async function handler(req, res) {
+  function setCors(res) {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
   }
+  if (req.method === "OPTIONS") { setCors(res); return res.status(204).end(); }
+  if (req.method === "GET") { setCors(res); return res.status(200).json({ ok:true, usage:"POST { seed_q, zhh, zhh_pron, chs, en, source }" }); }
+  if (req.method !== "POST") { setCors(res); return res.status(200).json({ ok:false, error:"Method Not Allowed (use POST)" }); }
 
   try {
-    const body = await readJson(req);
-    const c = buildCommon(req, res);
+    let body = req.body;
+    if (typeof body === "string") body = body ? JSON.parse(body) : {};
+    body = body || {};
 
-    // Only accept headword and lang
-    const headword = String(body.headword || '').trim();
-    const lang = String(body.lang || 'unknown').slice(0, 16);
+    const seed_q = String(body.seed_q || body.q || "").trim().slice(0, 200);
+    const zhh = String(body.zhh || "").trim().slice(0, 200);
 
-    if (!headword) {
-      res.statusCode = 200;
-      res.end(JSON.stringify({ ok: false, error: 'empty' }));
-      return;
+    if (!zhh && !seed_q) {
+      setCors(res);
+      return res.status(200).json({ ok:false, error:"Missing zhh/seed_q" });
     }
 
-    const salt = process.env.TELEMETRY_SALT || '';
-    const headwordPrefix = headword.slice(0, 12);
-    const headwordHash = headword ? sha256Hex(`${salt}:${headword}`) : '';
-
-    const row = {
-      cid: c.cid,
-      ip_hash: c.ip_hash,
-      device: c.device,
-      path: String(body.path || '').slice(0, 180),
-
-      headword: headword,         // Store headword
-      lang: lang,                 // Store language (lang)
-      headword_prefix: headwordPrefix, // Store prefix of headword
-      headword_hash: headwordHash, // Store hash for privacy
-      status: 'pending',         // Default status as 'pending'
-      country: c.country,
-      region: c.region,
-      city: c.city,
+    const payload = {
+      seed_q: seed_q || null,
+      zhh: zhh || null,
+      zhh_pron: body.zhh_pron ? String(body.zhh_pron).trim().slice(0, 200) : null,
+      chs: body.chs ? String(body.chs).trim().slice(0, 400) : null,
+      en: body.en ? String(body.en).trim().slice(0, 400) : null,
+      source: body.source ? String(body.source).trim().slice(0, 40) : "unknown",
+      created_at: new Date().toISOString(),
     };
 
-    // Insert the suggestion into the user_contrib table
-    await insertRow('user_contrib', row);
-    res.statusCode = 200;
-    res.end(JSON.stringify({ ok: true }));
+    const { createClient } = await import("@supabase/supabase-js");
+    const url = process.env.SUPABASE_URL;
+    const anon = process.env.SUPABASE_ANON_KEY;
+    const service = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const key = service || anon;
+    if (!url || !key) {
+      setCors(res);
+      return res.status(200).json({ ok:false, error:"Missing env: SUPABASE_URL or SUPABASE_ANON_KEY/SUPABASE_SERVICE_ROLE_KEY" });
+    }
+    const supabase = createClient(url, key, { auth: { persistSession: false } });
+
+    const ins = await supabase
+      .from("lexeme_suggestions")
+      .insert(payload)
+      .select("*")
+      .maybeSingle();
+
+    if (ins.error) {
+      setCors(res);
+      return res.status(200).json({
+        ok:false,
+        error:"insert failed: " + ins.error.message,
+        hint:"检查 lexeme_suggestions 是否有 seed_q/zhh/zhh_pron/chs/en/source/created_at 字段；没有就把 payload 里多余字段删掉。"
+      });
+    }
+
+    setCors(res);
+    return res.status(200).json({ ok:true, row: ins.data });
   } catch (e) {
-    res.statusCode = 200;
-    res.end(JSON.stringify({ ok: false }));
+    setCors(res);
+    return res.status(200).json({ ok:false, error: e?.message || String(e) });
   }
 };

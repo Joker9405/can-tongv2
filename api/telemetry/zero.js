@@ -35,7 +35,7 @@ module.exports = async function handler(req, res) {
     }
     const supabase = createClient(url, key, { auth: { persistSession: false } });
 
-    const sel = await supabase.from("telemetry_search").select("id,cnt").eq("q", q).maybeSingle();
+    const sel = await supabase.from("telemetry_zero").select("id,cnt").eq("q", q).maybeSingle();
     if (sel.error && sel.status !== 406) {
       setCors(res);
       return res.status(200).json({ ok: false, error: "select failed: " + sel.error.message });
@@ -44,7 +44,7 @@ module.exports = async function handler(req, res) {
     if (sel.data?.id) {
       const nextCnt = (sel.data.cnt || 0) + 1;
       const upd = await supabase
-        .from("telemetry_search")
+        .from("telemetry_zero")
         .update({ cnt: nextCnt, last_seen_at: new Date().toISOString() })
         .eq("id", sel.data.id)
         .select("id,q,cnt,last_seen_at")
@@ -54,7 +54,7 @@ module.exports = async function handler(req, res) {
     }
 
     const ins = await supabase
-      .from("telemetry_search")
+      .from("telemetry_zero")
       .insert({ q, cnt: 1, first_seen_at: new Date().toISOString(), last_seen_at: new Date().toISOString() })
       .select("id,q,cnt,last_seen_at")
       .maybeSingle();
