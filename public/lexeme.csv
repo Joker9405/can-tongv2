@@ -1,5 +1,5 @@
 id,zhh,zhh_pron,is_r18,chs,en,owner_tag,register,intent
-L1,揼波鐘,dam3 bo1 zung1,0,拖延时间/耽误时间/磨洋工/拖拖拉拉/浪费时间,time consuming/play for time,CanTong Lexicon 2025,Slang,Time description/Behavioral state
+L1,揼波鐘,dam3 bo1 zung1,0,拖延时间/耽误时间/磨洋工/拖拖拉拉/浪费时间,time consuming/play for time,,Slang,Time description/Behavioral state
 L2,揼時間,dam1 si4 gaan3,0,拖延时间/耽误时间/磨洋工/拖拖拉拉,waste time/dawdle/stall for time/stall for prolong,CanTong Lexicon 2025,Colloquial,Time description/Behavioral state
 L3,拖延時間​,to1 jin4 si4 gaan3,0,拖延时间/耽误时间,waste time/dawdle/stall for time/stall for prolong,CanTong Lexicon 2025,Formal,Time description/Behavioral state
 L4,拖時間​,to1 si4 gaan3,0,拖延时间/耽误时间,waste time/dawdle/stall for time/stall for prolong,CanTong Lexicon 2025,Colloquial,Time description/Behavioral state
@@ -516,10 +516,10 @@ L514,番薯,faan1 syu4,0,呆瓜/糊里糊涂/反应迟钝/慢半拍/傻里傻气
 L515,袖珍,zau6 zan1,0,小巧玲珑/精致/迷你/微缩/微型,petite/diminutive/cute and small/pocket-size/pocket/mini,CanTong Lexicon 2026,Slang,
 L516,唔等洗,m4 dang2 sai2,0,不等用/没用的/多余的/多余/不切实际/无用,impractical/useless ,CanTong Lexicon 2026,Formal,
 L517,啜核,zyut3 wat6,0,很过分/很刁钻/很犀利/很极致/真的想不到/很搞笑/很好笑,that's outrageous/tricky/sharp/extreme/unbelievable/hilarious/funny,CanTong Lexicon 2026,Slang,
-L518,搞嘢,gaau2 je5,0,很过分/很刁钻/很犀利/很极致/真的想不到/很搞笑/很好笑,that's outrageous/tricky/sharp/extreme/unbelievable/hilarious/funny,CanTong Lexicon 2026,Colloquial,
-L519,攪笑,gaau2 siu3,0,真的想不到/搞笑/好笑,unbelievable/funny/hilarious,CanTong Lexicon 2026,Colloquial,
-L520,劈撚,pek3 lang1,1,很过分/很刁钻/很犀利/很极致/真的想不到/很搞笑/很好笑,that's outrageous/tricky/sharp/extreme/unbelievable/hilarious/funny,CanTong Lexicon 2026,Colloquial,
-L521,抵死,dai2 sei2,0,很过分/很极致/很搞笑/很好笑/活该/风趣幽默,that's outrageous/extreme/hilarious/very funny/serves him right/funny and humorous,CanTong Lexicon 2026,Colloquial,
+L518,搞嘢,gaau2 je5,0,很过分/很刁钻/很犀利/很极致/真的想不到/很搞笑/很好笑/荒谬/有趣,that's outrageous/tricky/sharp/extreme/unbelievable/hilarious/funny/ridiculous/interesting,CanTong Lexicon 2026,Colloquial,
+L519,攪笑,gaau2 siu3,0,真的想不到/搞笑/好笑/荒谬/有趣,unbelievable/funny/hilarious/ridiculous/laughable/amusing/entertaining,CanTong Lexicon 2026,Colloquial,
+L520,劈撚,pek3 lang1,1,很过分/很刁钻/很犀利/很极致/真的想不到/很搞笑/很好笑/荒谬,that's outrageous/tricky/sharp/extreme/unbelievable/hilarious/funny/ridiculous/laughable/amusing/entertaining,CanTong Lexicon 2026,Colloquial,
+L521,抵死,dai2 sei2,0,很过分/很极致/很搞笑/很好笑/活该/风趣幽默/荒谬/有趣,that's outrageous/extreme/hilarious/very funny/serves him right/funny and humorous/ridiculous/interesting,CanTong Lexicon 2026,Colloquial,
 L522,風趣,fung1 ceoi3,0,风趣/幽默/风趣幽默/很搞笑/很好笑/搞笑/滑稽,humorous/funny/very funny/charm/humor/wit/witty,CanTong Lexicon 2026,Formal,
 L523,風趣幽默,fung1 ceoi3 jau1 mak6,0,风趣/幽默/风趣幽默/很搞笑/很好笑/搞笑/滑稽,humorous/funny/very funny/charm/humor/wit/witty,CanTong Lexicon 2026,Formal,
 L524,黐線,ci1 sin6,0,神经病/发神经/白痴/弱智/有病,dork/idiot/ridiculous/moron/crazy/insane/short/idiocy/fool/lunatic/mad/schizophrenic/weak minded/mentally deficient/retarded/,CanTong Lexicon 2026,Colloquial,curse
@@ -545,7 +545,7 @@ L543,二五仔,ji6 ng5 zai2,0,死小子/孙子/臭小子/混蛋/王八蛋/反贼
 L544,食碗麵，反碗底,"sik6 wun2 min6, faan2 wun2 dai2",0,死小子/孙子/臭小子/混蛋/王八蛋/反贼/反骨/讨厌的人/叛徒/白眼狼/忘恩负义/因将仇报/吃里扒外的货,to return one's kindess with ingratitude and betrayal/Bastard/Asshole/shithead/traitor/betrayer/utterly ungrateful,CanTong Lexicon 2026,Slang,curse
 L545,恩將仇報,jan1 zoeng1 cau4 bou3,0,死小子/孙子/臭小子/混蛋/王八蛋/反贼/反骨/讨厌的人/叛徒/白眼狼/忘恩负义/因将仇报/吃里扒外的货,Bastard/Asshole/shithead/traitor/betrayer/utterly ungrateful,CanTong Lexicon 2026,Formal,curse
 L546,忘恩負義,mong4 jan1 fu6 ji6,0,死小子/孙子/臭小子/混蛋/王八蛋/反贼/反骨/讨厌的人/叛徒/白眼狼/忘恩负义/因将仇报/吃里扒外的货,Bastard/Asshole/shithead/traitor/betrayer/utterly ungrateful,CanTong Lexicon 2026,Formal,curse
-L547,撲街,pok3 gaai1,0,该死/出大事了/跌倒/王八蛋/完了/完蛋了/倒霉了/扑街/糟糕了/糟糕/出大事,I'm screwed/I'm fucked/I'm doomed/I'm done/I'm finished/I'm toast/it's over/I'm in trouble/I'm dead/I'm so dead/I'm out of luck/down on my luck /bad luck/unlucky/shit/oh shit/holy shit/damn/god damn it/damn it/fuck /fuck me/fuck this/oh my god/omg/what the hell/what the fuck,CanTong Lexicon 2026,Colloquial,curse
+L547,撲街,pok3 gaai1,0,该死/出大事了/跌倒/王八蛋/完了/完蛋了/倒霉了/扑街/糟糕了/糟糕/出大事/失败了,I'm screwed/I'm fucked/I'm doomed/I'm done/I'm finished/I'm toast/it's over/I'm in trouble/I'm dead/I'm so dead/I'm out of luck/down on my luck /bad luck/unlucky/shit/oh shit/holy shit/damn/god damn it/damn it/fuck /fuck me/fuck this/oh my god/omg/what the hell/what the fuck,CanTong Lexicon 2026,Colloquial,curse
 L548,正撲街,zing3 pok3 gaai1,0,真该死/真的是王八蛋/正扑街/正一扑街/渣男/贱男/真渣男/真贱男/渣女/贱人,bastard/asshole/jerk/piece of shit/scumbag/dickhead/such a bastard/a real asshole/total jerk/absolute bastard,CanTong Lexicon 2026,Colloquial,curse
 L549,正一撲街,zing3 jat1 pok3 gaai1,0,真该死/真的是王八蛋/正扑街/正一扑街,bastard / asshole / jerk / piece of shit / scumbag / dickhead / such a bastard / a real asshole / total jerk / absolute bastard,CanTong Lexicon 2026,Colloquial,curse
 L550,食屎,sik6 si2,0,去死吧/吃屎去,eat shit/eat crap/eat dirt/go to hell/go to hell and die/go fuck yourself/fuck off/fuck you/screw you/up yours/kiss my ass/kiss my arse/bite me/drop dead/go die/die already/to hell with you/to hell with it/rot in hell/burn in hell,CanTong Lexicon 2026,Colloquial,curse
@@ -888,8 +888,8 @@ L879,陣間,zan6 gaan1,0,等等/慢着/且慢/等一下/一会/一会儿/一阵�
 L880,鳩​噏,gau1 ngap1,1,闲聊/开玩笑/吹水/信口开河/乱说/不负责任的说/随便说说,"chat/to chat/gossip/to banter/banter/to gossip/ to talk casually/to talk big
 talk big/talk casually/Speaking carelessly/Talking nonsense/Speaking irresponsibly/Saying whatever comes to mind",CanTong Lexicon 2026,Colloquial,
 L881,大檸樂,daai6 ning4 lok6,0,该死/出大事了/完了/完蛋了/倒霉了/扑街/糟糕了/糟糕/出大事,I'm screwed / I'm fucked / I'm doomed / I'm done / I'm finished / I'm toast / it's over / I'm dead / I'm so dead / I'm in trouble / I'm out of luck / down on my luck / I'm totally screwed / I'm completely fucked / I'm in deep trouble / I'm in deep shit / I'm fucked up / I'm done for / I'm finished for / I'm screwed big time / I'm screwed up / oh shit / holy shit / shit / damn it / god damn it / fuck / fuck me / fuck this / what the fuck / what the hell / oh my god / omg,CanTong Lexicon 2026,Colloquial,
-L882,閪曬,hai1 saai3,1,该死/出大事了/完了/完蛋了/倒霉了/扑街/糟糕了/糟糕/出大事,oh shit / damn / damn it / oh my god / omg / shit / fuck / fucked up / we're screwed / this sucks / what a mess / what the hell / out of luck / down on my luck / this is terrible / this is a disaster,CanTong Lexicon 2026,Colloquial,
-L883,碌柒,luk1 cat1,1,该死/出大事了/完了/完蛋了/倒霉了/扑街/糟糕了/糟糕/出大事,down on one's luck / out of luck / having the worst luck / everything goes wrong / nothing ever works out,CanTong Lexicon 2026,Colloquial,
+L882,閪曬,hai1 saai3,1,该死/出大事了/完了/完蛋了/倒霉了/扑街/糟糕了/糟糕/出大事/失败了,oh shit / damn / damn it / oh my god / omg / shit / fuck / fucked up / we're screwed / this sucks / what a mess / what the hell / out of luck / down on my luck / this is terrible / this is a disaster,CanTong Lexicon 2026,Colloquial,
+L883,碌柒,luk1 cat1,1,该死/出大事了/完了/完蛋了/倒霉了/扑街/糟糕了/糟糕/出大事/失败了,down on one's luck / out of luck / having the worst luck / everything goes wrong / nothing ever works out,CanTong Lexicon 2026,Colloquial,
 L884,咸濕,haam4 sap1,0,咸湿/好色/色眯眯/色情/很黄/黄,hamsup/horny/lustful/having/obscene/pornographic/prurience/prurient/lecherous,CanTong Lexicon 2026,Colloquial,
 L885,鹹濕佬,haam4 sap1 lou2,0,咸湿佬/好色男/下流/猥琐男人/色狼/色鬼/好色之徒/,a lecher/a lecherous guy/a creep/a creepy guy/a pervert/a dirty old man/a sleazy guy/a horn dog/a dirty-minded guy,CanTong Lexicon 2026,Colloquial,
 L886,鹹濕,haam4 sap1,0,咸湿/好色/色眯眯/色情/很黄/黄,hamsup/horny/lustful/having/obscene/pornographic/prurience/prurient/lecherous,CanTong Lexicon 2026,Colloquial,
@@ -1006,6 +1006,26 @@ L996,捞松,laau1 sung1,0,老兄/外地人,outsider,CanTong Lexicon 2026,slang,
 L997,著緊衫,zyu3 gan2 saam1,0,正在穿衣服/准备出门/在路上,Getting dressed / Getting ready to go out / On the way,CanTong Lexicon 2026,Colloquial,Behavior/Status
 L998,臨時開張,lam4 si4 hoi1 zoeng1,0,临时开店/林时开张/林家谦时开张敬轩/临时开店/临时开业,Temporary store opening,CanTong Lexicon 2026,Colloquial,
 L999,臨時開業,lam4 si4 hoi1 jip6,0,临时开店/临时开业,Temporary store opening,CanTong Lexicon 2026,Colloquial,
-,,,,,,,,
-,,,,,,,,
+L1000,閪咗,hai1 zo2,1,该死/出大事了/完了/完蛋了/倒霉了/扑街/糟糕了/糟糕/出大事/失败了,oh shit / damn / damn it / oh my god / omg / shit / fuck / fucked up / we're screwed / this sucks / what a mess / what the hell / out of luck / down on my luck / this is terrible / this is a disaster,CanTong Lexicon 2026,Colloquial,
+L1001,衰咗,seoi1 zo2,0,该死/出大事了/完了/完蛋了/倒霉了/扑街/糟糕了/糟糕/出大事/失败了,oh shit / damn / damn it / oh my god / omg / shit / fuck / fucked up / we're screwed / this sucks / what a mess / what the hell / out of luck / down on my luck / this is terrible / this is a disaster,CanTong Lexicon 2026,Colloquial,
+L1002,做錯​嘢,zou6 co3 je5,0,该死/出大事了/完了/完蛋了/倒霉了/扑街/糟糕了/糟糕/出大事/失败了/做错事/倒霉,oh shit / damn / damn it / oh my god / omg / shit / fuck / fucked up / we're screwed / this sucks / what a mess / what the hell / out of luck / down on my luck / this is terrible / this is a disaster,CanTong Lexicon 2026,Colloquial,
+L1003,好笑,hou2 siu3,0,搞笑/好笑/荒谬,unbelievable/funny/hilarious/ridiculous/laughable/amusing/entertaining/interesting,CanTong Lexicon 2026,Colloquial,
+L1004,無厘頭,mou4 lei4 tau4,0,真的想不到/搞笑/好笑/荒谬/无厘头,unbelievable/funny/hilarious/ridiculous/laughable/amusing/entertaining/interesting,CanTong Lexicon 2026,Colloquial,
+L1005,咪使旨意,mai5 sai2 zi2 ji3,0,想都别想/没门/没门儿/咪使指意/别想,to not bank on/to not hope for/to not even think about it/no way,CanTong Lexicon 2026,Colloquial,warn
+L1006,咪指意,mai5 zi2 ji3,0,想都别想/没门/没门儿/咪使指意/别想,to not bank on/to not hope for/to not even think about it/no way,CanTong Lexicon 2026,Colloquial,warn
+L1007,唔使旨意,m4 sai2 zi2 ji3,0,想都别想/没门/没门儿/唔使指意/别想,to not bank on/to not hope for/to not even think about it/no way,CanTong Lexicon 2026,Colloquial,warn
+L1008,慳啲啦,haan1 di1 laa1,0,想都别想/没门/没门儿/唔使指意/省点钱/节省点/不要乱花钱/别想,to not bank on/to not hope for/to not even think about it/no way/Save some money.,CanTong Lexicon 2026,Colloquial,warn
+L1009,慳翻啖氣,haan1 faan1 daam6 hei3,0,算了吧/没门/省点气吧你,Forget it/No way,CanTong Lexicon 2026,Colloquial,
+L1010,諗都唔好諗,nam2 dou1 mou2 lam2,0,想都别想/没门/没门儿/唔使指意/别想,to not bank on/to not hope for/to not even think about it/no way,CanTong Lexicon 2026,Colloquial,
+L1011,諗多咗,nam2 do1 zo2,0,想多了/想太多了/想了太多/多想了,You're overthinking it.,CanTong Lexicon 2026,Colloquial,
+L1012,諗得太多,nam2 dak1 taai3 do1,0,想多了/想太多了/想了太多/多想了,You're overthinking it.,CanTong Lexicon 2026,Colloquial,
+L1013,想創你,soeng2 cong3 nei5,0,想都别想/没门/没门儿/唔使指意/别想,to not bank on/to not hope for/to not even think about it/no way,CanTong Lexicon 2026,Colloquial,
+L1014,食懵你,sik6 mung2 nei5,0,傻了/疯了/糊涂了/不是吧/神经病/没事吧,Crazy / Insane / Confused / No way / Mentally ill / Are you okay?,CanTong Lexicon 2026,Colloquial,
+L1015,食懵咗,sik6 mung2 zo2,0,傻了/疯了/糊涂了/不是吧/神经病/没事吧,Crazy / Insane / Confused / No way / Mentally ill / Are you okay?,CanTong Lexicon 2026,Colloquial,
+L1016,冇得傾,mou5 dak1 king1,0,想都别想/没门/没门儿/别想/面谈/绝对不行,to not bank on/to not hope for/to not even think about it/no way/no,CanTong Lexicon 2026,Colloquial,
+L1017,發夢喇你,faat3 mung6 laa1 nei5,0,想都别想/没门/没门儿/别想/面谈/绝对不行/作梦吧你,to not bank on/to not hope for/to not even think about it/no way/no,CanTong Lexicon 2026,Colloquial,
+L1018,,,,,,,,
+L1019,,,,,,,,
+L1020,,,,,,,,
+L1021,,,,,,,,
 ,,,,,,,,
