@@ -28,46 +28,55 @@ export function AddWordDrawer({ isOpen, onClose }: AddWordDrawerProps) {
     };
   }, [isOpen, onClose]);
 
-const handleAdd = async () => {
-  setIsSubmitting(true);  // Show "adding..." state
+  const handleAdd = async () => {
+    setIsSubmitting(true);  // Show "adding..." state
 
-  const word = inputValue.trim();
-  if (!word || isSubmitting) return;
+    const word = inputValue.trim();
+    if (!word || isSubmitting) return;
 
-  try {
-    // Ensure all fields are valid before insertion
-    if (!word) {
+    try {
+      // Check if the word already exists in the lexeme_suggestions table
+      const { data: existingData } = await supabase
+        .from('lexeme_suggestions')
+        .select('*')
+        .eq('zhh', word)
+        .single();
+
+      if (existingData) {
+        // If the word exists, do not insert again and return
+        setIsSubmitting(false);
+        return alert('Duplicate entry, not added.');
+      }
+
+      // Insert data into lexeme_suggestions
+      const payload = {
+        zhh: word,
+        is_r18: wordType,  // 1 or 0 based on word type
+        chs: '',  // Add corresponding Chinese translation if needed
+        en: '',   // Add corresponding English translation if needed
+        owner_tag: '',  // Optional
+        register: '',   // Optional
+        intent: '',      // Optional
+      };
+
+      const { error } = await supabase
+        .from('lexeme_suggestions')
+        .insert([payload]);
+
+      if (error) {
+        console.error('Supabase insert error:', error);
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Reset form
+      setInputValue('');
+      setWordType('1');
       setIsSubmitting(false);
-      alert("Please enter a word.");
-      return;
-    }
-
-    const payload = {
-      zhh: word,
-      is_r18: wordType,  // 1 or 0 based on word type
-      chs: '',  // Optional, add default or validation
-      en: '',   // Optional, add default or validation
-      owner_tag: '',  // Optional
-      register: '',   // Optional
-      intent: '',      // Optional
-    };
-
-    const { error } = await supabase
-      .from('lexeme_suggestions')
-      .insert([payload]);
-
-    if (error) {
-      console.error('Supabase insert error:', error);
+      onClose();
+    } catch (error) {
+      console.error("Error inserting word: ", error);
       setIsSubmitting(false);
-      return;
-    }
-
-    setInputValue('');  // Clear input after successful add
-    setIsSubmitting(false);  // Hide "adding..." state
-    onClose();
-  } catch (error) {
-    console.error("Error inserting word: ", error);
-    setIsSubmitting(false);
     }
   };
 
@@ -105,7 +114,7 @@ const handleAdd = async () => {
           type="text"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
-          placeholder=" "
+          placeholder="Enter word"
           className="w-full bg-transparent text-white text-4xl text-center focus:outline-none placeholder:text-gray-600"
           autoFocus
         />
