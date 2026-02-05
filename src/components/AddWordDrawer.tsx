@@ -28,7 +28,31 @@ export function AddWordDrawer({ isOpen, onClose }: AddWordDrawerProps) {
     };
   }, [isOpen, onClose]);
 
-  const handleAdd = async () => {
+  
+    const handleReviseAdd = async () => {
+      const word = inputValue.trim();
+      if (!word || isSubmitting) return;
+
+      setIsSubmitting(true);
+
+      // Assuming the logic of adding to supabase will be the same as original add button
+      try {
+        const { data, error } = await supabase
+          .from('lexeme_suggestions')
+          .insert([{ word: word, status: 'pending', type: wordType }]);
+
+        if (error) {
+          console.error('Error adding word:', error.message);
+        } else {
+          console.log('Word added to supabase:', data);
+        }
+      } catch (err) {
+        console.error('Unexpected error:', err);
+      } finally {
+        setIsSubmitting(false);
+      }
+    };
+    
     const word = inputValue.trim();
     if (!word || isSubmitting) return;
 
