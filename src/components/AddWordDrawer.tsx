@@ -27,44 +27,39 @@ export function AddWordDrawer({ isOpen, onClose }: AddWordDrawerProps) {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isOpen, onClose]);
-
-  const handleAdd = async (isRevise: boolean = false) => {
+const handleAdd = async (isRevise: boolean = false) => {
     const word = inputValue.trim();
     if (!word || isSubmitting) return;
 
     setIsSubmitting(true);
 
     try {
-        // 创建提交数据的 payload，确保所有必要字段都包含在内
+        // Ensure the correct table (lexeme_suggestions) is being used for insert
         const payload = {
             word,
-            is_r18: Number(wordType),  // 假设 wordType 用来判断是否是粗俗语言
-            status: 'pending',  // 假设状态为 'pending'，如果有其他状态需求请修改
+            is_r18: Number(wordType),  // Assuming wordType determines if coarse language
+            status: 'pending',  // Default status, change if needed
         };
 
-        // 将新词条插入到 lexeme_suggestions 表
         const { data, error } = await supabase
-            .from('lexeme_suggestions')
+            .from('lexeme_suggestions')  // Make sure this points to the correct table
             .insert([payload]);
 
-        // 检查插入过程中是否有错误
         if (error) {
-            console.error('插入数据时发生错误:', error);
+            console.error('Error inserting data:', error);
             throw error;
         }
 
-        // 输出成功插入的数据到控制台
-        console.log('成功插入的数据:', data);
+        console.log('Inserted data:', data);
 
-        // 提交成功后重置输入框和状态
         setInputValue('');
         setIsSubmitting(false);
-        
+
         if (!isRevise) {
-            // 如果是普通添加，不是修订，可以在这里处理相关逻辑
+            // Handle non-revise logic here
         }
     } catch (error) {
-        console.error('handleAdd 函数中的错误:', error);
+        console.error('Error in handleAdd function:', error);
         setIsSubmitting(false);
     }
   };
