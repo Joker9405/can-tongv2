@@ -27,42 +27,37 @@ export function AddWordDrawer({ isOpen, onClose }: AddWordDrawerProps) {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isOpen, onClose]);
-const handleAdd = async (isRevise: boolean = false) => {
+const handleAdd = async () => {
     const word = inputValue.trim();
     if (!word || isSubmitting) return;
 
-    setIsSubmitting(true);  // Set submitting state to true
+    setIsSubmitting(true);
 
-    try {
-        const payload = {
-            word,
-            is_r18: Number(wordType),
-            status: 'pending',  // Default status, adjust if necessary
-        };
+    const payload = {
+        word,
+        is_r18: Number(wordType),
+        status: 'pending',
+    };
 
-         // Ensure that the correct table (lexeme_suggestions) is used
-        const { data, error } = await supabase
-            .from('lexeme_suggestions')  // Correct table path
-            .insert([payload]);
+    // 调试日志：打印表路径和数据负载
+    console.log('Supabase path:', 'lexeme_suggestions');
+    console.log('Payload data:', payload);
 
-        if (error) {
-            console.error('Error inserting data:', error);
-            throw error;
-        }
+    const { error } = await supabase
+      .from('lexeme_suggestions')  // Ensure path is correct
+      .insert([payload]);
 
-         // Log the data after successful insertion
-        console.log('Inserted data:', data);
+    if (error) {
+      console.error('Supabase insert error:', error);
+      setIsSubmitting(false);
+      return;
+    }
 
-        // Reset the form and disable submitting state
-        setInputValue('');
-        setIsSubmitting(false);
-
-        if (!isRevise) {
-            // Handle non-revise logic (if needed)
-        }
-    } catch (error) {
-        console.error('Error in handleAdd function:', error);
-        setIsSubmitting(false);  // Reset submitting state on error
+    // Reset form
+    setInputValue('');
+    setWordType('1');
+    setIsSubmitting(false);
+    onClose();
     }
   };
 
