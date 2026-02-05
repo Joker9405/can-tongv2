@@ -35,48 +35,46 @@ export function AddWordDrawer({ isOpen, onClose }: AddWordDrawerProps) {
     if (!word || isSubmitting) return;
 
     try {
-      // Check if the word already exists in the lexeme_suggestions table
-      const { data: existingData } = await supabase
-        .from('lexeme_suggestions')
-        .select('*')
-        .eq('zhh', word)
-        .single();
+        // Check if the word already exists in the lexeme_suggestions table
+        const { data: existingData } = await supabase
+            .from('lexeme_suggestions')
+            .select('*')
+            .eq('zhh', word) // Ensure the field 'zhh' exists in your DB
+            .single();
 
-      if (existingData) {
-        // If the word exists, do not insert again and return
+        if (existingData) {
+            setIsSubmitting(false);
+            return alert('Duplicate entry, not added.');
+        }
+
+        // Insert data into lexeme_suggestions
+        const payload = {
+            zhh: word,
+            is_r18: wordType,  // 1 or 0 based on word type
+            chs: '',  // Add corresponding Chinese translation if needed
+            en: '',   // Add corresponding English translation if needed
+            owner_tag: '',  // Optional
+            register: '',   // Optional
+            intent: '',      // Optional
+        };
+
+        const { error } = await supabase
+            .from('lexeme_suggestions')
+            .insert([payload]);
+
+        if (error) {
+            console.error('Supabase insert error:', error);
+            setIsSubmitting(false);
+            return;
+        }
+
+        setInputValue('');  // Clear input after successful add
+        setWordType('1');
         setIsSubmitting(false);
-        return alert('Duplicate entry, not added.');
-      }
-
-      // Insert data into lexeme_suggestions
-      const payload = {
-        zhh: word,
-        is_r18: wordType,  // 1 or 0 based on word type
-        chs: '',  // Add corresponding Chinese translation if needed
-        en: '',   // Add corresponding English translation if needed
-        owner_tag: '',  // Optional
-        register: '',   // Optional
-        intent: '',      // Optional
-      };
-
-      const { error } = await supabase
-        .from('lexeme_suggestions')
-        .insert([payload]);
-
-      if (error) {
-        console.error('Supabase insert error:', error);
-        setIsSubmitting(false);
-        return;
-      }
-
-      // Reset form
-      setInputValue('');
-      setWordType('1');
-      setIsSubmitting(false);
-      onClose();
+        onClose();
     } catch (error) {
-      console.error("Error inserting word: ", error);
-      setIsSubmitting(false);
+        console.error("Error inserting word: ", error);
+        setIsSubmitting(false);;
     }
   };
 
