@@ -31,21 +31,18 @@ const handleAdd = async (isRevise: boolean = false) => {
     const word = inputValue.trim();
     if (!word || isSubmitting) return;
 
-    setIsSubmitting(true); // Set submitting state to true to show 'adding...'
+    setIsSubmitting(true);  // Set submitting state to true
 
     try {
-        // Log before making the request
-        console.log("Submitting word:", word);
-
         const payload = {
             word,
             is_r18: Number(wordType),
-            status: 'pending',  // Default status, update if necessary
+            status: 'pending',  // Default status, adjust if necessary
         };
 
-        // Ensure correct table is being used (lexeme_suggestions)
+         // Ensure that the correct table (lexeme_suggestions) is used
         const { data, error } = await supabase
-            .from('lexeme_suggestions')  // Ensure correct table path
+            .from('lexeme_suggestions')  // Correct table path
             .insert([payload]);
 
         if (error) {
@@ -53,15 +50,15 @@ const handleAdd = async (isRevise: boolean = false) => {
             throw error;
         }
 
-        // Log successful insertion
+         // Log the data after successful insertion
         console.log('Inserted data:', data);
 
-        // Reset the form after successful insertion
+        // Reset the form and disable submitting state
         setInputValue('');
-        setIsSubmitting(false);  // Set submitting state to false after success
+        setIsSubmitting(false);
 
         if (!isRevise) {
-            // Handle non-revise add logic (if needed)
+            // Handle non-revise logic (if needed)
         }
     } catch (error) {
         console.error('Error in handleAdd function:', error);
