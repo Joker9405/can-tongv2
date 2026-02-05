@@ -35,26 +35,37 @@ export function AddWordDrawer({ isOpen, onClose }: AddWordDrawerProps) {
     setIsSubmitting(true);
 
     try {
-      // Insert word into supabase table
-      const { data, error } = await supabase
-        .from('lexeme_suggestions')
-        .insert([{ word, type: wordType }]);
+        // 创建提交数据的 payload，确保所有必要字段都包含在内
+        const payload = {
+            word,
+            is_r18: Number(wordType),  // 假设 wordType 用来判断是否是粗俗语言
+            status: 'pending',  // 假设状态为 'pending'，如果有其他状态需求请修改
+        };
 
-      if (error) throw error;
+        // 将新词条插入到 lexeme_suggestions 表
+        const { data, error } = await supabase
+            .from('lexeme_suggestions')
+            .insert([payload]);
 
-      // Log the inserted data to console for debugging purposes
-      console.log('Inserted data:', data);
+        // 检查插入过程中是否有错误
+        if (error) {
+            console.error('插入数据时发生错误:', error);
+            throw error;
+        }
 
-      // Reset form after successful insertion
-      setInputValue('');
-      setIsSubmitting(false);
-      
-      if (!isRevise) {
-        // Handle non-revise behavior here (if needed)
-      }
+        // 输出成功插入的数据到控制台
+        console.log('成功插入的数据:', data);
+
+        // 提交成功后重置输入框和状态
+        setInputValue('');
+        setIsSubmitting(false);
+        
+        if (!isRevise) {
+            // 如果是普通添加，不是修订，可以在这里处理相关逻辑
+        }
     } catch (error) {
-      console.error('Error inserting data:', error);
-      setIsSubmitting(false);
+        console.error('handleAdd 函数中的错误:', error);
+        setIsSubmitting(false);
     }
   };
 
