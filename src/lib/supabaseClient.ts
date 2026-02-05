@@ -9,6 +9,8 @@ if (!supabaseUrl || !supabaseAnonKey) {
   )
 }
 
+console.log('Connecting to Supabase with URL:', supabaseUrl);  // Debugging log
+
 const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 export default supabase
