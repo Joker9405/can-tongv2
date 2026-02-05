@@ -34,51 +34,27 @@ export function AddWordDrawer({ isOpen, onClose }: AddWordDrawerProps) {
 
     setIsSubmitting(true);
 
-    try {
-      // Check if the word already exists in the lexeme_suggestions table
-      const { data: existingData } = await supabase
-        .from('lexeme_suggestions')
-        .select('*')
-        .eq('zhh', word)
-        .single();
+    const payload = {
+      word,
+      is_r18: Number(wordType),
+      status: 'pending',
+    };
 
-      if (existingData) {
-        // If the word exists, do not insert again and return
-        setIsSubmitting(false);
-        alert('Duplicate entry, not added.');
-        return;
-      }
+    const { error } = await supabase
+      .from('lexeme_suggestions')
+      .insert([payload]);
 
-      // Insert data into lexeme_suggestions
-      const payload = {
-        zhh: word,
-        is_r18: wordType,  // 1 or 0 based on word type
-        chs: '',  // Add corresponding Chinese translation if needed
-        en: '',   // Add corresponding English translation if needed
-        owner_tag: '',  // Optional
-        register: '',   // Optional
-        intent: '',      // Optional
-      };
-
-      const { error } = await supabase
-        .from('lexeme_suggestions')
-        .insert([payload]);
-
-      if (error) {
-        console.error('Supabase insert error:', error);
-        setIsSubmitting(false);
-        return;
-      }
-
-      // Reset form
-      setInputValue('');
-      setWordType('1');
+    if (error) {
+      console.error('Supabase insert error:', error);
       setIsSubmitting(false);
-      onClose();
-    } catch (error) {
-      console.error("Error inserting word: ", error);
-      setIsSubmitting(false);
+      return;
     }
+
+    // Reset form
+    setInputValue('');
+    setWordType('1');
+    setIsSubmitting(false);
+    onClose();
   };
 
   if (!isOpen) return null;
@@ -115,7 +91,7 @@ export function AddWordDrawer({ isOpen, onClose }: AddWordDrawerProps) {
           type="text"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
-          placeholder="Enter word"
+          placeholder=""
           className="w-full bg-transparent text-white text-4xl text-center focus:outline-none placeholder:text-gray-600"
           autoFocus
         />
