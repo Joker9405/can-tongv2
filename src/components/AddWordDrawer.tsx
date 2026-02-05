@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from 'react';
 import supabase from '../lib/supabaseClient';
 
@@ -30,45 +29,85 @@ export function AddWordDrawer({ isOpen, onClose }: AddWordDrawerProps) {
   }, [isOpen, onClose]);
 
   const handleAdd = async () => {
-    setIsSubmitting(true);  // Show loading state
+    const word = inputValue.trim();
+    if (!word || isSubmitting) return;
 
-    // Check if the word already exists in lexeme_suggestions to avoid duplicates
-    const { data: existingWords, error } = await supabase
+    setIsSubmitting(true);
+
+    const payload = {
+      word,
+      is_r18: Number(wordType),
+      status: 'pending',
+    };
+
+    const { error } = await supabase
       .from('lexeme_suggestions')
-      .select('*')
-      .eq('input_value', inputValue);
+      .insert([payload]);
 
-    if (existingWords && existingWords.length > 0) {
-      console.log('Duplicate entry found, not adding');
+    if (error) {
+      console.error('Supabase insert error:', error);
       setIsSubmitting(false);
-      return;  // Stop further processing if duplicate is found
+      return;
     }
 
-    // If no duplicates, add to lexeme_suggestions
-    const { data, error: addError } = await supabase
-      .from('lexeme_suggestions')
-      .insert([{ input_value: inputValue, word_type: wordType }]);
-
-    if (addError) {
-      console.error('Error adding word to lexeme_suggestions:', addError);
-    } else {
-      console.log('Word added to lexeme_suggestions:', data);
-    }
-
-    setIsSubmitting(false);  // Reset loading state after submission
+    // Reset form
+    setInputValue('');
+    setWordType('1');
+    setIsSubmitting(false);
+    onClose();
   };
 
+  if (!isOpen) return null;
+
   return (
-    <div ref={drawerRef} className="drawer">
-      <input
-        type="text"
-        value={inputValue}
-        onChange={(e) => setInputValue(e.target.value)}
-        placeholder="Enter word"
-      />
-      <button onClick={handleAdd} disabled={isSubmitting}>
-        {isSubmitting ? 'Adding...' : 'Add Word'}
-      </button>
+    <div
+      ref={drawerRef}
+      className="absolute top-0 left-0 bg-[#3a3a3a] w-full rounded-[28px] p-8 p-6 z-10"
+    >
+      {/* Type Selector - Top Left at corner radius center */}
+      <div className="flex gap-3 mb-6 -pr-20 -pb-20">
+        <button
+          onClick={() => setWordType('0')}
+          className="relative w-8 h-8 rounded-[28px] bg-[#c8ff00] flex items-center justify-center hover:scale-110 transition-transform"
+          aria-label="Green term"
+          type="button"
+        >
+          {wordType === '0' && <div className="w-4 h-4 rounded-[28px] bg-black"></div>}
+        </button>
+
+        <button
+          onClick={() => setWordType('1')}
+          className="relative w-8 h-8 rounded-[28px] bg-[#ff0090] flex items-center justify-center hover:scale-110 transition-transform"
+          aria-label="Pink term"
+          type="button"
+        >
+          {wordType === '1' && <div className="w-4 h-4 rounded-[28px] bg-black"></div>}
+        </button>
+      </div>
+
+      {/* Large Text Input */}
+      <div className="mb-6">
+        <input
+          type="text"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          placeholder=""
+          className="w-full bg-transparent text-white text-4xl text-center focus:outline-none placeholder:text-gray-600"
+          autoFocus
+        />
+      </div>
+
+      {/* Add Button - Bottom Right at corner radius center */}
+      <div className="flex justify-end -pr-20 -pb-20">
+        <button
+          onClick={handleAdd}
+          className="px-6 py-3 bg-black text-[#c8ff00] rounded-[28px] text-xl font-bold hover:scale-105 transition-transform font-[Anton]"
+          type="button"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? 'adding...' : 'add'}
+        </button>
+      </div>
     </div>
   );
 }
