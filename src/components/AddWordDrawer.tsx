@@ -34,15 +34,16 @@ const handleAdd = async (isRevise: boolean = false) => {
     setIsSubmitting(true);
 
     try {
-        // Ensure the correct table (lexeme_suggestions) is being used for insert
+        // Create the payload, ensuring all necessary fields are included
         const payload = {
             word,
-            is_r18: Number(wordType),  // Assuming wordType determines if coarse language
-            status: 'pending',  // Default status, change if needed
+            is_r18: Number(wordType),
+            status: 'pending',  // Default status, can be updated if necessary
         };
 
+        // Insert the new word entry into the lexeme_suggestions table
         const { data, error } = await supabase
-            .from('lexeme_suggestions')  // Make sure this points to the correct table
+            .from('lexeme_suggestions')  // Ensure this points to the correct table
             .insert([payload]);
 
         if (error) {
@@ -50,13 +51,15 @@ const handleAdd = async (isRevise: boolean = false) => {
             throw error;
         }
 
+        // Log successful insertion
         console.log('Inserted data:', data);
 
+        // Reset input and submitting state after successful insertion
         setInputValue('');
         setIsSubmitting(false);
 
         if (!isRevise) {
-            // Handle non-revise logic here
+            // Handle non-revise add logic (if needed)
         }
     } catch (error) {
         console.error('Error in handleAdd function:', error);
