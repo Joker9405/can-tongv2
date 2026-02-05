@@ -27,24 +27,21 @@ export function AddWordDrawer({ isOpen, onClose }: AddWordDrawerProps) {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isOpen, onClose]);
-const handleAdd = async () => {
+
+  const handleAdd = async () => {
     const word = inputValue.trim();
     if (!word || isSubmitting) return;
 
     setIsSubmitting(true);
 
     const payload = {
-        word,
-        is_r18: Number(wordType),
-        status: 'pending',
+      word,
+      is_r18: Number(wordType),
+      status: 'pending',
     };
 
-    // 调试日志：打印表路径和数据负载
-    console.log('Supabase path:', 'lexeme_suggestions');
-    console.log('Payload data:', payload);
-
     const { error } = await supabase
-      .from('lexeme_suggestions')  // Ensure path is correct
+      .from('lexeme_suggestions')
       .insert([payload]);
 
     if (error) {
@@ -58,7 +55,6 @@ const handleAdd = async () => {
     setWordType('1');
     setIsSubmitting(false);
     onClose();
-    }
   };
 
   if (!isOpen) return null;
