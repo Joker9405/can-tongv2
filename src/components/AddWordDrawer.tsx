@@ -115,7 +115,7 @@ export function AddWordDrawer({ isOpen, onClose }: AddWordDrawerProps) {
           type="text"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
-          placeholder="Enter word"
+          placeholder=" "
           className="w-full bg-transparent text-white text-4xl text-center focus:outline-none placeholder:text-gray-600"
           autoFocus
         />
