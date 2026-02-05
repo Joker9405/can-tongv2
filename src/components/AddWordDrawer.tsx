@@ -28,32 +28,25 @@ export function AddWordDrawer({ isOpen, onClose }: AddWordDrawerProps) {
     };
   }, [isOpen, onClose]);
 
-  const handleAdd = async () => {
+const handleAdd = async () => {
   setIsSubmitting(true);  // Show "adding..." state
 
   const word = inputValue.trim();
   if (!word || isSubmitting) return;
 
   try {
-    // Check if the word already exists in the lexeme_suggestions table
-    const { data: existingData } = await supabase
-      .from('lexeme_suggestions')
-      .select('*')
-      .eq('zhh', word)
-      .single();
-
-    if (existingData) {
-      // If the word exists, do not insert again and return
+    // Ensure all fields are valid before insertion
+    if (!word) {
       setIsSubmitting(false);
-      return alert('Duplicate entry, not added.');
+      alert("Please enter a word.");
+      return;
     }
 
-    // Insert data into lexeme_suggestions
     const payload = {
       zhh: word,
       is_r18: wordType,  // 1 or 0 based on word type
-      chs: '',  // Add corresponding Chinese translation if needed
-      en: '',   // Add corresponding English translation if needed
+      chs: '',  // Optional, add default or validation
+      en: '',   // Optional, add default or validation
       owner_tag: '',  // Optional
       register: '',   // Optional
       intent: '',      // Optional
@@ -69,10 +62,8 @@ export function AddWordDrawer({ isOpen, onClose }: AddWordDrawerProps) {
       return;
     }
 
-    // Reset form
-    setInputValue('');
-    setWordType('1');
-    setIsSubmitting(false);
+    setInputValue('');  // Clear input after successful add
+    setIsSubmitting(false);  // Hide "adding..." state
     onClose();
   } catch (error) {
     console.error("Error inserting word: ", error);
