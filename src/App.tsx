@@ -167,13 +167,6 @@ export default function App() {
     }
   };
 
-  const handleWordClick = (word: string) => {
-    const found = matchedEntries.find(entry => entry.zhh === word);
-    if (found) {
-      setSelectedEntry(found);
-    }
-  };
-
   const handleAdd = async () => {
     setIsSubmitting(true);  // Show "adding..." state
 
