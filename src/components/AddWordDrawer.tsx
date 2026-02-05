@@ -28,36 +28,7 @@ export function AddWordDrawer({ isOpen, onClose }: AddWordDrawerProps) {
     };
   }, [isOpen, onClose]);
 
-  
-const handleAdd = async (isRevise: boolean = false) => {
-    const word = inputValue.trim();
-    if (!word || isSubmitting) return;
-
-    setIsSubmitting(true);
-
-    try {
-        const { data, error } = await supabase
-            .from('lexeme_suggestions')
-            .insert([{ word, type: wordType }]);
-
-        if (error) throw error;
-
-        // Log the data to console for debugging purposes (f12 in the browser)
-        console.log('Inserted data:', data);
-
-        // Reset and set the 'adding...' state only after successful submission
-        setInputValue('');
-        setIsSubmitting(false);
-
-        if (!isRevise) {
-            // Handle non-Revise button add logic (such as resetting input, showing confirmation etc)
-        }
-    } catch (error) {
-        console.error('Error inserting data:', error);
-        setIsSubmitting(false);
-    }
-};
-
+  const handleAdd = async () => {
     const word = inputValue.trim();
     if (!word || isSubmitting) return;
 
