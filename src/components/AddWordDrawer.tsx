@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'; 
+import { useState, useRef, useEffect } from 'react';
 import supabase from '../lib/supabaseClient';
 
 interface AddWordDrawerProps {
@@ -12,7 +12,7 @@ export function AddWordDrawer({ isOpen, onClose }: AddWordDrawerProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);  // Track submitting state
   const drawerRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
+  useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (drawerRef.current && !drawerRef.current.contains(event.target as Node)) {
         onClose();
@@ -28,7 +28,7 @@ export function AddWordDrawer({ isOpen, onClose }: AddWordDrawerProps) {
     };
   }, [isOpen, onClose]);
 
-    const handleAdd = async () => {
+  const handleAdd = async () => {
     setIsSubmitting(true);  // Show "adding..." state
 
     const word = inputValue.trim();
@@ -45,10 +45,11 @@ export function AddWordDrawer({ isOpen, onClose }: AddWordDrawerProps) {
       if (existingData) {
         // If the word exists, do not insert again and return
         setIsSubmitting(false);
-        return alert('Duplicate entry, not added.');
-    }
+        alert('Duplicate entry, not added.');
+        return;
+      }
 
-     // Insert data into lexeme_suggestions
+      // Insert data into lexeme_suggestions
       const payload = {
         zhh: word,
         is_r18: wordType,  // 1 or 0 based on word type
@@ -57,26 +58,15 @@ export function AddWordDrawer({ isOpen, onClose }: AddWordDrawerProps) {
         owner_tag: '',  // Optional
         register: '',   // Optional
         intent: '',      // Optional
-    };
+      };
 
-     const { error } = await supabase
+      const { error } = await supabase
         .from('lexeme_suggestions')
         .insert([payload]);
 
       if (error) {
         console.error('Supabase insert error:', error);
         setIsSubmitting(false);
-        return;
-      }
-
-      // Reset form
-      setInputValue('');
-      setWordType('1');
-      setIsSubmitting(false);
-      onClose();
-    } catch (error) {
-      console.error("Error inserting word: ", error);
-      setIsSubmitting(false);
         return;
       }
 
