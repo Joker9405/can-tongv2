@@ -28,7 +28,40 @@ export function AddWordDrawer({ isOpen, onClose }: AddWordDrawerProps) {
     };
   }, [isOpen, onClose]);
 
-  const handleAdd = async () => {
+  
+    const handleAdd = async () => {
+        setIsSubmitting(true);  // Show loading state
+
+        const word = inputValue.trim();
+        if (!word || isSubmitting) return;
+
+        try {
+            // Insert data into lexeme_suggestions
+            const { data, error } = await supabase
+                .from('lexeme_suggestions')
+                .insert([
+                    {
+                        zhh: word,
+                        is_r18: wordType,  // 1 or 0 based on word type
+                        chs: '',  // Add corresponding Chinese translation if needed
+                        en: '',   // Add corresponding English translation if needed
+                        owner_tag: '',  // Optional
+                        register: '',   // Optional
+                        intent: ''      // Optional
+                    }
+                ]);
+
+            if (error) throw error;
+
+            setInputValue('');  // Clear input after successful add
+            onClose();          // Close the drawer
+        } catch (error) {
+            console.error("Error inserting word: ", error);
+        } finally {
+            setIsSubmitting(false);  // Hide loading state
+        }
+    };
+    
     const word = inputValue.trim();
     if (!word || isSubmitting) return;
 
