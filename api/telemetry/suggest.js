@@ -6,7 +6,33 @@ module.exports = async function handler(req, res) {
   }
   if (req.method === "OPTIONS") { setCors(res); return res.status(204).end(); }
   if (req.method === "GET") { setCors(res); return res.status(200).json({ ok:true, usage:"POST { seed_q, zhh, zhh_pron, chs, en, source }" }); }
-  if (req.method !== "POST") { setCors(res); return res.status(200).json({ ok:false, error:"Method Not Allowed (use POST)" }); }
+  if (req.method !== "POST") { setCors(res); 
+    const { seed_q, zhh, zhh_pron, chs, en, source } = body;
+
+    // Check if the entry already exists
+    const { data: existingData } = await supabase
+        .from('lexeme_suggestions')
+        .select('*')
+        .eq('zhh', zhh)
+        .single();
+
+    if (existingData) {
+        return res.status(200).json({ ok: true, message: 'Duplicate entry, not added.' });
+    }
+
+    // Add the new entry to lexeme_suggestions
+    const { data, error } = await supabase
+        .from('lexeme_suggestions')
+        .insert([
+            { seed_q, zhh, zhh_pron, chs, en, source }
+        ]);
+
+    if (error) {
+        return res.status(500).json({ ok: false, error: error.message });
+    }
+
+    return res.status(200).json({ ok: true, data });
+     }
 
   try {
     let body = req.body;
