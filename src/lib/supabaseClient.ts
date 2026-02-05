@@ -10,8 +10,8 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 // Debugging log for connection URL
-console.log('Connecting to Supabase with URL:', supabaseUrl);
-console.log('Supabase Anon Key:', supabaseAnonKey);
+console.log('Supabase path:', 'lexeme_suggestions');
+console.log('Payload data:', payload);
 
 // Create the Supabase client
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
