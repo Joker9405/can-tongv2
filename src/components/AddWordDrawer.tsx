@@ -9,7 +9,7 @@ interface AddWordDrawerProps {
 export function AddWordDrawer({ isOpen, onClose }: AddWordDrawerProps) {
   const [wordType, setWordType] = useState<'0' | '1'>('1'); // 0=green, 1=pink
   const [inputValue, setInputValue] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);  // Track submitting state
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const drawerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -29,53 +29,32 @@ export function AddWordDrawer({ isOpen, onClose }: AddWordDrawerProps) {
   }, [isOpen, onClose]);
 
   const handleAdd = async () => {
-    setIsSubmitting(true);  // Show "adding..." state
-
     const word = inputValue.trim();
     if (!word || isSubmitting) return;
 
-    try {
-        // Check if the word already exists in the lexeme_suggestions table
-        const { data: existingData } = await supabase
-            .from('lexeme_suggestions')
-            .select('*')
-            .eq('zhh', word) // Ensure the field 'zhh' exists in your DB
-            .single();
+    setIsSubmitting(true);
 
-        if (existingData) {
-            setIsSubmitting(false);
-            return alert('Duplicate entry, not added.');
-        }
+    const payload = {
+      word,
+      is_r18: Number(wordType),
+      status: 'pending',
+    };
 
-        // Insert data into lexeme_suggestions
-        const payload = {
-            zhh: word,
-            is_r18: wordType,  // 1 or 0 based on word type
-            chs: '',  // Add corresponding Chinese translation if needed
-            en: '',   // Add corresponding English translation if needed
-            owner_tag: '',  // Optional
-            register: '',   // Optional
-            intent: '',      // Optional
-        };
+    const { error } = await supabase
+      .from('lexeme_suggestions')
+      .insert([payload]);
 
-        const { error } = await supabase
-            .from('lexeme_suggestions')
-            .insert([payload]);
-
-        if (error) {
-            console.error('Supabase insert error:', error);
-            setIsSubmitting(false);
-            return;
-        }
-
-        setInputValue('');  // Clear input after successful add
-        setWordType('1');
-        setIsSubmitting(false);
-        onClose();
-    } catch (error) {
-        console.error("Error inserting word: ", error);
-        setIsSubmitting(false);;
+    if (error) {
+      console.error('Supabase insert error:', error);
+      setIsSubmitting(false);
+      return;
     }
+
+    // Reset form
+    setInputValue('');
+    setWordType('1');
+    setIsSubmitting(false);
+    onClose();
   };
 
   if (!isOpen) return null;
@@ -112,7 +91,7 @@ export function AddWordDrawer({ isOpen, onClose }: AddWordDrawerProps) {
           type="text"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
-          placeholder="Enter word"
+          placeholder=""
           className="w-full bg-transparent text-white text-4xl text-center focus:outline-none placeholder:text-gray-600"
           autoFocus
         />
