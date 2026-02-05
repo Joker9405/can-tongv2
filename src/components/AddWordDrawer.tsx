@@ -30,47 +30,44 @@ export function AddWordDrawer({ isOpen, onClose }: AddWordDrawerProps) {
 
   
 
-const handleAdd = async () => {
-  try {
-    const word = inputValue.trim();
-    if (!word || isSubmitting) return;
-    
-    setIsSubmitting(true);
-    
-    // Check if the word already exists in lexeme_suggestions
-    const { data: existingWords, error } = await supabase
-      .from('lexeme_suggestions')
-      .select('id')
-      .eq('word', word);
-    
-    if (error) {
-      console.error('Error checking word existence:', error);
-      setIsSubmitting(false);
-      return;
-    }
-    
-    if (existingWords.length > 0) {
-      console.log('Word already exists:', word);
-      setIsSubmitting(false);
-      return; // Don't add duplicate word
-    }
-    
-    // Proceed with adding the word to lexeme_suggestions
-    const { data, error: insertError } = await supabase
-      .from('lexeme_suggestions')
-      .insert([{ word }]);
-    
-    if (insertError) {
-      console.error('Error inserting word:', insertError);
-    } else {
-      console.log('Successfully added word:', word);
-    }
-    
+const handleAdd = async (event: React.FormEvent) => {
+  event.preventDefault();  // Prevent form submission
+  
+  const word = inputValue.trim();
+  if (!word || isSubmitting) return;
+  
+  setIsSubmitting(true);
+  
+  // Check if the word already exists in lexeme_suggestions
+  const { data: existingWords, error } = await supabase
+    .from('lexeme_suggestions')
+    .select('id')
+    .eq('word', word);
+  
+  if (error) {
+    console.error('Error checking word existence:', error);
     setIsSubmitting(false);
-  } catch (error) {
-    console.error('Error in handleAdd:', error);
-    setIsSubmitting(false);
+    return;
   }
+  
+  if (existingWords.length > 0) {
+    console.log('Word already exists:', word);
+    setIsSubmitting(false);
+    return; // Don't add duplicate word
+  }
+  
+  // Proceed with adding the word to lexeme_suggestions
+  const { data, error: insertError } = await supabase
+    .from('lexeme_suggestions')
+    .insert([{ word }]);
+  
+  if (insertError) {
+    console.error('Error inserting word:', insertError);
+  } else {
+    console.log('Successfully added word:', word);
+  }
+  
+  setIsSubmitting(false);
 };
     
   const word = inputValue.trim();
