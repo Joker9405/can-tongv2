@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react'; 
 import supabase from '../lib/supabaseClient';
 
 interface AddWordDrawerProps {
@@ -9,10 +9,10 @@ interface AddWordDrawerProps {
 export function AddWordDrawer({ isOpen, onClose }: AddWordDrawerProps) {
   const [wordType, setWordType] = useState<'0' | '1'>('1'); // 0=green, 1=pink
   const [inputValue, setInputValue] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);  // Track submitting state
   const drawerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+    useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (drawerRef.current && !drawerRef.current.contains(event.target as Node)) {
         onClose();
@@ -28,55 +28,55 @@ export function AddWordDrawer({ isOpen, onClose }: AddWordDrawerProps) {
     };
   }, [isOpen, onClose]);
 
-  const handleAdd = async () => {
-      setIsSubmitting(true);  // Show "adding..." state
+    const handleAdd = async () => {
+    setIsSubmitting(true);  // Show "adding..." state
 
-  const word = inputValue.trim();
-  if (!word || isSubmitting) return;
+    const word = inputValue.trim();
+    if (!word || isSubmitting) return;
 
-  try {
-    // Check if the word already exists in the lexeme_suggestions table
-    const { data: existingData } = await supabase
-      .from('lexeme_suggestions')
-      .select('*')
-      .eq('zhh', word)
-      .single();
+    try {
+      // Check if the word already exists in the lexeme_suggestions table
+      const { data: existingData } = await supabase
+        .from('lexeme_suggestions')
+        .select('*')
+        .eq('zhh', word)
+        .single();
 
-    if (existingData) {
-      // If the word exists, do not insert again and return
-      setIsSubmitting(false);
-      return alert('Duplicate entry, not added.');
+      if (existingData) {
+        // If the word exists, do not insert again and return
+        setIsSubmitting(false);
+        return alert('Duplicate entry, not added.');
     }
 
-    // Insert data into lexeme_suggestions
-    const payload = {
-      zhh: word,
-      is_r18: wordType,  // 1 or 0 based on word type
-      chs: '',  // Add corresponding Chinese translation if needed
-      en: '',   // Add corresponding English translation if needed
-      owner_tag: '',  // Optional
-      register: '',   // Optional
-      intent: '',      // Optional
+     // Insert data into lexeme_suggestions
+      const payload = {
+        zhh: word,
+        is_r18: wordType,  // 1 or 0 based on word type
+        chs: '',  // Add corresponding Chinese translation if needed
+        en: '',   // Add corresponding English translation if needed
+        owner_tag: '',  // Optional
+        register: '',   // Optional
+        intent: '',      // Optional
     };
 
-    const { error } = await supabase
-      .from('lexeme_suggestions')
-      .insert([payload]);
+     const { error } = await supabase
+        .from('lexeme_suggestions')
+        .insert([payload]);
 
-    if (error) {
-      console.error('Supabase insert error:', error);
+      if (error) {
+        console.error('Supabase insert error:', error);
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Reset form
+      setInputValue('');
+      setWordType('1');
       setIsSubmitting(false);
-      return;
-    }
-
-    // Reset form
-    setInputValue('');
-    setWordType('1');
-    setIsSubmitting(false);
-    onClose();
-  } catch (error) {
-    console.error("Error inserting word: ", error);
-    setIsSubmitting(false);
+      onClose();
+    } catch (error) {
+      console.error("Error inserting word: ", error);
+      setIsSubmitting(false);
         return;
       }
 
