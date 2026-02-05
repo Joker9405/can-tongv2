@@ -28,7 +28,45 @@ export function AddWordDrawer({ isOpen, onClose }: AddWordDrawerProps) {
     };
   }, [isOpen, onClose]);
 
-  const handleAdd = async () => {
+  
+const handleAdd = async () => {
+  const word = inputValue.trim();
+  if (!word || isSubmitting) return;
+  
+  setIsSubmitting(true);
+  
+  // Check if the word already exists in lexeme_suggestions
+  const { data: existingWords, error } = await supabase
+    .from('lexeme_suggestions')
+    .select('id')
+    .eq('word', word);
+  
+  if (error) {
+    console.error('Error checking word existence:', error);
+    setIsSubmitting(false);
+    return;
+  }
+  
+  if (existingWords.length > 0) {
+    console.log('Word already exists:', word);
+    setIsSubmitting(false);
+    return; // Don't add duplicate word
+  }
+  
+  // Proceed with adding the word to lexeme_suggestions
+  const { data, error: insertError } = await supabase
+    .from('lexeme_suggestions')
+    .insert([{ word }]);
+  
+  if (insertError) {
+    console.error('Error inserting word:', insertError);
+  } else {
+    console.log('Successfully added word:', word);
+  }
+  
+  setIsSubmitting(false);
+};
+    
     const word = inputValue.trim();
     if (!word || isSubmitting) return;
 
