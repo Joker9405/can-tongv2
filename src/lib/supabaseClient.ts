@@ -9,8 +9,14 @@ if (!supabaseUrl || !supabaseAnonKey) {
   )
 }
 
-console.log('Connecting to Supabase with URL:', supabaseUrl);  // Debugging log
+// Debugging log for connection URL
+console.log('Connecting to Supabase with URL:', supabaseUrl);
 
+// Create the Supabase client
 const supabase = createClient(supabaseUrl, supabaseAnonKey)
+
+// Add a comment reminding developers to always use the correct table name
+// Example: When inserting data into 'lexeme_suggestions', use:
+// supabase.from('lexeme_suggestions').insert(...);
 
 export default supabase
