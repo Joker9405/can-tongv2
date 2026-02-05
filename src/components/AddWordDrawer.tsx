@@ -36,6 +36,7 @@ const handleAdd = async (isRevise: boolean = false) => {
     setIsSubmitting(true);
 
     try {
+        // Insert data into supabase only once
         const { data, error } = await supabase
             .from('lexeme_suggestions')
             .insert([{ word, type: wordType }]);
