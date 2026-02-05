@@ -29,55 +29,54 @@ export function AddWordDrawer({ isOpen, onClose }: AddWordDrawerProps) {
   }, [isOpen, onClose]);
 
   const handleAdd = async () => {
-    setIsSubmitting(true);  // Show "adding..." state
+  setIsSubmitting(true);  // Show "adding..." state
 
-    const word = inputValue.trim();
-    if (!word || isSubmitting) return;
+  const word = inputValue.trim();
+  if (!word || isSubmitting) return;
 
-    try {
-      // Check if the word already exists in the lexeme_suggestions table
-      const { data: existingData } = await supabase
-        .from('lexeme_suggestions')
-        .select('*')
-        .eq('zhh', word)
-        .single();
+  try {
+    // Check if the word already exists in the lexeme_suggestions table
+    const { data: existingData } = await supabase
+      .from('lexeme_suggestions')
+      .select('*')
+      .eq('zhh', word)
+      .single();
 
-      if (existingData) {
-        // If the word exists, do not insert again and return
-        setIsSubmitting(false);
-        alert('Duplicate entry, not added.');
-        return;
-      }
-
-      // Insert data into lexeme_suggestions
-      const payload = {
-        zhh: word,
-        is_r18: wordType,  // 1 or 0 based on word type
-        chs: '',  // Add corresponding Chinese translation if needed
-        en: '',   // Add corresponding English translation if needed
-        owner_tag: '',  // Optional
-        register: '',   // Optional
-        intent: '',      // Optional
-      };
-
-      const { error } = await supabase
-        .from('lexeme_suggestions')
-        .insert([payload]);
-
-      if (error) {
-        console.error('Supabase insert error:', error);
-        setIsSubmitting(false);
-        return;
-      }
-
-      // Reset form
-      setInputValue('');
-      setWordType('1');
+    if (existingData) {
+      // If the word exists, do not insert again and return
       setIsSubmitting(false);
-      onClose();
-    } catch (error) {
-      console.error("Error inserting word: ", error);
+      return alert('Duplicate entry, not added.');
+    }
+
+    // Insert data into lexeme_suggestions
+    const payload = {
+      zhh: word,
+      is_r18: wordType,  // 1 or 0 based on word type
+      chs: '',  // Add corresponding Chinese translation if needed
+      en: '',   // Add corresponding English translation if needed
+      owner_tag: '',  // Optional
+      register: '',   // Optional
+      intent: '',      // Optional
+    };
+
+    const { error } = await supabase
+      .from('lexeme_suggestions')
+      .insert([payload]);
+
+    if (error) {
+      console.error('Supabase insert error:', error);
       setIsSubmitting(false);
+      return;
+    }
+
+    // Reset form
+    setInputValue('');
+    setWordType('1');
+    setIsSubmitting(false);
+    onClose();
+  } catch (error) {
+    console.error("Error inserting word: ", error);
+    setIsSubmitting(false);
     }
   };
 
