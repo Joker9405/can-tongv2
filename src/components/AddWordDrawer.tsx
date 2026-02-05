@@ -28,63 +28,34 @@ export function AddWordDrawer({ isOpen, onClose }: AddWordDrawerProps) {
     };
   }, [isOpen, onClose]);
 
-  
-const handleAdd = async (isRevise: boolean = false) => {
+  const handleAdd = async (isRevise: boolean = false) => {
     const word = inputValue.trim();
     if (!word || isSubmitting) return;
 
     setIsSubmitting(true);
 
     try {
-        // Insert data into supabase only once
-        const { data, error } = await supabase
-            .from('lexeme_suggestions')
-            .insert([{ word, type: wordType }]);
+      // Insert word into supabase table
+      const { data, error } = await supabase
+        .from('lexeme_suggestions')
+        .insert([{ word, type: wordType }]);
 
-        if (error) throw error;
+      if (error) throw error;
 
-        // Log the data to console for debugging purposes (f12 in the browser)
-        console.log('Inserted data:', data);
+      // Log the inserted data to console for debugging purposes
+      console.log('Inserted data:', data);
 
-        // Reset and set the 'adding...' state only after successful submission
-        setInputValue('');
-        setIsSubmitting(false);
-
-        if (!isRevise) {
-            // Handle non-Revise button add logic (such as resetting input, showing confirmation etc)
-        }
-    } catch (error) {
-        console.error('Error inserting data:', error);
-        setIsSubmitting(false);
-    }
-};
-
-    const word = inputValue.trim();
-    if (!word || isSubmitting) return;
-
-    setIsSubmitting(true);
-
-    const payload = {
-      word,
-      is_r18: Number(wordType),
-      status: 'pending',
-    };
-
-    const { error } = await supabase
-      .from('lexeme_suggestions')
-      .insert([payload]);
-
-    if (error) {
-      console.error('Supabase insert error:', error);
+      // Reset form after successful insertion
+      setInputValue('');
       setIsSubmitting(false);
-      return;
+      
+      if (!isRevise) {
+        // Handle non-revise behavior here (if needed)
+      }
+    } catch (error) {
+      console.error('Error inserting data:', error);
+      setIsSubmitting(false);
     }
-
-    // Reset form
-    setInputValue('');
-    setWordType('1');
-    setIsSubmitting(false);
-    onClose();
   };
 
   if (!isOpen) return null;
