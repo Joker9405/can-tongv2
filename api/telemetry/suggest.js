@@ -42,6 +42,7 @@ module.exports = async function handler(req, res) {
       chs: body.chs ? String(body.chs).trim().slice(0, 400) : '',  // Default empty string if not provided
       en: body.en ? String(body.en).trim().slice(0, 400) : '',    // Default empty string if not provided
       source: body.source ? String(body.source).trim().slice(0, 40) : "unknown",  // Default to 'unknown' if missing
+      status: 'pending',
       created_at: new Date().toISOString(),
       // 允许从前端透传 is_r18（例如 0/1 或 true/false），方便后续分析
       is_r18: typeof body.is_r18 === "boolean"
