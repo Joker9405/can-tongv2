@@ -43,6 +43,12 @@ module.exports = async function handler(req, res) {
       en: body.en ? String(body.en).trim().slice(0, 400) : '',    // Default empty string if not provided
       source: body.source ? String(body.source).trim().slice(0, 40) : "unknown",  // Default to 'unknown' if missing
       created_at: new Date().toISOString(),
+      // 允许从前端透传 is_r18（例如 0/1 或 true/false），方便后续分析
+      is_r18: typeof body.is_r18 === "boolean"
+        ? body.is_r18
+        : typeof body.is_r18 === "number"
+        ? !!body.is_r18
+        : undefined,
     };
 
     // Check if the entry already exists
@@ -60,21 +66,28 @@ module.exports = async function handler(req, res) {
     const supabase = createClient(url, key, { auth: { persistSession: false } });
 
     // Check if the word already exists in the lexeme_suggestions table
-    const { data: existingData } = await supabase
+    const { data: existingData, error: existingError } = await supabase
       .from('lexeme_suggestions')
-      .select('*')
+      .select('id')
       .eq('zhh', zhh)
-      .single();
+      .limit(1);
 
-    if (existingData) {
+    if (existingError) {
       setCors(res);
-      return res.status(200).json({ ok: true, message: 'Duplicate entry, not added.' });
+      return res.status(500).json({ ok: false, error: existingError.message });
+    }
+
+    if (existingData && existingData.length > 0) {
+      setCors(res);
+      return res.status(200).json({ ok: true, duplicate: true, message: 'Duplicate entry, not added.' });
     }
 
     // Insert new entry
     const { data, error } = await supabase
       .from('lexeme_suggestions')
-      .insert([payload]);
+      .insert([payload])
+      // 指定返回字段，便于调试确认插入结果
+      .select('zhh,is_r18');
 
     if (error) {
       setCors(res);

@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from "react";
 import { Volume2 } from "lucide-react";
-import supabase from "../lib/supabaseClient";
 
 interface BlueCardProps {
   searchTerm: string;
@@ -10,7 +9,6 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
   const [showDrawer, setShowDrawer] = useState(false);
   const [wordType, setWordType] = useState<"0" | "1">("0"); // 0=colloquial(green), 1=vulgar(magenta)
   const [inputValue, setInputValue] = useState("");
-  const [isAdding, setIsAdding] = useState(false);
   const drawerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -38,76 +36,15 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
     };
   }, [showDrawer]);
 
-  const handleAdd = async () => {
-    // 确定要插入的词汇（优先使用inputValue，如果为空则使用searchTerm）
-    const zhh = inputValue.trim() || searchTerm.trim();
-    
-    if (!zhh) {
-      console.error("词汇不能为空");
-      return;
-    }
-
-    setIsAdding(true);
-
-    try {
-      // 检查是否存在重复数据（基于word字段，对应zhh）
-      const { data: existingData, error: checkError } = await supabase
-        .from('lexeme_suggestions')
-        .select('word')
-        .eq('word', zhh)
-        .maybeSingle();
-
-      if (checkError && checkError.code !== 'PGRST116') {
-        // PGRST116是"未找到数据"的错误，这是正常的
-        throw checkError;
-      }
-
-      if (existingData) {
-        console.warn('该词汇已存在于lexeme_suggestions表中');
-        alert('该词汇已存在于lexeme_suggestions表中');
-        setIsAdding(false);
-        return;
-      }
-
-      // 准备要插入的数据
-      const insertData: any = {
-        word: zhh,
-        is_r18: wordType === "1", // "1" 表示 vulgar，转换为 boolean
-        status: 'pending',
-      };
-
-      // 可选字段（如果将来需要添加chs, en, source等字段）
-      // if (chs) insertData.chs = chs;
-      // if (en) insertData.en = en;
-      // if (source) insertData.source = source;
-
-      // 构建要选择的列，确保在Network面板中显示正确的路径
-      // 路径将显示为: lexeme_suggestions?columns=word,is_r18,status
-      const columns = ['word', 'is_r18', 'status'];
-
-      // 插入数据到lexeme_suggestions表
-      // 使用select()来确保在Network面板中显示正确的路径
-      const { data, error: insertError } = await supabase
-        .from('lexeme_suggestions')
-        .insert(insertData)
-        .select(columns.join(','));
-
-      if (insertError) {
-        throw insertError;
-      }
-
-      console.log("数据成功插入:", data);
-      
-      // 成功后重置状态
-      setShowDrawer(false);
-      setInputValue("");
-      setWordType("0");
-    } catch (err: any) {
-      console.error("插入数据错误:", err);
-      alert(err.message || '插入数据失败');
-    } finally {
-      setIsAdding(false);
-    }
+  const handleAdd = () => {
+    console.log("Adding suggested term:", {
+      original: searchTerm,
+      suggested: inputValue,
+      is_r18: wordType,
+    });
+    setShowDrawer(false);
+    setInputValue("");
+    setWordType("0");
   };
 
   const handleSpeak = () => {
@@ -202,10 +139,9 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
               <div className="flex justify-end -pr-20 -pb-20">
                 <button
                   onClick={handleAdd}
-                  disabled={isAdding}
-                  className="px-8 py-3 bg-black text-[#c8ff00] rounded-full text-xl hover:scale-105 transition-transform font-[Anton] font-bold disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="px-8 py-3 bg-black text-[#c8ff00] rounded-full text-xl hover:scale-105 transition-transform font-[Anton] font-bold"
                 >
-                  {isAdding ? 'adding...' : 'add'}
+                  add
                 </button>
               </div>
             </div>

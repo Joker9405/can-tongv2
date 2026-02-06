@@ -38,15 +38,70 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
     };
   }, [showDrawer]);
 
-  const handleAdd = () => {
-    console.log("Adding suggested term:", {
-      original: searchTerm,
-      suggested: inputValue,
-      is_r18: wordType,
-    });
-    setShowDrawer(false);
-    setInputValue("");
-    setWordType("0");
+  const handleAdd = async () => {
+    if (!inputValue.trim() || isAdding) {
+      return;
+    }
+
+    const zhh = inputValue.trim();
+
+    try {
+      setIsAdding(true);
+
+      // 1. 先检查是否已存在相同 zhh，避免重复插入
+      const { data: existing, error: checkError } = await supabase
+        .from("lexeme_suggestions")
+        .select("id")
+        .eq("zhh", zhh)
+        .limit(1);
+
+      if (checkError) {
+        console.error("Failed to check duplicate lexeme_suggestions", checkError);
+        alert("检查是否已存在该词时出错，请稍后重试。");
+        return;
+      }
+
+      if (existing && existing.length > 0) {
+        // 已存在，给出提示，不再插入
+        alert("该词已经存在于候选列表中。");
+        return;
+      }
+
+      // 2. 插入新的建议词汇
+      const { error: insertError } = await supabase
+        .from("lexeme_suggestions")
+        .insert([
+          {
+            zhh,
+            // 按照后端设计：0=colloquial, 1=vulgar，对应是否为 R18
+            is_r18: wordType === "1",
+            chs: "",
+            en: "",
+            source: "cantong-web",
+          },
+        ])
+        // 带上 select，可以在 Network 中看到 ?columns=... 的请求路径
+        .select("zhh,is_r18");
+
+      if (insertError) {
+        console.error("Failed to insert into lexeme_suggestions", insertError);
+        alert("提交失败，请稍后再试。");
+        return;
+      }
+
+      console.log("Adding suggested term:", {
+        original: searchTerm,
+        suggested: zhh,
+        is_r18: wordType,
+      });
+
+      // 成功后收起抽屉并重置输入
+      setShowDrawer(false);
+      setInputValue("");
+      setWordType("0");
+    } finally {
+      setIsAdding(false);
+    }
   };
 
   const handleSpeak = () => {
