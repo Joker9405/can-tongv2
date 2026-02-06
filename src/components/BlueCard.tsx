@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Volume2 } from "lucide-react";
+import supabase from "../lib/supabaseClient";
 
 interface BlueCardProps {
   searchTerm: string;
@@ -9,6 +10,7 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
   const [showDrawer, setShowDrawer] = useState(false);
   const [wordType, setWordType] = useState<"0" | "1">("0"); // 0=colloquial(green), 1=vulgar(magenta)
   const [inputValue, setInputValue] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);  // 新增：按钮“adding...”状态
   const drawerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -36,24 +38,66 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
     };
   }, [showDrawer]);
 
-  const handleAdd = () => {
-    console.log("Adding suggested term:", {
-      original: searchTerm,
-      suggested: inputValue,
-      is_r18: wordType,
-    });
-    setShowDrawer(false);
-    setInputValue("");
-    setWordType("0");
-  };
+    const handleAdd = async () => {
+    const word = inputValue.trim();
 
-  const handleSpeak = () => {
-    if ("speechSynthesis" in window) {
-      const utterance = new SpeechSynthesisUtterance(
-        searchTerm,
-      );
-      utterance.lang = "zh-HK";
-      speechSynthesis.speak(utterance);
+    // 空字符串或正在提交时，直接返回，避免重复点击
+    if (!word || isSubmitting) return;
+
+    setIsSubmitting(true);
+
+    try {
+      // 1）先查重，避免重复插入（这里用的是 lexeme_suggestions 的 word 字段）
+      const { data: existingData, error: existingError } = await supabase
+        .from("lexeme_suggestions")
+        .select("id")
+        .eq("word", word)
+        .limit(1);
+
+      if (existingError) {
+        console.error("Supabase select error:", existingError);
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (existingData && existingData.length > 0) {
+        console.log("Duplicate entry, not added.");
+        // 这里选择关闭抽屉并清空输入，你也可以改成只提示不关闭
+        setShowDrawer(false);
+        setInputValue("");
+        setWordType("0");
+        setIsSubmitting(false);
+        return;
+      }
+
+      // 2）准备插入 payload（与 AddWordDrawer 保持一致）
+      const payload = {
+        word,
+        is_r18: Number(wordType), // "0" / "1" → 0 / 1
+        status: "pending",
+      };
+
+      // 3）插入 lexeme_suggestions，并 select 一下字段，方便在 Network 里看到 columns/select
+      const { error } = await supabase
+        .from("lexeme_suggestions")
+        .insert([payload])
+        .select("word,is_r18,status");
+
+      if (error) {
+        console.error("Supabase insert error:", error);
+        setIsSubmitting(false);
+        return;
+      }
+
+      // 4）成功后重置状态并关闭抽屉
+      setShowDrawer(false);
+      setInputValue("");
+      setWordType("0");
+    } finally {
+      // 无论成功/失败，都恢复按钮状态
+      setIsSubmitting(false);
+    }
+  };
     }
   };
 
@@ -140,8 +184,9 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
                 <button
                   onClick={handleAdd}
                   className="px-8 py-3 bg-black text-[#c8ff00] rounded-full text-xl hover:scale-105 transition-transform font-[Anton] font-bold"
+                  disabled={isSubmitting}
                 >
-                  go
+                 {isSubmitting ? "adding..." : "go"}
                 </button>
               </div>
             </div>
