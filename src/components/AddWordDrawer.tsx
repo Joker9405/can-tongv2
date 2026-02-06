@@ -108,7 +108,7 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
                   {wordType === "0" && (
                     <div className="w-4 h-4 rounded-full bg-black"></div>
                   )}
-                </button>
+                    </button>
 
                 <button
                   onClick={() => setWordType("1")}
@@ -144,7 +144,7 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
                   disabled={isAdding}
                   className="px-8 py-3 bg-black text-[#c8ff00] rounded-full text-xl hover:scale-105 transition-transform font-[Anton] font-bold disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  {isAdding ? 'adding...' : 'add'}
+                   {isAdding ? 'adding...' : 'add'}
                 </button>
               </div>
             </div>
