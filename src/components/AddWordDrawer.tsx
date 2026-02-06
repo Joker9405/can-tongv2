@@ -209,3 +209,9 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
     </>
   );
 }
+
+// 兼容 App.tsx 中的命名导入：AddWordDrawer
+// 不改变原有界面，只是用同样的组件再导出一层包装
+export function AddWordDrawer(props: BlueCardProps) {
+  return <BlueCard {...props} />;
+}
