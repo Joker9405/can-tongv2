@@ -36,6 +36,8 @@ export function AddWordDrawer({ isOpen, onClose }: AddWordDrawerProps) {
     if (!zhh || isSubmitting) return;
 
     setIsSubmitting(true);
+  // ... 保持你现在的 Supabase 插入逻辑 ...
+};
 
     try {
       // 1) 先按 zhh 查重，避免重复插入
