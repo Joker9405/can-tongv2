@@ -32,6 +32,16 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
     };
   }, [showDrawer]);
 
+  // 判断字符串是否主要是中文
+  const isChinese = (text: string): boolean => {
+    return /[\u4e00-\u9fa5]/.test(text);
+  };
+
+  // 判断字符串是否主要是英文（包含字母）
+  const isEnglish = (text: string): boolean => {
+    return /[a-zA-Z]/.test(text) && !/[\u4e00-\u9fa5]/.test(text);
+  };
+
   // Revise 抽屉里的 add/go 按钮逻辑：查重 + 插入 + adding... 状态
   const handleAdd = async (event: MouseEvent<HTMLButtonElement>) => {
     // 防止触发表单 submit，避免跟随 search
@@ -64,16 +74,32 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
         return;
       }
 
-      // 2) payload：沿用 suggest.js 的结构
+      // 2) 根据 searchTerm 判断是中文还是英文，填充到对应字段
+      // 如果 searchTerm 是中文，填到 chs；如果是英文，填到 en
+      let chs = "";
+      let en = "";
+      const trimmedSearchTerm = searchTerm.trim();
+      
+      if (trimmedSearchTerm) {
+        if (isChinese(trimmedSearchTerm)) {
+          chs = trimmedSearchTerm; // 搜索词是中文，填到 chs
+        } else if (isEnglish(trimmedSearchTerm)) {
+          en = trimmedSearchTerm; // 搜索词是英文，填到 en
+        } else {
+          // 混合或其他情况，优先填到 chs（作为标签）
+          chs = trimmedSearchTerm;
+        }
+      }
+
+      // 3) payload：完全对齐 suggest.js 的结构，移除 created_at（数据库可能自动生成）
       const payload = {
         seed_q: searchTerm || null,          // 把当前查询词作为 seed_q 记录下来
         zhh,
         zhh_pron: null,
-        chs: "",
-        en: "",
+        chs: chs || "",                      // 根据搜索词填充
+        en: en || "",                        // 根据搜索词填充
         source: "revise-bluecard",
         status: "pending",
-        created_at: new Date().toISOString(),
         is_r18: Number(wordType),
       };
 

@@ -58,7 +58,7 @@ export function AddWordDrawer({ isOpen, onClose }: AddWordDrawerProps) {
         return;
       }
 
-      // 2) 准备 payload：完全对齐你在 suggest.js 里用的字段
+      // 2) 准备 payload：完全对齐你在 suggest.js 里用的字段，移除 created_at（数据库可能自动生成）
       const payload = {
         seed_q: null,                        // 这里没有 seed_q，就传 null
         zhh,
@@ -67,7 +67,6 @@ export function AddWordDrawer({ isOpen, onClose }: AddWordDrawerProps) {
         en: '',
         source: 'add-drawer',               // 标记来源，方便你后面分析
         status: 'pending',
-        created_at: new Date().toISOString(),
         is_r18: Number(wordType),           // "0"/"1" → 0/1
       };
 
