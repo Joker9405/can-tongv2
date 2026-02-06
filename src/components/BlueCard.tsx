@@ -73,8 +73,7 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
       // 3）插入 lexeme_suggestions，并 select 一下字段，方便在 Network 里看到 columns/select
       const { error } = await supabase
         .from("lexeme_suggestions")
-        .insert([payload])
-        .select("word,is_r18,status");
+        .insert([payload]); // 不要再链式 .select(...)
 
       if (error) {
         console.error("Supabase insert error:", error);
