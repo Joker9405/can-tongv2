@@ -10,7 +10,7 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
   const [showDrawer, setShowDrawer] = useState(false);
   const [wordType, setWordType] = useState<"0" | "1">("0"); // 0=colloquial(green), 1=vulgar(magenta)
   const [inputValue, setInputValue] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false); // 按钮“adding...”状态
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const drawerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -24,31 +24,31 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
     };
 
     if (showDrawer) {
-      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside as any);
     }
 
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside as any);
     };
   }, [showDrawer]);
 
   // Revise 抽屉里的 add/go 按钮逻辑：查重 + 插入 + adding... 状态
   const handleAdd = async (event: MouseEvent<HTMLButtonElement>) => {
-     // 防止触发表单的 submit（也就不会再去调用 search）
+    // 防止触发表单 submit，避免跟随 search
     event.preventDefault();
     event.stopPropagation();
 
-    const word = inputValue.trim();
-    if (!word || isSubmitting) return;
+    const zhh = inputValue.trim();
+    if (!zhh || isSubmitting) return;
 
     setIsSubmitting(true);
 
     try {
-      // 1）先查重，避免重复插入（这里用的是 lexeme_suggestions 的 word 字段）
+      // 1) 先按 zhh 查重
       const { data: existingData, error: existingError } = await supabase
         .from("lexeme_suggestions")
         .select("id")
-        .eq("word", word)
+        .eq("zhh", zhh)
         .limit(1);
 
       if (existingError) {
@@ -58,41 +58,43 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
 
       if (existingData && existingData.length > 0) {
         console.log("Duplicate entry, not added.");
-        // 这里选择关闭抽屉并清空输入，你也可以改成只提示不关闭
         setShowDrawer(false);
         setInputValue("");
         setWordType("0");
         return;
       }
 
-      // 2）准备插入 payload（与 AddWordDrawer 保持一致）
+      // 2) payload：沿用 suggest.js 的结构
       const payload = {
-        word,
-        is_r18: Number(wordType), // "0" / "1" → 0 / 1
+        seed_q: searchTerm || null,          // 把当前查询词作为 seed_q 记录下来
+        zhh,
+        zhh_pron: null,
+        chs: "",
+        en: "",
+        source: "revise-bluecard",
         status: "pending",
+        created_at: new Date().toISOString(),
+        is_r18: Number(wordType),
       };
 
-      // 3）插入 lexeme_suggestions，并 select 一下字段，方便在 Network 里看到 columns/select
       const { error } = await supabase
         .from("lexeme_suggestions")
-        .insert([payload]); // 不要再链式 .select(...)
+        .insert([payload]);                 // 不要 .select(...)
 
       if (error) {
         console.error("Supabase insert error:", error);
         return;
       }
 
-      // 4）成功后重置状态并关闭抽屉
       setShowDrawer(false);
       setInputValue("");
       setWordType("0");
     } finally {
-      // 无论成功/失败，都恢复按钮状态
       setIsSubmitting(false);
     }
   };
 
-  // 原来就有的发音按钮逻辑，补回来
+  // 发音按钮
   const handleSpeak = () => {
     if ("speechSynthesis" in window) {
       const utterance = new SpeechSynthesisUtterance(searchTerm);
@@ -133,19 +135,20 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
             </button>
           )}
 
-          {/* Revise Drawer - Positioned below, width from left edge to right edge within card padding */}
+          {/* Revise Drawer */}
           {showDrawer && (
             <div
               ref={drawerRef}
               className="absolute top-full left-4 right-4 -mt-16 bg-[#000080] rounded-[28px] p-8 p-6"
             >
-              {/* Type Selector - Top Left at corner */}
+              {/* Type Selector */}
               <div className="flex gap-3 mb-6 -pl-20 -pt-20">
                 <button
                   onClick={() => setWordType("0")}
                   className="relative w-8 h-8 rounded-full bg-[#c8ff00] flex items-center justify-center
                              hover:scale-110 transition-transform"
                   aria-label="Colloquial term"
+                  type="button"
                 >
                   {wordType === "0" && (
                     <div className="w-4 h-4 rounded-full bg-black"></div>
@@ -157,6 +160,7 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
                   className="relative w-8 h-8 rounded-full bg-[#ff0090] flex items-center justify-center
                              hover:scale-110 transition-transform"
                   aria-label="Vulgar term"
+                  type="button"
                 >
                   {wordType === "1" && (
                     <div className="w-4 h-4 rounded-full bg-black"></div>
@@ -177,11 +181,11 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
                 />
               </div>
 
-              {/* Add Button - Bottom Right at corner */}
+              {/* Add Button */}
               <div className="flex justify-end -pr-20 -pb-20">
                 <button
-                   type="button"
-                   onClick={handleAdd}
+                  type="button"
+                  onClick={handleAdd}
                   className="px-8 py-3 bg-black text-[#c8ff00] rounded-full text-xl hover:scale-105 transition-transform font-[Anton] font-bold"
                   disabled={isSubmitting}
                 >
