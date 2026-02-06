@@ -141,7 +141,7 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
                   onClick={handleAdd}
                   className="px-8 py-3 bg-black text-[#c8ff00] rounded-full text-xl hover:scale-105 transition-transform font-[Anton] font-bold"
                 >
-                  add
+                  go
                 </button>
               </div>
             </div>
