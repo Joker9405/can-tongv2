@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, type MouseEvent } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Volume2 } from "lucide-react";
 import supabase from "../lib/supabaseClient";
 
@@ -10,7 +10,7 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
   const [showDrawer, setShowDrawer] = useState(false);
   const [wordType, setWordType] = useState<"0" | "1">("0"); // 0=colloquial(green), 1=vulgar(magenta)
   const [inputValue, setInputValue] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false); // 按钮“adding...”状态
   const drawerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -24,41 +24,29 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
     };
 
     if (showDrawer) {
-      document.addEventListener("mousedown", handleClickOutside as any);
+      document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside as any);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showDrawer]);
 
-  // 判断字符串是否主要是中文
-  const isChinese = (text: string): boolean => {
-    return /[\u4e00-\u9fa5]/.test(text);
-  };
-
-  // 判断字符串是否主要是英文（包含字母）
-  const isEnglish = (text: string): boolean => {
-    return /[a-zA-Z]/.test(text) && !/[\u4e00-\u9fa5]/.test(text);
-  };
-
   // Revise 抽屉里的 add/go 按钮逻辑：查重 + 插入 + adding... 状态
-  const handleAdd = async (event: MouseEvent<HTMLButtonElement>) => {
-    // 防止触发表单 submit，避免跟随 search
-    event.preventDefault();
-    event.stopPropagation();
+  const handleAdd = async () => {
+    const word = inputValue.trim();
 
-    const zhh = inputValue.trim();
-    if (!zhh || isSubmitting) return;
+    // 空字符串或正在提交时，直接返回，避免重复点击
+    if (!word || isSubmitting) return;
 
     setIsSubmitting(true);
 
     try {
-      // 1) 先按 zhh 查重
+      // 1）先查重，避免重复插入（这里用的是 lexeme_suggestions 的 word 字段）
       const { data: existingData, error: existingError } = await supabase
         .from("lexeme_suggestions")
         .select("id")
-        .eq("zhh", zhh)
+        .eq("word", word)
         .limit(1);
 
       if (existingError) {
@@ -68,59 +56,41 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
 
       if (existingData && existingData.length > 0) {
         console.log("Duplicate entry, not added.");
+        // 这里选择关闭抽屉并清空输入，你也可以改成只提示不关闭
         setShowDrawer(false);
         setInputValue("");
         setWordType("0");
         return;
       }
 
-      // 2) 根据 searchTerm 判断是中文还是英文，填充到对应字段
-      // 如果 searchTerm 是中文，填到 chs；如果是英文，填到 en
-      let chs = "";
-      let en = "";
-      const trimmedSearchTerm = searchTerm.trim();
-      
-      if (trimmedSearchTerm) {
-        if (isChinese(trimmedSearchTerm)) {
-          chs = trimmedSearchTerm; // 搜索词是中文，填到 chs
-        } else if (isEnglish(trimmedSearchTerm)) {
-          en = trimmedSearchTerm; // 搜索词是英文，填到 en
-        } else {
-          // 混合或其他情况，优先填到 chs（作为标签）
-          chs = trimmedSearchTerm;
-        }
-      }
-
-      // 3) payload：完全对齐 suggest.js 的结构，移除 created_at（数据库可能自动生成）
+      // 2）准备插入 payload（与 AddWordDrawer 保持一致）
       const payload = {
-        seed_q: searchTerm || null,          // 把当前查询词作为 seed_q 记录下来
-        zhh,
-        zhh_pron: null,
-        chs: chs || "",                      // 根据搜索词填充
-        en: en || "",                        // 根据搜索词填充
-        source: "revise-bluecard",
+        word,
+        is_r18: Number(wordType), // "0" / "1" → 0 / 1
         status: "pending",
-        is_r18: Number(wordType),
       };
 
+      // 3）插入 lexeme_suggestions，并 select 一下字段，方便在 Network 里看到 columns/select
       const { error } = await supabase
         .from("lexeme_suggestions")
-        .insert([payload]);                 // 不要 .select(...)
+        .insert([payload]); // 不要再链式 .select(...)
 
       if (error) {
         console.error("Supabase insert error:", error);
         return;
       }
 
+      // 4）成功后重置状态并关闭抽屉
       setShowDrawer(false);
       setInputValue("");
       setWordType("0");
     } finally {
+      // 无论成功/失败，都恢复按钮状态
       setIsSubmitting(false);
     }
   };
 
-  // 发音按钮
+  // 原来就有的发音按钮逻辑，补回来
   const handleSpeak = () => {
     if ("speechSynthesis" in window) {
       const utterance = new SpeechSynthesisUtterance(searchTerm);
@@ -161,20 +131,19 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
             </button>
           )}
 
-          {/* Revise Drawer */}
+          {/* Revise Drawer - Positioned below, width from left edge to right edge within card padding */}
           {showDrawer && (
             <div
               ref={drawerRef}
               className="absolute top-full left-4 right-4 -mt-16 bg-[#000080] rounded-[28px] p-8 p-6"
             >
-              {/* Type Selector */}
+              {/* Type Selector - Top Left at corner */}
               <div className="flex gap-3 mb-6 -pl-20 -pt-20">
                 <button
                   onClick={() => setWordType("0")}
                   className="relative w-8 h-8 rounded-full bg-[#c8ff00] flex items-center justify-center
                              hover:scale-110 transition-transform"
                   aria-label="Colloquial term"
-                  type="button"
                 >
                   {wordType === "0" && (
                     <div className="w-4 h-4 rounded-full bg-black"></div>
@@ -186,7 +155,6 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
                   className="relative w-8 h-8 rounded-full bg-[#ff0090] flex items-center justify-center
                              hover:scale-110 transition-transform"
                   aria-label="Vulgar term"
-                  type="button"
                 >
                   {wordType === "1" && (
                     <div className="w-4 h-4 rounded-full bg-black"></div>
@@ -207,10 +175,9 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
                 />
               </div>
 
-              {/* Add Button */}
+              {/* Add Button - Bottom Right at corner */}
               <div className="flex justify-end -pr-20 -pb-20">
                 <button
-                  type="button"
                   onClick={handleAdd}
                   className="px-8 py-3 bg-black text-[#c8ff00] rounded-full text-xl hover:scale-105 transition-transform font-[Anton] font-bold"
                   disabled={isSubmitting}

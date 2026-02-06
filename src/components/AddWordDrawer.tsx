@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, type MouseEvent } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import supabase from '../lib/supabaseClient';
 
 interface AddWordDrawerProps {
@@ -20,74 +20,41 @@ export function AddWordDrawer({ isOpen, onClose }: AddWordDrawerProps) {
     };
 
     if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside as any);
+      document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside as any);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isOpen, onClose]);
 
-  const handleAdd = async (event: MouseEvent<HTMLButtonElement>) => {
-    event.preventDefault();
-    event.stopPropagation();
-
-    const zhh = inputValue.trim();
-    if (!zhh || isSubmitting) return;
+  const handleAdd = async () => {
+    const word = inputValue.trim();
+    if (!word || isSubmitting) return;
 
     setIsSubmitting(true);
-  // ... 保持你现在的 Supabase 插入逻辑 ...
-};
 
-    try {
-      // 1) 先按 zhh 查重，避免重复插入
-      const { data: existingData, error: existingError } = await supabase
-        .from('lexeme_suggestions')
-        .select('id')
-        .eq('zhh', zhh)
-        .limit(1);
+    const payload = {
+      word,
+      is_r18: Number(wordType),
+      status: 'pending',
+    };
 
-      if (existingError) {
-        console.error('Supabase select error:', existingError);
-        return;
-      }
+    const { error } = await supabase
+      .from('lexeme_suggestions')
+      .insert([payload]);
 
-      if (existingData && existingData.length > 0) {
-        console.log('Duplicate entry, not added.');
-        onClose();
-        setInputValue('');
-        setWordType('1');
-        return;
-      }
-
-      // 2) 准备 payload：完全对齐你在 suggest.js 里用的字段，移除 created_at（数据库可能自动生成）
-      const payload = {
-        seed_q: null,                        // 这里没有 seed_q，就传 null
-        zhh,
-        zhh_pron: null,                      // 暂时没有发音，前端先传 null
-        chs: '',                             // 先留空，后面后台再补也行
-        en: '',
-        source: 'add-drawer',               // 标记来源，方便你后面分析
-        status: 'pending',
-        is_r18: Number(wordType),           // "0"/"1" → 0/1
-      };
-
-      const { error } = await supabase
-        .from('lexeme_suggestions')
-        .insert([payload]);                 // 不要 .select(...)
-
-      if (error) {
-        console.error('Supabase insert error:', error);
-        return;
-      }
-
-      // 3) 成功后重置
-      setInputValue('');
-      setWordType('1');
-      onClose();
-    } finally {
+    if (error) {
+      console.error('Supabase insert error:', error);
       setIsSubmitting(false);
+      return;
     }
+
+    // Reset form
+    setInputValue('');
+    setWordType('1');
+    setIsSubmitting(false);
+    onClose();
   };
 
   if (!isOpen) return null;
