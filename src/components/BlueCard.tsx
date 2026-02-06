@@ -11,7 +11,6 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
   const [wordType, setWordType] = useState<"0" | "1">("0"); // 0=colloquial(green), 1=vulgar(magenta)
   const [inputValue, setInputValue] = useState("");
   const [isAdding, setIsAdding] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const drawerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -40,18 +39,22 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
   }, [showDrawer]);
 
   const handleAdd = async () => {
-    const word = inputValue.trim();
-    if (!word || isAdding) return;
+    // 确定要插入的词汇（优先使用inputValue，如果为空则使用searchTerm）
+    const zhh = inputValue.trim() || searchTerm.trim();
+    
+    if (!zhh) {
+      console.error("词汇不能为空");
+      return;
+    }
 
     setIsAdding(true);
-    setError(null);
 
     try {
-      // 检查是否存在重复数据（基于word字段）
+      // 检查是否存在重复数据（基于word字段，对应zhh）
       const { data: existingData, error: checkError } = await supabase
         .from('lexeme_suggestions')
         .select('word')
-        .eq('word', word)
+        .eq('word', zhh)
         .maybeSingle();
 
       if (checkError && checkError.code !== 'PGRST116') {
@@ -60,25 +63,30 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
       }
 
       if (existingData) {
-        const errorMsg = '该词汇已存在于lexeme_suggestions表中';
-        setError(errorMsg);
+        console.warn('该词汇已存在于lexeme_suggestions表中');
+        alert('该词汇已存在于lexeme_suggestions表中');
         setIsAdding(false);
         return;
       }
 
       // 准备要插入的数据
       const insertData: any = {
-        word: word,
-        is_r18: Number(wordType),
+        word: zhh,
+        is_r18: wordType === "1", // "1" 表示 vulgar，转换为 boolean
         status: 'pending',
       };
 
-      // 构建查询参数，用于在Network面板中显示正确的路径
+      // 可选字段（如果将来需要添加chs, en, source等字段）
+      // if (chs) insertData.chs = chs;
+      // if (en) insertData.en = en;
+      // if (source) insertData.source = source;
+
+      // 构建要选择的列，确保在Network面板中显示正确的路径
+      // 路径将显示为: lexeme_suggestions?columns=word,is_r18,status
       const columns = ['word', 'is_r18', 'status'];
 
       // 插入数据到lexeme_suggestions表
       // 使用select()来确保在Network面板中显示正确的路径
-      // 这会在F12控制台中显示类似: lexeme_suggestions?columns=word,is_r18,status
       const { data, error: insertError } = await supabase
         .from('lexeme_suggestions')
         .insert(insertData)
@@ -88,15 +96,15 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
         throw insertError;
       }
 
-      // 成功插入
-      console.log('数据成功插入:', data);
+      console.log("数据成功插入:", data);
+      
+      // 成功后重置状态
       setShowDrawer(false);
       setInputValue("");
       setWordType("0");
     } catch (err: any) {
-      const errorMsg = err.message || '插入数据失败';
-      setError(errorMsg);
-      console.error('插入数据错误:', err);
+      console.error("插入数据错误:", err);
+      alert(err.message || '插入数据失败');
     } finally {
       setIsAdding(false);
     }
@@ -200,11 +208,6 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
                   {isAdding ? 'adding...' : 'add'}
                 </button>
               </div>
-              {error && (
-                <div className="text-red-400 text-sm mt-2 text-center">
-                  {error}
-                </div>
-              )}
             </div>
           )}
         </div>
