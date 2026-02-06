@@ -29,57 +29,32 @@ export function AddWordDrawer({ isOpen, onClose }: AddWordDrawerProps) {
   }, [isOpen, onClose]);
 
   const handleAdd = async () => {
-    const zhh = inputValue.trim();
-    if (!zhh || isSubmitting) return;
+    const word = inputValue.trim();
+    if (!word || isSubmitting) return;
 
     setIsSubmitting(true);
 
-    try {
-      // 1) 先检查是否已存在相同 zhh，避免重复插入
-      const { data: existingData, error: existingError } = await supabase
-        .from('lexeme_suggestions')
-        .select('id')
-        .eq('zhh', zhh)
-        .limit(1);
+    const payload = {
+      word,
+      is_r18: Number(wordType),
+      status: 'pending',
+    };
 
-      if (existingError) {
-        console.error('Supabase duplicate check error:', existingError);
-        return;
-      }
+    const { error } = await supabase
+      .from('lexeme_suggestions')
+      .insert([payload]);
 
-      if (existingData && existingData.length > 0) {
-        console.warn('Duplicate entry, not added.');
-        return;
-      }
-
-      // 2) 插入 lexeme_suggestions
-      const payload = {
-        zhh,
-        is_r18: Number(wordType), // 0 = green, 1 = pink
-        chs: '',
-        en: '',
-        source: 'revise-ui',
-        status: 'pending',
-      };
-
-      const { error } = await supabase
-        .from('lexeme_suggestions')
-        .insert([payload])
-        // 触发 REST 路径中带 columns=...，方便在 Network 面板中确认
-        .select('zhh,is_r18,chs,en,source,status');
-
-      if (error) {
-        console.error('Supabase insert error:', error);
-        return;
-      }
-
-      // Reset form
-      setInputValue('');
-      setWordType('1');
-      onClose();
-    } finally {
+    if (error) {
+      console.error('Supabase insert error:', error);
       setIsSubmitting(false);
+      return;
     }
+
+    // Reset form
+    setInputValue('');
+    setWordType('1');
+    setIsSubmitting(false);
+    onClose();
   };
 
   if (!isOpen) return null;
@@ -130,7 +105,7 @@ export function AddWordDrawer({ isOpen, onClose }: AddWordDrawerProps) {
           type="button"
           disabled={isSubmitting}
         >
-          {isSubmitting ? 'adding...' : 'add'}
+          {isSubmitting ? 'adding...' : 'go'}
         </button>
       </div>
     </div>
