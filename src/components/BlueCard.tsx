@@ -10,7 +10,7 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
   const [showDrawer, setShowDrawer] = useState(false);
   const [wordType, setWordType] = useState<"0" | "1">("0"); // 0=colloquial(green), 1=vulgar(magenta)
   const [inputValue, setInputValue] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);  // 新增：按钮“adding...”状态
+  const [isSubmitting, setIsSubmitting] = useState(false); // 按钮“adding...”状态
   const drawerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -24,21 +24,16 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
     };
 
     if (showDrawer) {
-      document.addEventListener(
-        "mousedown",
-        handleClickOutside,
-      );
+      document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener(
-        "mousedown",
-        handleClickOutside,
-      );
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showDrawer]);
 
-    const handleAdd = async () => {
+  // Revise 抽屉里的 add/go 按钮逻辑：查重 + 插入 + adding... 状态
+  const handleAdd = async () => {
     const word = inputValue.trim();
 
     // 空字符串或正在提交时，直接返回，避免重复点击
@@ -56,7 +51,6 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
 
       if (existingError) {
         console.error("Supabase select error:", existingError);
-        setIsSubmitting(false);
         return;
       }
 
@@ -66,7 +60,6 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
         setShowDrawer(false);
         setInputValue("");
         setWordType("0");
-        setIsSubmitting(false);
         return;
       }
 
@@ -85,7 +78,6 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
 
       if (error) {
         console.error("Supabase insert error:", error);
-        setIsSubmitting(false);
         return;
       }
 
@@ -98,6 +90,13 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
       setIsSubmitting(false);
     }
   };
+
+  // 原来就有的发音按钮逻辑，补回来
+  const handleSpeak = () => {
+    if ("speechSynthesis" in window) {
+      const utterance = new SpeechSynthesisUtterance(searchTerm);
+      utterance.lang = "zh-HK";
+      speechSynthesis.speak(utterance);
     }
   };
 
@@ -169,9 +168,7 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
                 <input
                   type="text"
                   value={inputValue}
-                  onChange={(e) =>
-                    setInputValue(e.target.value)
-                  }
+                  onChange={(e) => setInputValue(e.target.value)}
                   placeholder=""
                   className="w-full bg-transparent text-white text-4xl text-center
                             focus:outline-none placeholder:text-blue-400/50"
@@ -186,7 +183,7 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
                   className="px-8 py-3 bg-black text-[#c8ff00] rounded-full text-xl hover:scale-105 transition-transform font-[Anton] font-bold"
                   disabled={isSubmitting}
                 >
-                 {isSubmitting ? "adding..." : "go"}
+                  {isSubmitting ? "adding..." : "go"}
                 </button>
               </div>
             </div>
