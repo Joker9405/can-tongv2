@@ -13,13 +13,13 @@ SET hit_status = 'miss';
 UPDATE public.telemetry_search ts
 SET hit_status = 'bingo'
 FROM public.lexeme_suggestions ls
-WHERE ts.text IS NOT NULL
-  AND ts.text <> ''
+WHERE ts.q IS NOT NULL
+  AND ts.q <> ''
   AND ls.status = 'approved'  -- 只匹配已审核的词
   AND (
-    ts.text = ls.zhh
-    OR ts.text = ls.chs
-    OR ts.text = ls.en
+    ts.q = ls.zhh
+    OR ts.q = ls.chs
+    OR ts.q = ls.en
   );
 
 -- ============================================
@@ -54,12 +54,12 @@ WHERE ts.text IS NOT NULL
 -- UPDATE public.telemetry_search ts
 -- SET hit_status = 'bingo'
 -- FROM public.lexeme lx
--- WHERE ts.text IS NOT NULL
---   AND ts.text <> ''
+-- WHERE ts.q IS NOT NULL
+--   AND ts.q <> ''
 --   AND (
---     ts.text = lx.zhh
---     OR ts.text = lx.chs
---     OR ts.text = lx.en
+--     ts.q = lx.zhh
+--     OR ts.q = lx.chs
+--     OR ts.q = lx.en
 --   );
 
 -- ============================================
@@ -74,10 +74,10 @@ WHERE ts.text IS NOT NULL
 -- UPDATE public.telemetry_search ts
 -- SET hit_status = 'bingo'
 -- FROM public.lexeme_suggestions ls
--- WHERE ts.text IS NOT NULL
---   AND ts.text <> ''
+-- WHERE ts.q IS NOT NULL
+--   AND ts.q <> ''
 --   AND (
---     ts.text = ls.zhh
---     OR ts.text = ls.chs
---     OR ts.text = ls.en
+--     ts.q = ls.zhh
+--     OR ts.q = ls.chs
+--     OR ts.q = ls.en
 --   );
