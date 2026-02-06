@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, type MouseEvent } from "react";
 import { Volume2 } from "lucide-react";
 import supabase from "../lib/supabaseClient";
 
@@ -33,10 +33,12 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
   }, [showDrawer]);
 
   // Revise 抽屉里的 add/go 按钮逻辑：查重 + 插入 + adding... 状态
-  const handleAdd = async () => {
-    const word = inputValue.trim();
+  const handleAdd = async (event: MouseEvent<HTMLButtonElement>) => {
+     // 防止触发表单的 submit（也就不会再去调用 search）
+    event.preventDefault();
+    event.stopPropagation();
 
-    // 空字符串或正在提交时，直接返回，避免重复点击
+    const word = inputValue.trim();
     if (!word || isSubmitting) return;
 
     setIsSubmitting(true);
@@ -178,7 +180,8 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
               {/* Add Button - Bottom Right at corner */}
               <div className="flex justify-end -pr-20 -pb-20">
                 <button
-                  onClick={handleAdd}
+                   type="button"
+                   onClick={handleAdd}
                   className="px-8 py-3 bg-black text-[#c8ff00] rounded-full text-xl hover:scale-105 transition-transform font-[Anton] font-bold"
                   disabled={isSubmitting}
                 >
