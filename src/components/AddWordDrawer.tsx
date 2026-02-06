@@ -1,4 +1,4 @@
-import { useState, useRef, type MouseEvent } from "react";
+import { useState, useRef, useEffect } from 'react';
 import supabase from '../lib/supabaseClient';
 
 interface AddWordDrawerProps {
@@ -28,10 +28,7 @@ export function AddWordDrawer({ isOpen, onClose }: AddWordDrawerProps) {
     };
   }, [isOpen, onClose]);
 
-  const handleAdd = async (event: MouseEvent<HTMLButtonElement>) => {
-     event.preventDefault();
-     event.stopPropagation();
-     
+  const handleAdd = async () => {
     const word = inputValue.trim();
     if (!word || isSubmitting) return;
 
