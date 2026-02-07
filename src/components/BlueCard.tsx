@@ -33,19 +33,22 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
   }, [showDrawer]);
 
   // Revise 抽屉里的 add/go 按钮逻辑：查重 + 插入 + adding... 状态
-  const handleAdd = async () => {
-    const word = inputValue.trim();
+  const handleAdd = async (event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
 
-    // 空字符串或正在提交时，直接返回，避免重复点击
+    const word = inputValue.trim();
     if (!word || isSubmitting) return;
 
     setIsSubmitting(true);
 
     try {
       // 1）先查重，避免重复插入（这里用的是 lexeme_suggestions 的 word 字段）
-      const { error } = await supabase
-          .from("lexeme_suggestions")
-         .insert([payload]); // 不要再链式 .select(...)
+      const { data: existingData, error: existingError } = await supabase
+        .from("lexeme_suggestions")
+        .select("id")
+        .eq("word", word)
+        .limit(1);
 
       if (existingError) {
         console.error("Supabase select error:", existingError);
@@ -71,8 +74,7 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
       // 3）插入 lexeme_suggestions，并 select 一下字段，方便在 Network 里看到 columns/select
       const { error } = await supabase
         .from("lexeme_suggestions")
-        .insert([payload])
-        .select("word,is_r18,status");
+        .insert([payload]); // 不要再链式 .select(...)
 
       if (error) {
         console.error("Supabase insert error:", error);
@@ -177,6 +179,7 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
               {/* Add Button - Bottom Right at corner */}
               <div className="flex justify-end -pr-20 -pb-20">
                 <button
+                  type="button"
                   onClick={handleAdd}
                   className="px-8 py-3 bg-black text-[#c8ff00] rounded-full text-xl hover:scale-105 transition-transform font-[Anton] font-bold"
                   disabled={isSubmitting}
