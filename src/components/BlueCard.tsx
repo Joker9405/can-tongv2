@@ -43,11 +43,9 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
 
     try {
       // 1）先查重，避免重复插入（这里用的是 lexeme_suggestions 的 word 字段）
-      const { data: existingData, error: existingError } = await supabase
-        .from("lexeme_suggestions")
-        .select("id")
-        .eq("word", word)
-        .limit(1);
+      const { error } = await supabase
+          .from("lexeme_suggestions")
+         .insert([payload]); // 不要再链式 .select(...)
 
       if (existingError) {
         console.error("Supabase select error:", existingError);
