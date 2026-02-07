@@ -1,32 +1,36 @@
-import { useState, useRef, useEffect } from 'react';
-import supabase from '../lib/supabaseClient';
+import { useState, useRef, useEffect } from "react";
+import { Volume2 } from "lucide-react";
+import supabase from "../lib/supabaseClient";
 
-interface AddWordDrawerProps {
-  isOpen: boolean;
-  onClose: () => void;
+interface BlueCardProps {
+  searchTerm: string;
 }
 
-export function AddWordDrawer({ isOpen, onClose }: AddWordDrawerProps) {
-  const [wordType, setWordType] = useState<'0' | '1'>('1'); // 0=green, 1=pink
-  const [inputValue, setInputValue] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+export function BlueCard({ searchTerm }: BlueCardProps) {
+  const [showDrawer, setShowDrawer] = useState(false);
+  const [wordType, setWordType] = useState<"0" | "1">("0"); // 0=colloquial(green), 1=vulgar(magenta)
+  const [inputValue, setInputValue] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false); // 按钮“adding...”状态
   const drawerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (drawerRef.current && !drawerRef.current.contains(event.target as Node)) {
-        onClose();
+      if (
+        drawerRef.current &&
+        !drawerRef.current.contains(event.target as Node)
+      ) {
+        setShowDrawer(false);
       }
     };
 
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
+    if (showDrawer) {
+      document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isOpen, onClose]);
+  }, [showDrawer]);
 
   const handleAdd = async () => {
     const word = inputValue.trim();
