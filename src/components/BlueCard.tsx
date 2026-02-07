@@ -1,9 +1,47 @@
 import { useState, useRef, useEffect } from "react";
+import type { MouseEvent as ReactMouseEvent } from "react";
 import { Volume2 } from "lucide-react";
 import supabase from "../lib/supabaseClient";
 
 interface BlueCardProps {
   searchTerm: string;
+}
+
+function logSupabaseError(label: string, error: any) {
+  console.error(label, {
+    message: error?.message,
+    details: error?.details,
+    hint: error?.hint,
+    code: error?.code,
+  });
+}
+
+/**
+ * 尝试插入：优先带上 source/chs/en（满足你的字段要求）
+ * 若因为列不存在导致失败，则回退只插入基础字段（word/is_r18/status）
+ */
+async function insertSuggestionWithFallback(
+  basePayload: { word: string; is_r18: number; status: string },
+  extraPayload: { source: string; chs: string | null; en: string | null }
+) {
+  const fullPayload: any = { ...basePayload, ...extraPayload };
+
+  let { error } = await supabase.from("lexeme_suggestions").insert([fullPayload]);
+
+  if (error) {
+    const msg = String(error?.message ?? "");
+    const isUnknownColumn =
+      msg.includes("schema cache") ||
+      msg.includes("Could not find the") ||
+      msg.includes("does not exist");
+
+    if (isUnknownColumn) {
+      const retry = await supabase.from("lexeme_suggestions").insert([basePayload]);
+      error = retry.error;
+    }
+  }
+
+  return error;
 }
 
 export function BlueCard({ searchTerm }: BlueCardProps) {
@@ -14,11 +52,8 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
   const drawerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        drawerRef.current &&
-        !drawerRef.current.contains(event.target as Node)
-      ) {
+    const handleClickOutside = (event: globalThis.MouseEvent) => {
+      if (drawerRef.current && !drawerRef.current.contains(event.target as Node)) {
         setShowDrawer(false);
       }
     };
@@ -33,7 +68,7 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
   }, [showDrawer]);
 
   // Revise 抽屉里的 add/go 按钮逻辑：查重 + 插入 + adding... 状态
-  const handleAdd = async (event: MouseEvent<HTMLButtonElement>) => {
+  const handleAdd = async (event: ReactMouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     event.stopPropagation();
 
@@ -43,7 +78,7 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
     setIsSubmitting(true);
 
     try {
-      // 1）先查重，避免重复插入（这里用的是 lexeme_suggestions 的 word 字段）
+      // 1）先查重，避免重复插入（按 lexeme_suggestions.word）
       const { data: existingData, error: existingError } = await supabase
         .from("lexeme_suggestions")
         .select("id")
@@ -51,44 +86,42 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
         .limit(1);
 
       if (existingError) {
-        console.error("Supabase select error:", existingError);
+        logSupabaseError("Supabase duplicate-check error:", existingError);
         return;
       }
 
       if (existingData && existingData.length > 0) {
-        console.log("Duplicate entry, not added.");
-        // 这里选择关闭抽屉并清空输入，你也可以改成只提示不关闭
+        console.log("[lexeme_suggestions] duplicated:", word);
+        // 保持你原行为：重复则关闭抽屉并清空
         setShowDrawer(false);
         setInputValue("");
         setWordType("0");
         return;
       }
 
-      // 2）准备插入 payload（与 AddWordDrawer 保持一致）
-      const payload = {
-       word,
-       is_r18: Number(wordType),
-       status: "pending",
-       source: "revise",
-       chs: searchTerm || null,
-       en: null,
-    };
+      // 2）准备插入 payload
+      const basePayload = {
+        word,
+        is_r18: Number(wordType), // "0" / "1" → 0 / 1
+        status: "pending",
+      };
 
-      // 3）插入 lexeme_suggestions，并 select 一下字段，方便在 Network 里看到 columns/select
-      const { error } = await supabase
-        .from("lexeme_suggestions")
-        .insert([payload]); // 不要再链式 .select(...)
+      // 额外字段：把 searchTerm 简单归因到 chs/en（不改 UI，仅写库）
+      const hasLatin = /[A-Za-z]/.test(searchTerm);
+      const extraPayload = {
+        source: "revise",
+        chs: hasLatin ? null : (searchTerm || null),
+        en: hasLatin ? (searchTerm || null) : null,
+      };
 
-      if (error) {
-        console.error("Supabase insert error:", {
-         message: error?.message,
-         details: (error as any)?.details,
-         hint: (error as any)?.hint,
-         code: (error as any)?.code,
+      const insertErr = await insertSuggestionWithFallback(basePayload, extraPayload);
+
+      if (insertErr) {
+        logSupabaseError("Supabase insert error:", insertErr);
         return;
       }
 
-      // 4）成功后重置状态并关闭抽屉
+      // 3）成功后重置状态并关闭抽屉
       setShowDrawer(false);
       setInputValue("");
       setWordType("0");
@@ -98,7 +131,7 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
     }
   };
 
-  // 原来就有的发音按钮逻辑，补回来
+  // 发音按钮逻辑（保持原样）
   const handleSpeak = () => {
     if ("speechSynthesis" in window) {
       const utterance = new SpeechSynthesisUtterance(searchTerm);
@@ -113,9 +146,7 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
         {/* AI Generated Blue Card */}
         <div className="bg-[#0000ff] rounded-[28px] p-8 relative">
           <div className="text-center">
-            <h2 className="text-6xl font-bold text-white mb-2">
-              {searchTerm}
-            </h2>
+            <h2 className="text-6xl font-bold text-white mb-2">{searchTerm}</h2>
             <p className="text-lg text-gray-300">sei2 ceon2</p>
           </div>
 
@@ -153,51 +184,5 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
                              hover:scale-110 transition-transform"
                   aria-label="Colloquial term"
                 >
-                  {wordType === "0" && (
-                    <div className="w-4 h-4 rounded-full bg-black"></div>
-                  )}
+                  {wordType === "0" && <div className="w-4 h-4 rounded-full bg-black"></div>}
                 </button>
-
-                <button
-                  onClick={() => setWordType("1")}
-                  className="relative w-8 h-8 rounded-full bg-[#ff0090] flex items-center justify-center
-                             hover:scale-110 transition-transform"
-                  aria-label="Vulgar term"
-                >
-                  {wordType === "1" && (
-                    <div className="w-4 h-4 rounded-full bg-black"></div>
-                  )}
-                </button>
-              </div>
-
-              {/* Large Text Input */}
-              <div className="mb-6">
-                <input
-                  type="text"
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  placeholder=""
-                  className="w-full bg-transparent text-white text-4xl text-center
-                            focus:outline-none placeholder:text-blue-400/50"
-                  autoFocus
-                />
-              </div>
-
-              {/* Add Button - Bottom Right at corner */}
-              <div className="flex justify-end -pr-20 -pb-20">
-                <button
-                  type="button"
-                  onClick={handleAdd}
-                  className="px-8 py-3 bg-black text-[#c8ff00] rounded-full text-xl hover:scale-105 transition-transform font-[Anton] font-bold"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? "adding..." : "go"}
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </>
-  );
-}
