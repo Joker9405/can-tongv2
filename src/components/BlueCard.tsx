@@ -40,61 +40,50 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
   }, [showDrawer]);
 
   const handleAdd = async (event: ReactMouseEvent<HTMLButtonElement>) => {
-    event.preventDefault();
-    event.stopPropagation();
+  event.preventDefault();
+  event.stopPropagation();
 
-    const word = inputValue.trim();
-    if (!word || isSubmitting) return;
+  const word = inputValue.trim();
+  if (!word || isSubmitting) return;
 
-    setIsSubmitting(true);
+  setIsSubmitting(true);
 
-    try {
-      // 1) 查重：避免重复插入（按 word 字段）
-      const { data: existingData, error: existingError } = await supabase
-        .from("lexeme_suggestions")
-        .select("id")
-        .eq("word", word)
-        .limit(1);
+  try {
+    const payload = {
+      word,
+      is_r18: Number(wordType), // "0"/"1" -> 0/1
+      status: "pending",
+    };
 
-      if (existingError) {
-        logSupabaseError("Supabase duplicate-check error:", existingError);
-        return;
-      }
+    const { error } = await supabase
+      .from("lexeme_suggestions")
+      .insert([payload]);
 
-      if (existingData && existingData.length > 0) {
-        console.log("[lexeme_suggestions] duplicated:", word);
+    if (error) {
+      // ✅ 依赖数据库唯一键：重复时会抛 23505
+      const code = (error as any)?.code;
+      const msg = String((error as any)?.message ?? "");
+
+      if (code === "23505" || msg.includes("duplicate key")) {
+        // 重复：当作“已存在”，直接收起（不算失败）
         setShowDrawer(false);
         setInputValue("");
         setWordType("0");
         return;
       }
 
-      // 2) 插入（保持 columns=word,is_r18,status 的路径一致性：只传这 3 个字段）
-      const payload = {
-        word,
-        is_r18: Number(wordType),
-        status: "pending",
-      };
-
-      const { error } = await supabase
-        .from("lexeme_suggestions")
-        .insert([payload])
-        .select("word,is_r18,status");
-
-      if (error) {
-        logSupabaseError("Supabase insert error:", error);
-        return;
-      }
-
-      // 3) 成功后重置
-      setShowDrawer(false);
-      setInputValue("");
-      setWordType("0");
-    } finally {
-      setIsSubmitting(false);
+      console.error("Supabase insert error:", error);
+      return;
     }
-  };
 
+    // 成功：收起并清空
+    setShowDrawer(false);
+    setInputValue("");
+    setWordType("0");
+  } finally {
+    setIsSubmitting(false);
+  }
+};
   const handleSpeak = () => {
     if ("speechSynthesis" in window) {
       const utterance = new SpeechSynthesisUtterance(searchTerm);

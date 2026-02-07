@@ -37,59 +37,47 @@ export function AddWordDrawer({ isOpen, onClose }: AddWordDrawerProps) {
     };
   }, [isOpen, onClose]);
 
-  const handleAdd = async (event: MouseEvent<HTMLButtonElement>) => {
-    event.preventDefault();
-    event.stopPropagation();
+ const handleAdd = async (event: MouseEvent<HTMLButtonElement>) => {
+  event.preventDefault();
+  event.stopPropagation();
 
-    const word = inputValue.trim();
-    if (!word || isSubmitting) return;
+  const word = inputValue.trim();
+  if (!word || isSubmitting) return;
 
-    setIsSubmitting(true);
+  setIsSubmitting(true);
 
-    try {
-      // 1) 查重：避免重复插入（按 word 字段）
-      const { data: existing, error: existErr } = await supabase
-        .from("lexeme_suggestions")
-        .select("id")
-        .eq("word", word)
-        .limit(1);
+  try {
+    const payload = {
+      word,
+      is_r18: Number(wordType),
+      status: "pending",
+    };
 
-      if (existErr) {
-        logSupabaseError("Supabase duplicate-check error:", existErr);
+    const { error } = await supabase
+      .from("lexeme_suggestions")
+      .insert([payload]);
+
+    if (error) {
+      const code = (error as any)?.code;
+      const msg = String((error as any)?.message ?? "");
+
+      if (code === "23505" || msg.includes("duplicate key")) {
+        console.log("Duplicate entry, ignored:", word);
+        // 不插入也当完成，恢复按钮即可
         return;
       }
 
-      if (existing && existing.length > 0) {
-        console.log("[lexeme_suggestions] duplicated:", word);
-        return;
-      }
-
-      // 2) 插入（保持 columns=word,is_r18,status 路径一致：只传这 3 个字段）
-      const payload = {
-        word,
-        is_r18: Number(wordType),
-        status: "pending",
-      };
-
-      const { error } = await supabase
-        .from("lexeme_suggestions")
-        .insert([payload])
-        .select("word,is_r18,status");
-
-      if (error) {
-        logSupabaseError("Supabase insert error:", error);
-        return;
-      }
-
-      // Reset form
-      setInputValue("");
-      setWordType("1");
-      onClose();
-    } finally {
-      setIsSubmitting(false);
+      console.error("Supabase insert error:", error);
+      return;
     }
-  };
 
+    setInputValue("");
+    setWordType("1");
+    onClose();
+  } finally {
+    setIsSubmitting(false);
+  }
+};
   if (!isOpen) return null;
 
   return (
