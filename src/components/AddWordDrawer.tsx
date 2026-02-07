@@ -43,7 +43,7 @@ const handleAdd = async () => {
     console.log('检查重复...');
     const { data: existingData, error: existingError } = await supabase
       .from('lexeme_suggestions')
-      .select('id')
+      .select("word,is_r18,status")
       .eq('zhh', word)
       .limit(1);
 

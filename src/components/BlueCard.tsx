@@ -33,7 +33,10 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
   }, [showDrawer]);
 
   // Revise 抽屉里的 add/go 按钮逻辑：查重 + 插入 + adding... 状态
-  const handleAdd = async () => {
+  const handleAdd = async (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+
     const word = inputValue.trim();
 
     // 空字符串或正在提交时，直接返回，避免重复点击
@@ -42,31 +45,9 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
     setIsSubmitting(true);
 
     try {
-      // 1）先查重，避免重复插入（这里用的是 lexeme_suggestions 的 word 字段）
-      const { data: existingData, error: existingError } = await supabase
-        .from("lexeme_suggestions")
-        .select("id")
-        .eq("word", word)
-        .limit(1);
-
-      if (existingError) {
-        console.error("Supabase select error:", existingError);
-        return;
-      }
-
-      if (existingData && existingData.length > 0) {
-        console.log("Duplicate entry, not added.");
-        // 这里选择关闭抽屉并清空输入，你也可以改成只提示不关闭
-        setShowDrawer(false);
-        setInputValue("");
-        setWordType("0");
-        return;
-      }
-
-      // 2）准备插入 payload（与 AddWordDrawer 保持一致）
       const payload = {
         word,
-        is_r18: Number(wordType), // "0" / "1" → 0 / 1
+        is_r18: Number(wordType),
         status: "pending",
       };
 
@@ -74,6 +55,7 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
       const { error } = await supabase
         .from("lexeme_suggestions")
         .insert([payload])
+        .select("word,is_r18,status");
 
       if (error) {
         console.error("Supabase insert error:", error);
