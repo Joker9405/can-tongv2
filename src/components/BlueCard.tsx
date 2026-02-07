@@ -58,7 +58,6 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
 
       if (existingData && existingData.length > 0) {
         console.log("Duplicate entry, not added.");
-        alert("这个词已经存在了！");
         setIsSubmitting(false);
         return;
       }
@@ -67,21 +66,24 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
       const payload = {
         zhh: word, // 粤语词汇
         is_r18: Number(wordType), // "0" / "1" → 0 / 1
-        chs: "", // 简体中文（可以根据需要添加输入框）
-        en: "", // 英文翻译（可以根据需要添加输入框）
-        source: "user_suggestion", // 来源标识
         status: "pending", // 状态
         created_at: new Date().toISOString(),
       };
+
+       console.log('Inserting data:', payload);
 
       // 3）插入 lexeme_suggestions，并 select 指定字段以在 Network 中显示 columns
       const { data, error } = await supabase
         .from("lexeme_suggestions")
         .insert([payload])
-        .select("zhh, is_r18, chs, en, source, status"); // 添加 select 以确保 Network 面板显示正确的路径
-
+        
       if (error) {
         console.error("Supabase insert error:", error);
+        console.error("Error details:", {
+          code: error.code,
+        message: error.message,
+        details: error.details
+      });
         setIsSubmitting(false);
         return;
       }
@@ -92,9 +94,6 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
       setShowDrawer(false);
       setInputValue("");
       setWordType("0");
-      
-      // 可以添加成功提示
-      alert("词汇已成功提交！");
       
     } catch (error) {
       console.error("Unexpected error:", error);
@@ -188,7 +187,7 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
                   type="text"
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
-                  placeholder="输入粤语词汇..."
+                  placeholder=" "
                   className="w-full bg-transparent text-white text-4xl text-center
                             focus:outline-none placeholder:text-blue-400/50"
                   autoFocus

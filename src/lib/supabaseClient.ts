@@ -9,6 +9,15 @@ if (!supabaseUrl || !supabaseAnonKey) {
   )
 }
 
-const supabase = createClient(supabaseUrl, supabaseAnonKey)
+// 添加调试日志
+console.log('Supabase URL:', supabaseUrl ? 'Set' : 'Missing');
+console.log('Supabase Key:', supabaseAnonKey ? 'Set' : 'Missing');
+
+const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+  }
+})
 
 export default supabase

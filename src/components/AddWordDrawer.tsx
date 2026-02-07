@@ -134,7 +134,7 @@ export function AddWordDrawer({ searchTerm, isOpen, onClose }: AddWordDrawerProp
           type="text"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
-          placeholder="输入粤语词汇..."
+          placeholder=" "
           className="w-full bg-transparent text-white text-4xl text-center focus:outline-none placeholder:text-gray-600 disabled:opacity-50"
           autoFocus
           disabled={isSubmitting}
