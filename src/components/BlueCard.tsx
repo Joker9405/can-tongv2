@@ -33,84 +33,83 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
   }, [showDrawer]);
 
   // 修复后的 add 按钮逻辑
-  const handleAdd = async (event: MouseEvent<HTMLButtonElement>) => {
-    event.preventDefault();
-    event.stopPropagation();
+const handleAdd = async (event: MouseEvent<HTMLButtonElement>) => {
+  event.preventDefault();
+  event.stopPropagation();
 
-    const word = inputValue.trim();
-    if (!word || isSubmitting) return;
+  const word = inputValue.trim();
+  if (!word || isSubmitting) return;
 
-    setIsSubmitting(true);
+  setIsSubmitting(true);
 
-    try {
-      // 1）先查重，避免重复插入（使用 zhh 字段检查）
-      const { data: existingData, error: existingError } = await supabase
-        .from("lexeme_suggestions")
-        .select("id")
-        .eq("zhh", word)
-        .limit(1);
+  try {
+    // 1）先查重，避免重复插入
+    console.log('检查重复...');
+    const { data: existingData, error: existingError } = await supabase
+      .from("lexeme_suggestions")
+      .select("id")
+      .eq("zhh", word) // 使用 zhh 字段（粤语词汇）
+      .limit(1);
 
-      if (existingError) {
-        console.error("Supabase select error:", existingError);
-        setIsSubmitting(false);
-        return;
-      }
-
-      if (existingData && existingData.length > 0) {
-        console.log("Duplicate entry, not added.");
-        setIsSubmitting(false);
-        return;
-      }
-
-      // 2）准备完整的数据 payload
-      const payload = {
-        zhh: word, // 粤语词汇
-        is_r18: Number(wordType), // "0" / "1" → 0 / 1
-        status: "pending", // 状态
-        created_at: new Date().toISOString(),
-      };
-
-       console.log('Inserting data:', payload);
-
-      // 3）插入 lexeme_suggestions，并 select 指定字段以在 Network 中显示 columns
-      const { data, error } = await supabase
-        .from("lexeme_suggestions")
-        .insert([payload])
-        
-      if (error) {
-        console.error("Supabase insert error:", error);
-        console.error("Error details:", {
-          code: error.code,
-        message: error.message,
-        details: error.details
-      });
-        setIsSubmitting(false);
-        return;
-      }
-
-      console.log("Insert successful:", data);
-      
-      // 4）成功后重置状态并关闭抽屉
-      setShowDrawer(false);
-      setInputValue("");
-      setWordType("0");
-      
-    } catch (error) {
-      console.error("Unexpected error:", error);
-    } finally {
-      // 无论成功/失败，都恢复按钮状态
+    if (existingError) {
+      console.error("查询重复时出错:", existingError);
       setIsSubmitting(false);
+      return;
     }
-  };
 
-  // 原来就有的发音按钮逻辑
-  const handleSpeak = () => {
-    if ("speechSynthesis" in window) {
-      const utterance = new SpeechSynthesisUtterance(searchTerm);
-      utterance.lang = "zh-HK";
-      speechSynthesis.speak(utterance);
+    if (existingData && existingData.length > 0) {
+      console.log("词汇已存在，跳过插入");
+      setIsSubmitting(false);
+      return;
     }
-  };
+
+    // 2）准备完整的数据 payload，包含所有必需字段
+    const payload = {
+      zhh: word,           // 粤语词汇 (必需)
+      chs: "",             // 简体中文 (必需，根据你的要求)
+      en: "",              // 英文翻译 (必需，根据你的要求)
+      is_r18: wordType === "1" ? 1 : 0, // 0=普通, 1=R18
+      status: "pending",   // 状态
+      source: "user_suggestion", // 来源
+      created_at: new Date().toISOString(),
+      // 确保包含表的所有必需字段
+    };
+
+    console.log('插入数据:', payload);
+
+    // 3）插入数据
+    const { data, error } = await supabase
+      .from("lexeme_suggestions")
+      .insert([payload]);
+
+    if (error) {
+      console.error("插入失败:", error);
+      console.error("错误详情:", {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint
+      });
+      setIsSubmitting(false);
+      return;
+    }
+
+    console.log("插入成功:", data);
+    
+    // 4）成功后重置状态
+    setShowDrawer(false);
+    setInputValue("");
+    setWordType("0");
+    
+    // 可以添加成功提示
+    console.log("词汇已提交到 lexeme_suggestions 表");
+    
+  } catch (error) {
+    console.error("意外错误:", error);
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   return (
     <>

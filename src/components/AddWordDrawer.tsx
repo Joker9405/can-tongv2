@@ -32,71 +32,73 @@ export function AddWordDrawer({ searchTerm, isOpen, onClose }: AddWordDrawerProp
     };
   }, [isOpen, onClose]);
 
-  const handleAdd = async () => {
-    const word = inputValue.trim();
-    if (!word || isSubmitting) return;
+const handleAdd = async () => {
+  const word = inputValue.trim();
+  if (!word || isSubmitting) return;
 
-    setIsSubmitting(true);
+  setIsSubmitting(true);
 
-    try {
-      // 1）先查重，避免重复插入（使用 zhh 字段检查）
-      const { data: existingData, error: existingError } = await supabase
-        .from('lexeme_suggestions')
-        .select('id')
-        .eq('zhh', word)
-        .limit(1);
+  try {
+    // 1）先查重
+    console.log('检查重复...');
+    const { data: existingData, error: existingError } = await supabase
+      .from('lexeme_suggestions')
+      .select('id')
+      .eq('zhh', word)
+      .limit(1);
 
-      if (existingError) {
-        console.error('Supabase select error:', existingError);
-        return;
-      }
-
-      if (existingData && existingData.length > 0) {
-        console.log('Duplicate entry, not added.');
-        alert('这个词已经存在了！');
-        setIsSubmitting(false);
-        return;
-      }
-
-      // 2）准备完整的数据 payload
-      const payload = {
-        zhh: word, // 粤语词汇
-        is_r18: Number(wordType), // "0" / "1" → 0 / 1
-        chs: "", // 简体中文
-        en: "", // 英文翻译
-        source: "user_suggestion",
-        status: 'pending',
-        created_at: new Date().toISOString(),
-      };
-
-      // 3）插入 lexeme_suggestions，并 select 指定字段
-      const { data, error } = await supabase
-        .from('lexeme_suggestions')
-        .insert([payload])
-        .select('zhh, is_r18, chs, en, source, status'); // 添加 select 以确保 Network 面板显示正确的路径
-
-      if (error) {
-        console.error('Supabase insert error:', error);
-        setIsSubmitting(false);
-        return;
-      }
-
-      console.log('Insert successful:', data);
-      
-      // 4）成功后重置状态并关闭抽屉
-      setInputValue('');
-      setWordType('1');
-      onClose();
-      
-      // 可以添加成功提示
-      alert('词汇已成功提交！');
-      
-    } catch (error) {
-      console.error('Unexpected error:', error);
-    } finally {
+    if (existingError) {
+      console.error('查询重复时出错:', existingError);
       setIsSubmitting(false);
+      return;
     }
-  };
+
+    if (existingData && existingData.length > 0) {
+      console.log('词汇已存在');
+      setIsSubmitting(false);
+      return;
+    }
+
+    // 2）准备完整的数据
+    const payload = {
+      zhh: word,           // 粤语词汇
+      chs: searchTerm || "", // 简体中文（使用搜索词或空）
+      en: "",              // 英文翻译
+      is_r18: wordType === "1" ? 1 : 0,
+      status: 'pending',
+      source: "user_suggestion",
+      created_at: new Date().toISOString(),
+    };
+
+    console.log('插入数据:', payload);
+
+    // 3）插入数据 - 确保只调用 insert
+    const { data, error } = await supabase
+      .from('lexeme_suggestions')
+      .insert([payload]); // 不要链式调用 select
+
+    if (error) {
+      console.error('插入失败:', error);
+      console.error('完整错误:', JSON.stringify(error, null, 2));
+      setIsSubmitting(false);
+      return;
+    }
+
+    console.log('插入成功:', data);
+    
+    // 4）成功后重置
+    setInputValue('');
+    setWordType('1');
+    onClose();
+    
+    console.log("数据已写入 lexeme_suggestions 表");
+    
+  } catch (error) {
+    console.error('意外错误:', error);
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   if (!isOpen) return null;
 
