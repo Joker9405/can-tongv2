@@ -15,10 +15,7 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        drawerRef.current &&
-        !drawerRef.current.contains(event.target as Node)
-      ) {
+      if (drawerRef.current && !drawerRef.current.contains(event.target as Node)) {
         setShowDrawer(false);
       }
     };
@@ -32,47 +29,55 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
     };
   }, [showDrawer]);
 
-  // Revise 抽屉里的 add/go 按钮逻辑：查重 + 插入 + adding... 状态
+  // Revise 抽屉里的 add/go 按钮逻辑：插入 + adding... 状态
   const handleAdd = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     event.stopPropagation();
 
     const word = inputValue.trim();
 
-    // 空字符串或正在提交时，直接返回，避免重复点击
     if (!word || isSubmitting) return;
 
     setIsSubmitting(true);
 
     try {
+      // ⚠️ 关键：不要手动传 created_at（让数据库默认 now() 处理）
+      // ⚠️ 关键：字段名必须和表一致（你表里确定有 word/is_r18/status/chs/zhh/en/source）
       const payload = {
         word,
         is_r18: Number(wordType),
         status: "pending",
+        // 可选：你要记录来源/关联搜索词就加这些（都在你表里）
+        chs: searchTerm || null,
+        zhh: null,
+        en: null,
+        source: "web",
       };
 
-      // 3）插入 lexeme_suggestions，并 select 一下字段，方便在 Network 里看到 columns/select
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("lexeme_suggestions")
         .insert([payload])
-        .select("word,is_r18,status");
+        // 只返回你关心的列，避免返回列名不匹配造成额外问题
+        .select("id,word,is_r18,status");
 
       if (error) {
-        console.error("Supabase insert error:", error);
+        // 关键：把服务端真正说的“缺哪个列”打印出来（在 Console 看）
+        console.error("Insert failed:", error);
+        console.error("Insert failed(full):", JSON.stringify(error, null, 2));
         return;
       }
 
-      // 4）成功后重置状态并关闭抽屉
+      console.log("Insert ok:", data);
+
       setShowDrawer(false);
       setInputValue("");
       setWordType("0");
     } finally {
-      // 无论成功/失败，都恢复按钮状态
       setIsSubmitting(false);
     }
   };
 
-  // 原来就有的发音按钮逻辑，补回来
+  // 原来就有的发音按钮逻辑
   const handleSpeak = () => {
     if ("speechSynthesis" in window) {
       const utterance = new SpeechSynthesisUtterance(searchTerm);
@@ -87,13 +92,11 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
         {/* AI Generated Blue Card */}
         <div className="bg-[#0000ff] rounded-[28px] p-8 relative">
           <div className="text-center">
-            <h2 className="text-6xl font-bold text-white mb-2">
-              {searchTerm}
-            </h2>
+            <h2 className="text-6xl font-bold text-white mb-2">{searchTerm}</h2>
             <p className="text-lg text-gray-300">sei2 ceon2</p>
           </div>
 
-          {/* Speaker Button - Bottom Right, inside corner, white icon */}
+          {/* Speaker Button */}
           <button
             onClick={handleSpeak}
             className="absolute bottom-4 right-4 w-12 h-12 bg-black rounded-full 
@@ -103,7 +106,7 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
             <Volume2 className="w-6 h-6 text-white" />
           </button>
 
-          {/* Revise Button - Bottom Left, inside corner */}
+          {/* Revise Button */}
           {!showDrawer && (
             <button
               onClick={() => setShowDrawer(true)}
@@ -113,13 +116,12 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
             </button>
           )}
 
-          {/* Revise Drawer - Positioned below, width from left edge to right edge within card padding */}
+          {/* Revise Drawer */}
           {showDrawer && (
             <div
               ref={drawerRef}
               className="absolute top-full left-4 right-4 -mt-16 bg-[#000080] rounded-[28px] p-8 p-6"
             >
-              {/* Type Selector - Top Left at corner */}
               <div className="flex gap-3 mb-6 -pl-20 -pt-20">
                 <button
                   onClick={() => setWordType("0")}
@@ -127,9 +129,7 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
                              hover:scale-110 transition-transform"
                   aria-label="Colloquial term"
                 >
-                  {wordType === "0" && (
-                    <div className="w-4 h-4 rounded-full bg-black"></div>
-                  )}
+                  {wordType === "0" && <div className="w-4 h-4 rounded-full bg-black"></div>}
                 </button>
 
                 <button
@@ -138,13 +138,10 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
                              hover:scale-110 transition-transform"
                   aria-label="Vulgar term"
                 >
-                  {wordType === "1" && (
-                    <div className="w-4 h-4 rounded-full bg-black"></div>
-                  )}
+                  {wordType === "1" && <div className="w-4 h-4 rounded-full bg-black"></div>}
                 </button>
               </div>
 
-              {/* Large Text Input */}
               <div className="mb-6">
                 <input
                   type="text"
@@ -157,7 +154,6 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
                 />
               </div>
 
-              {/* Add Button - Bottom Right at corner */}
               <div className="flex justify-end -pr-20 -pb-20">
                 <button
                   onClick={handleAdd}
