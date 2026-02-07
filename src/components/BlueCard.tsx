@@ -66,10 +66,13 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
 
       // 2）准备插入 payload（与 AddWordDrawer 保持一致）
       const payload = {
-        word,
-        is_r18: Number(wordType), // "0" / "1" → 0 / 1
-        status: "pending",
-      };
+       word,
+       is_r18: Number(wordType),
+       status: "pending",
+       source: "revise",
+       chs: searchTerm || null,
+       en: null,
+    };
 
       // 3）插入 lexeme_suggestions，并 select 一下字段，方便在 Network 里看到 columns/select
       const { error } = await supabase
@@ -77,7 +80,11 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
         .insert([payload]); // 不要再链式 .select(...)
 
       if (error) {
-        console.error("Supabase insert error:", error);
+        console.error("Supabase insert error:", {
+         message: error?.message,
+         details: (error as any)?.details,
+         hint: (error as any)?.hint,
+         code: (error as any)?.code,
         return;
       }
 

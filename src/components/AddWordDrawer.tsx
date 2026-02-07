@@ -29,36 +29,69 @@ export function AddWordDrawer({ isOpen, onClose }: AddWordDrawerProps) {
   }, [isOpen, onClose]);
 
   const handleAdd = async (event: MouseEvent<HTMLButtonElement>) => {
-    event.preventDefault();
-    event.stopPropagation();
+  event.preventDefault();
+  event.stopPropagation();
 
-    const word = inputValue.trim();
-    if (!word || isSubmitting) return;
+  const word = inputValue.trim();
+  if (!word || isSubmitting) return;
 
-    setIsSubmitting(true);
+  setIsSubmitting(true);
 
-    const payload = {
-      word,
-      is_r18: Number(wordType),
-      status: 'pending',
-    };
+  try {
+    // 1) 查重
+    const { data: exist, error: existErr } = await supabase
+      .from("lexeme_suggestions")
+      .select("id")
+      .eq("word", word)
+      .limit(1);
 
-    const { error } = await supabase
-      .from('lexeme_suggestions')
-      .insert([payload]);
-
-    if (error) {
-      console.error('Supabase insert error:', error);
-      setIsSubmitting(false);
+    if (existErr) {
+      console.error("Supabase duplicate-check error:", {
+        message: existErr?.message,
+        details: (existErr as any)?.details,
+        hint: (existErr as any)?.hint,
+        code: (existErr as any)?.code,
+      });
       return;
     }
 
-    // Reset form
-    setInputValue('');
-    setWordType('1');
-    setIsSubmitting(false);
+    if (exist && exist.length > 0) {
+      console.log("Duplicate entry, not added:", word);
+      return;
+    }
+
+    // 2) 插入（补 source，避免 NOT NULL）
+    const payload = {
+      word,
+      is_r18: Number(wordType),
+      status: "pending",
+      source: "drawer",
+      chs: null,
+      en: null,
+    };
+
+    const { error } = await supabase
+      .from("lexeme_suggestions")
+      .insert([payload]);
+
+    if (error) {
+      console.error("Supabase insert error:", {
+        message: error?.message,
+        details: (error as any)?.details,
+        hint: (error as any)?.hint,
+        code: (error as any)?.code,
+      });
+      return;
+    }
+
+    setInputValue("");
+    setWordType("1");
     onClose();
-  };
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
 
   if (!isOpen) return null;
 
