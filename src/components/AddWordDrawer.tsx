@@ -1,5 +1,4 @@
-import { useState, useRef, useEffect } from "react";
-import type { MouseEvent as ReactMouseEvent } from "react";
+import { useState, useRef, useEffect, type MouseEvent } from "react";
 import supabase from "../lib/supabaseClient";
 
 interface AddWordDrawerProps {
@@ -14,45 +13,6 @@ function logSupabaseError(label: string, error: any) {
     hint: error?.hint,
     code: error?.code,
   });
-}
-
-/**
- * 尝试插入：优先带上 source/chs/en（若你表有 NOT NULL 需求可避免 400）
- * 如果因为“列不存在(schema cache)”导致失败，则回退只插入基础字段（word/is_r18/status）
- */
-async function insertSuggestionWithFallback(basePayload: {
-  word: string;
-  is_r18: number;
-  status: string;
-}) {
-  // 先尝试“全字段”（满足你要求：source/chs/en）
-  const fullPayload: any = {
-    ...basePayload,
-    source: "drawer",
-    chs: null,
-    en: null,
-  };
-
-  let { error } = await supabase.from("lexeme_suggestions").insert([fullPayload]);
-
-  if (error) {
-    const msg = String(error?.message ?? "");
-    // 常见：PGRST204 schema cache column not found / column does not exist
-    const isUnknownColumn =
-      msg.includes("schema cache") ||
-      msg.includes("Could not find the") ||
-      msg.includes("does not exist");
-
-    if (isUnknownColumn) {
-      // 回退：只插入基础字段，避免因为你表没这些列而 400
-      const retry = await supabase
-        .from("lexeme_suggestions")
-        .insert([basePayload]);
-      error = retry.error;
-    }
-  }
-
-  return error;
 }
 
 export function AddWordDrawer({ isOpen, onClose }: AddWordDrawerProps) {
@@ -77,7 +37,7 @@ export function AddWordDrawer({ isOpen, onClose }: AddWordDrawerProps) {
     };
   }, [isOpen, onClose]);
 
-  const handleAdd = async (event: ReactMouseEvent<HTMLButtonElement>) => {
+  const handleAdd = async (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     event.stopPropagation();
 
@@ -87,7 +47,7 @@ export function AddWordDrawer({ isOpen, onClose }: AddWordDrawerProps) {
     setIsSubmitting(true);
 
     try {
-      // 1) 插入前查重（按 word 字段）
+      // 1) 查重：避免重复插入（按 word 字段）
       const { data: existing, error: existErr } = await supabase
         .from("lexeme_suggestions")
         .select("id")
@@ -101,25 +61,27 @@ export function AddWordDrawer({ isOpen, onClose }: AddWordDrawerProps) {
 
       if (existing && existing.length > 0) {
         console.log("[lexeme_suggestions] duplicated:", word);
-        // 不强制关闭抽屉，避免改变你原交互（只是不插入）
         return;
       }
 
-      // 2) 插入
-      const basePayload = {
+      // 2) 插入（保持 columns=word,is_r18,status 路径一致：只传这 3 个字段）
+      const payload = {
         word,
         is_r18: Number(wordType),
         status: "pending",
       };
 
-      const insertErr = await insertSuggestionWithFallback(basePayload);
+      const { error } = await supabase
+        .from("lexeme_suggestions")
+        .insert([payload])
+        .select("word,is_r18,status");
 
-      if (insertErr) {
-        logSupabaseError("Supabase insert error:", insertErr);
+      if (error) {
+        logSupabaseError("Supabase insert error:", error);
         return;
       }
 
-      // 3) 成功：重置 & 关闭
+      // Reset form
       setInputValue("");
       setWordType("1");
       onClose();
@@ -135,7 +97,6 @@ export function AddWordDrawer({ isOpen, onClose }: AddWordDrawerProps) {
       ref={drawerRef}
       className="absolute top-0 left-0 bg-[#3a3a3a] w-full rounded-[28px] p-8 p-6 z-10"
     >
-      {/* Type Selector - Top Left at corner radius center */}
       <div className="flex gap-3 mb-6 -pr-20 -pb-20">
         <button
           onClick={() => setWordType("0")}
@@ -156,7 +117,6 @@ export function AddWordDrawer({ isOpen, onClose }: AddWordDrawerProps) {
         </button>
       </div>
 
-      {/* Large Text Input */}
       <div className="mb-6">
         <input
           type="text"
@@ -168,7 +128,6 @@ export function AddWordDrawer({ isOpen, onClose }: AddWordDrawerProps) {
         />
       </div>
 
-      {/* Add Button - Bottom Right at corner radius center */}
       <div className="flex justify-end -pr-20 -pb-20">
         <button
           onClick={handleAdd}
