@@ -58,7 +58,7 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
         .from("lexeme_suggestions")
         .insert([payload])
         // 只返回你关心的列，避免返回列名不匹配造成额外问题
-        .select("id,word,is_r18,status");
+        .select("id,word,is_r18,status,chs,en,source");
 
       if (error) {
         // 关键：把服务端真正说的“缺哪个列”打印出来（在 Console 看）

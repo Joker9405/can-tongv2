@@ -50,7 +50,7 @@ export function AddWordDrawer({ searchTerm, isOpen, onClose }: AddWordDrawerProp
       const { data, error } = await supabase
         .from("lexeme_suggestions")
         .insert([payload])
-        .select("id,word,is_r18,status");
+        .select("id,word,is_r18,status,chs,en,source");
 
       if (error) {
         console.error("Insert failed:", error);
