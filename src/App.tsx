@@ -312,8 +312,8 @@ export default function App() {
               {showAddDrawer && (
                 <AddWordDrawer
                   isOpen={showAddDrawer}
-                  onClose={() => setShowAddDrawer(false)}
                   searchTerm={searchTerm}
+                  onClose={() => setShowAddDrawer(false)}
                 />
               )}
             </div>

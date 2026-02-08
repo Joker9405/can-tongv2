@@ -37,36 +37,23 @@ export function AddWordDrawer({ searchTerm, isOpen, onClose }: AddWordDrawerProp
 
     try {
       const q = (searchTerm || "").trim();
-      const isQueryChinese = /[\u4E00-\u9FFF]/.test(q);
+      const isChineseQuery = /[\u4e00-\u9fff]/.test(q);
 
-      // ⚠️ 不传 created_at（让 DB 默认 now()）
-      const payload = {
-        word,
-        is_r18: wordType === "1" ? 1 : 0,
-        status: "pending",
-        chs: q ? (isQueryChinese ? q : null) : null,
-        en: q ? (!isQueryChinese ? q : null) : null,
-        source: "web",
-      };
-
-      // ✅ 统一走 RPC：新词插入；重复词合并 chs/en；不会再出现 409
-      const { data, error } = await supabase.rpc("submit_lexeme_suggestion", {
-        p_word: payload.word,
-        p_is_r18: payload.is_r18,
-        p_status: payload.status,
-        p_chs: payload.chs,
-        p_en: payload.en,
-        p_source: payload.source,
+      const { data, error } = await supabase.rpc("upsert_lexeme_suggestion", {
+        p_word: word,
+        p_is_r18: wordType === "1" ? 1 : 0,
+        p_chs: q ? (isChineseQuery ? q : null) : null,
+        p_en: q ? (isChineseQuery ? null : q) : null,
+        p_source: "web",
       });
 
       if (error) {
-        console.error("RPC failed:", error);
-        console.error("RPC failed(full):", JSON.stringify(error, null, 2));
+        // 仅在 Console 记录，不把 DB 错误透出前端
+        console.error("Add suggestion failed:", error);
         return;
       }
 
-      console.log("RPC ok:", data);
-
+      console.log("Add suggestion ok:", data);
       setInputValue("");
       setWordType("0");
       onClose();
