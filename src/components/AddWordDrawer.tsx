@@ -37,15 +37,25 @@ export function AddWordDrawer({ searchTerm, isOpen, onClose }: AddWordDrawerProp
 
     try {
       // ⚠️ 不传 created_at（让 DB 默认 now()）
+      
+const term = (searchTerm || '').trim();
+const hasHan = /[\u4E00-\u9FFF]/.test(term);
+const hasLatin = /[A-Za-z]/.test(term);
+
+// 只存一种最可靠：中文 -> chs；英文 -> en；两者都有就两个都存
+const chsVal = hasHan ? term : null;
+const enVal = (hasLatin && !hasHan) ? term : (hasLatin && hasHan ? term : null);
+
       const payload = {
-        word,
-        is_r18: wordType === "1" ? 1 : 0,
-        status: "pending",
-        chs: searchTerm || null,
-        zhh: null,
-        en: null,
-        source: "web",
-      };
+  word,
+  is_r18: Number(wordType),
+  status: "pending",
+  // 记录本次搜索词（命中/未命中都可用）
+  chs: chsVal,
+  en: enVal,
+  // 只要你表里有该列才保留；没有就删掉这一行 + select 里的 source
+  source: "web",
+};
 
       const { data, error } = await supabase
         .from("lexeme_suggestions")
@@ -112,7 +122,7 @@ export function AddWordDrawer({ searchTerm, isOpen, onClose }: AddWordDrawerProp
       </div>
 
       <div className="flex justify-end -pr-20 -pb-20">
-        <button
+        <button type="button"
           onClick={handleAdd}
           className="px-6 py-3 bg-black text-[#c8ff00] rounded-[28px] text-xl font-bold hover:scale-105 transition-transform font-[Anton] disabled:opacity-50 disabled:cursor-not-allowed"
           type="button"

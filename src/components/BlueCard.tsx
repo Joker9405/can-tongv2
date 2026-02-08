@@ -43,15 +43,22 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
     try {
       // ⚠️ 关键：不要手动传 created_at（让数据库默认 now() 处理）
       // ⚠️ 关键：字段名必须和表一致（你表里确定有 word/is_r18/status/chs/zhh/en/source）
-      const payload = any = {
-        word,
-        is_r18: Number(wordType),
-        status: "pending",
-        // 可选：你要记录来源/关联搜索词就加这些（都在你表里）
-        chs,
-        en,
-        source: "web",
-      };
+      
+const term = (searchTerm || '').trim();
+const hasHan = /[\u4E00-\u9FFF]/.test(term);
+const hasLatin = /[A-Za-z]/.test(term);
+
+const chsVal = hasHan ? term : null;
+const enVal = (hasLatin && !hasHan) ? term : (hasLatin && hasHan ? term : null);
+
+      const payload: any = {
+  word,
+  is_r18: Number(wordType),
+  status: "pending",
+  chs: chsVal,
+  en: enVal,
+  source: "web",
+};
 
       const { data, error } = await supabase
         .from("lexeme_suggestions")
@@ -154,12 +161,12 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
               </div>
 
               <div className="flex justify-end -pr-20 -pb-20">
-                <button
+                <button type="button"
                   onClick={handleAdd}
                   className="px-8 py-3 bg-black text-[#c8ff00] rounded-full text-xl hover:scale-105 transition-transform font-[Anton] font-bold"
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? "adding..." : "go"}
+                  {isSubmitting ? "adding..." : "add"}
                 </button>
               </div>
             </div>
