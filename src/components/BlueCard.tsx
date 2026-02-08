@@ -22,7 +22,8 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
   const [showDrawer, setShowDrawer] = useState(false);
   const [wordType, setWordType] = useState<"0" | "1">("0"); // 0=colloquial(green), 1=vulgar(magenta)
   const [inputValue, setInputValue] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false); // 按钮“adding...”状态
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const drawerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -41,57 +42,60 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
     };
   }, [showDrawer]);
 
-  // Revise 抽屉里的 add/go 按钮逻辑：插入 + adding... 状态
+  // Handle the add button submission
   const handleAdd = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     event.stopPropagation();
 
-    const word = inputValue.trim();
+    const inputWord = inputValue.trim();
 
-    if (!word || isSubmitting) return;
+    if (!inputWord || isSubmitting) return;
 
     setIsSubmitting(true);
+    setSubmitError(null);
 
     try {
-      // ⚠️ 关键：不要手动传 created_at（让数据库默认 now() 处理）
-      // ⚠️ 关键：字段名必须和表一致（你表里确定有 word/is_r18/status/chs/zhh/en/source）
-      
-const term = (searchTerm || '').trim();
-const hasHan = /[\u4E00-\u9FFF]/.test(term);
-const hasLatin = /[A-Za-z]/.test(term);
+      // Determine if input is Chinese (Han) or Latin characters
+      const hasHan = /[\u4E00-\u9FFF]/.test(inputWord);
+      const hasLatin = /[A-Za-z]/.test(inputWord);
 
-const chsVal = hasHan ? term : null;
-const enVal = (hasLatin && !hasHan) ? term : (hasLatin && hasHan ? term : null);
+      // Map to appropriate columns based on input language
+      const chsVal = hasHan ? inputWord : null;
+      const enVal = (hasLatin && !hasHan) ? inputWord : (hasLatin && hasHan ? inputWord : null);
 
       const payload: any = {
-  word,
-  is_r18: Number(wordType),
-  status: "pending",
-  chs: chsVal,
-  en: enVal,
-  source: "web",
-};
+        zhh: inputWord,  // 关键：使用 zhh 作为主字段（词汇本身）
+        is_r18: Number(wordType),
+        status: "pending",
+        chs: chsVal,     // 中文翻译/同义词
+        en: enVal,       // 英文翻译/同义词
+        source: "web",
+      };
 
+      // Try to insert first
       const { data, error } = await supabase
         .from("lexeme_suggestions")
         .insert([payload])
-        // 只返回你关心的列，避免返回列名不匹配造成额外问题
-        .select("id,word,is_r18,status,chs,en,source");
+        .select("id,zhh,is_r18,status,chs,en,source");
 
       if (error) {
-        // 409 / 23505: word 已存在（unique constraint），把搜索词合并进 chs/en
+        // Handle duplicate constraint (23505) or conflict (409)
         if ((error as any).code === "23505" || (error as any).status === 409) {
+          console.log("Duplicate detected, attempting merge...");
+          
           const { data: existing, error: readErr } = await supabase
             .from("lexeme_suggestions")
-            .select("id,word,is_r18,status,chs,en,source")
-            .eq("word", word)
+            .select("id,zhh,is_r18,status,chs,en,source")
+            .eq("zhh", inputWord)
             .maybeSingle();
 
           if (readErr || !existing) {
             console.error("Read existing failed:", readErr || "not found");
+            setSubmitError("Failed to read existing entry");
             return;
           }
 
+          // Merge the fields
           const mergedChs = mergeSlashList(existing.chs ?? null, chsVal);
           const mergedEn = mergeSlashList(existing.en ?? null, enVal);
           const mergedR18 = Math.max(Number(existing.is_r18 ?? 0), Number(wordType));
@@ -100,33 +104,38 @@ const enVal = (hasLatin && !hasHan) ? term : (hasLatin && hasHan ? term : null);
             .from("lexeme_suggestions")
             .update({ chs: mergedChs, en: mergedEn, is_r18: mergedR18 })
             .eq("id", existing.id)
-            .select("id,word,is_r18,status,chs,en,source");
+            .select("id,zhh,is_r18,status,chs,en,source");
 
           if (updErr) {
             console.error("Merge update failed:", updErr);
-            console.error("Merge update failed(full):", JSON.stringify(updErr, null, 2));
+            setSubmitError("Failed to merge entry");
             return;
           }
 
-          console.log("Merge ok:", upd);
+          console.log("Merge success:", upd);
         } else {
           console.error("Insert failed:", error);
-          console.error("Insert failed(full):", JSON.stringify(error, null, 2));
+          setSubmitError(error.message || "Failed to insert entry");
           return;
         }
       } else {
-        console.log("Insert ok:", data);
+        console.log("Insert success:", data);
       }
 
+      // Clear form and close drawer on success
       setShowDrawer(false);
       setInputValue("");
       setWordType("0");
+      setSubmitError(null);
+    } catch (e) {
+      console.error("Unexpected error:", e);
+      setSubmitError(e instanceof Error ? e.message : "An unexpected error occurred");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // 原来就有的发音按钮逻辑
+  // Handle pronunciation
   const handleSpeak = () => {
     if ("speechSynthesis" in window) {
       const utterance = new SpeechSynthesisUtterance(searchTerm);
@@ -169,7 +178,7 @@ const enVal = (hasLatin && !hasHan) ? term : (hasLatin && hasHan ? term : null);
           {showDrawer && (
             <div
               ref={drawerRef}
-              className="absolute top-full left-4 right-4 -mt-16 bg-[#000080] rounded-[28px] p-8 p-6"
+              className="absolute top-full left-4 right-4 -mt-16 bg-[#000080] rounded-[28px] p-8 p-6 z-50"
             >
               <div className="flex gap-3 mb-6 -pl-20 -pt-20">
                 <button
@@ -177,6 +186,8 @@ const enVal = (hasLatin && !hasHan) ? term : (hasLatin && hasHan ? term : null);
                   className="relative w-8 h-8 rounded-full bg-[#c8ff00] flex items-center justify-center
                              hover:scale-110 transition-transform"
                   aria-label="Colloquial term"
+                  type="button"
+                  disabled={isSubmitting}
                 >
                   {wordType === "0" && <div className="w-4 h-4 rounded-full bg-black"></div>}
                 </button>
@@ -186,6 +197,8 @@ const enVal = (hasLatin && !hasHan) ? term : (hasLatin && hasHan ? term : null);
                   className="relative w-8 h-8 rounded-full bg-[#ff0090] flex items-center justify-center
                              hover:scale-110 transition-transform"
                   aria-label="Vulgar term"
+                  type="button"
+                  disabled={isSubmitting}
                 >
                   {wordType === "1" && <div className="w-4 h-4 rounded-full bg-black"></div>}
                 </button>
@@ -198,16 +211,24 @@ const enVal = (hasLatin && !hasHan) ? term : (hasLatin && hasHan ? term : null);
                   onChange={(e) => setInputValue(e.target.value)}
                   placeholder=""
                   className="w-full bg-transparent text-white text-4xl text-center
-                            focus:outline-none placeholder:text-blue-400/50"
+                            focus:outline-none placeholder:text-blue-400/50 disabled:opacity-50"
                   autoFocus
+                  disabled={isSubmitting}
                 />
               </div>
 
+              {submitError && (
+                <div className="mb-4 text-red-400 text-sm text-center">
+                  Error: {submitError}
+                </div>
+              )}
+
               <div className="flex justify-end -pr-20 -pb-20">
-                <button type="button"
+                <button 
+                  type="button"
                   onClick={handleAdd}
-                  className="px-8 py-3 bg-black text-[#c8ff00] rounded-full text-xl hover:scale-105 transition-transform font-[Anton] font-bold"
-                  disabled={isSubmitting}
+                  className="px-8 py-3 bg-black text-[#c8ff00] rounded-full text-xl hover:scale-105 transition-transform font-[Anton] font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={isSubmitting || !inputValue.trim()}
                 >
                   {isSubmitting ? "adding..." : "enter"}
                 </button>

@@ -12,7 +12,7 @@ module.exports = async function handler(req, res) {
   
   if (req.method === "GET") { 
     setCors(res); 
-    return res.status(200).json({ ok: true, usage: "POST { seed_q, zhh, zhh_pron, chs, en, source }" }); 
+    return res.status(200).json({ ok: true, usage: "POST { zhh, is_r18, chs, en, source }" }); 
   }
   
   if (req.method !== "POST") { 
@@ -25,31 +25,29 @@ module.exports = async function handler(req, res) {
     if (typeof body === "string") body = body ? JSON.parse(body) : {};
     body = body || {};
 
-    // Extract and sanitize the fields
-    const seed_q = String(body.seed_q || body.q || "").trim().slice(0, 200);
-    const zhh = String(body.zhh || "").trim().slice(0, 200);
+    // 关键改进：使用 zhh 作为词汇的主要字段
+    // 支持旧的 seed_q/q 字段以保持向后兼容，但优先使用 zhh
+    const zhh = String(body.zhh || body.seed_q || body.q || "").trim().slice(0, 200);
 
     // Ensure required fields are provided
-    if (!zhh && !seed_q) {
+    if (!zhh) {
       setCors(res);
-      return res.status(200).json({ ok: false, error: "Missing zhh/seed_q" });
+      return res.status(200).json({ ok: false, error: "Missing zhh/seed_q/q" });
     }
 
     const payload = {
-      seed_q: seed_q || null,
-      zhh: zhh || null,
+      zhh: zhh,  // 词汇本身（粤语/Cantonese）
       zhh_pron: body.zhh_pron ? String(body.zhh_pron).trim().slice(0, 200) : null,
-      chs: body.chs ? String(body.chs).trim().slice(0, 400) : '',  // Default empty string if not provided
-      en: body.en ? String(body.en).trim().slice(0, 400) : '',    // Default empty string if not provided
-      source: body.source ? String(body.source).trim().slice(0, 40) : "unknown",  // Default to 'unknown' if missing
+      chs: body.chs ? String(body.chs).trim().slice(0, 400) : null,  // 中文同义词或翻译
+      en: body.en ? String(body.en).trim().slice(0, 400) : null,     // 英文同义词或翻译
+      source: body.source ? String(body.source).trim().slice(0, 40) : "web",  // 默认为 'web'
       status: 'pending',
-      created_at: new Date().toISOString(),
-      // 允许从前端透传 is_r18（例如 0/1 或 true/false），方便后续分析
+      // 注意：不要手动设置 created_at，让 Supabase 使用数据库默认的 now()
       is_r18: typeof body.is_r18 === "boolean"
-        ? body.is_r18
+        ? (body.is_r18 ? 1 : 0)
         : typeof body.is_r18 === "number"
-        ? !!body.is_r18
-        : undefined,
+        ? (body.is_r18 ? 1 : 0)
+        : (typeof body.is_r18 === "string" && body.is_r18.trim() === "1" ? 1 : 0),
     };
 
     // Check if the entry already exists
@@ -66,10 +64,10 @@ module.exports = async function handler(req, res) {
 
     const supabase = createClient(url, key, { auth: { persistSession: false } });
 
-    // Check if the word already exists in the lexeme_suggestions table
+    // Check if the zhh entry already exists in the lexeme_suggestions table
     const { data: existingData, error: existingError } = await supabase
       .from('lexeme_suggestions')
-      .select('id')
+      .select('id, zhh, is_r18, chs, en, source')
       .eq('zhh', zhh)
       .limit(1);
 
@@ -78,17 +76,41 @@ module.exports = async function handler(req, res) {
       return res.status(500).json({ ok: false, error: existingError.message });
     }
 
+    // If entry exists, merge fields instead of inserting duplicate
     if (existingData && existingData.length > 0) {
+      console.log("Duplicate detected, merging...", zhh);
+      
+      const existing = existingData[0];
+      
+      // Merge chs and en fields (avoid duplicates with /)
+      const mergedChs = mergeSlashList(existing.chs, payload.chs);
+      const mergedEn = mergeSlashList(existing.en, payload.en);
+      const mergedR18 = Math.max(existing.is_r18 || 0, payload.is_r18 || 0);
+
+      const { data: updated, error: updateError } = await supabase
+        .from('lexeme_suggestions')
+        .update({
+          chs: mergedChs,
+          en: mergedEn,
+          is_r18: mergedR18,
+        })
+        .eq('id', existing.id)
+        .select('id, zhh, is_r18, status, chs, en, source');
+
+      if (updateError) {
+        setCors(res);
+        return res.status(500).json({ ok: false, error: updateError.message });
+      }
+
       setCors(res);
-      return res.status(200).json({ ok: true, duplicate: true, message: 'Duplicate entry, not added.' });
+      return res.status(200).json({ ok: true, merged: true, data: updated });
     }
 
-    // Insert new entry
+    // Insert new entry if not duplicate
     const { data, error } = await supabase
       .from('lexeme_suggestions')
       .insert([payload])
-      // 指定返回字段，便于调试确认插入结果
-      .select('zhh,is_r18');
+      .select('id, zhh, is_r18, status, chs, en, source');
 
     if (error) {
       setCors(res);
@@ -102,3 +124,21 @@ module.exports = async function handler(req, res) {
     return res.status(200).json({ ok: false, error: e?.message || String(e) });
   }
 };
+
+// Helper function to merge slash-separated values without duplicates
+function mergeSlashList(current, incoming) {
+  const next = (incoming ?? "").toString().trim();
+  if (!next) return current;
+  
+  const items = (current ?? "")
+    .toString()
+    .split("/")
+    .map((x) => x.trim())
+    .filter(Boolean);
+  
+  if (!items.includes(next)) {
+    items.push(next);
+  }
+  
+  return items.length ? items.join("/") : null;
+}

@@ -22,7 +22,8 @@ const mergeSlashList = (current: string | null, incoming: string | null) => {
 export function AddWordDrawer({ searchTerm, isOpen, onClose }: AddWordDrawerProps) {
   const [wordType, setWordType] = useState<"0" | "1">("0"); // 0=colloquial(green), 1=vulgar(magenta)
   const [inputValue, setInputValue] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false); // 按钮"adding..."状态
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const drawerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -42,52 +43,54 @@ export function AddWordDrawer({ searchTerm, isOpen, onClose }: AddWordDrawerProp
   }, [isOpen, onClose]);
 
   const handleAdd = async () => {
-    const word = inputValue.trim();
-    if (!word || isSubmitting) return;
+    const inputWord = inputValue.trim();
+    if (!inputWord || isSubmitting) return;
 
     setIsSubmitting(true);
+    setSubmitError(null);
 
     try {
-      // ⚠️ 不传 created_at（让 DB 默认 now()）
-      
-const term = (searchTerm || '').trim();
-const hasHan = /[\u4E00-\u9FFF]/.test(term);
-const hasLatin = /[A-Za-z]/.test(term);
+      // Determine if input is Chinese (Han) or Latin characters
+      const hasHan = /[\u4E00-\u9FFF]/.test(inputWord);
+      const hasLatin = /[A-Za-z]/.test(inputWord);
 
-// 只存一种最可靠：中文 -> chs；英文 -> en；两者都有就两个都存
-const chsVal = hasHan ? term : null;
-const enVal = (hasLatin && !hasHan) ? term : (hasLatin && hasHan ? term : null);
+      // Map to appropriate columns based on input language
+      const chsVal = hasHan ? inputWord : null;
+      const enVal = (hasLatin && !hasHan) ? inputWord : (hasLatin && hasHan ? inputWord : null);
 
       const payload = {
-  word,
-  is_r18: Number(wordType),
-  status: "pending",
-  // 记录本次搜索词（命中/未命中都可用）
-  chs: chsVal,
-  en: enVal,
-  // 只要你表里有该列才保留；没有就删掉这一行 + select 里的 source
-  source: "web",
-};
+        zhh: inputWord,  // 关键：使用 zhh 作为主字段（词汇本身）
+        is_r18: Number(wordType),
+        status: "pending",
+        chs: chsVal,     // 中文翻译/同义词
+        en: enVal,       // 英文翻译/同义词
+        source: "web",
+      };
 
+      // Try to insert first
       const { data, error } = await supabase
         .from("lexeme_suggestions")
         .insert([payload])
-        .select("id,word,is_r18,status,chs,en,source");
+        .select("id,zhh,is_r18,status,chs,en,source");
 
       if (error) {
-        // 409 / 23505: word 已存在（unique constraint），把搜索词合并进 chs/en
+        // Handle duplicate constraint (23505) or conflict (409)
         if ((error as any).code === "23505" || (error as any).status === 409) {
+          console.log("Duplicate detected, attempting merge...");
+          
           const { data: existing, error: readErr } = await supabase
             .from("lexeme_suggestions")
-            .select("id,word,is_r18,status,chs,en,source")
-            .eq("word", word)
+            .select("id,zhh,is_r18,status,chs,en,source")
+            .eq("zhh", inputWord)
             .maybeSingle();
 
           if (readErr || !existing) {
             console.error("Read existing failed:", readErr || "not found");
+            setSubmitError("Failed to read existing entry");
             return;
           }
 
+          // Merge the fields
           const mergedChs = mergeSlashList(existing.chs ?? null, chsVal);
           const mergedEn = mergeSlashList(existing.en ?? null, enVal);
           const mergedR18 = Math.max(Number(existing.is_r18 ?? 0), Number(wordType));
@@ -96,31 +99,40 @@ const enVal = (hasLatin && !hasHan) ? term : (hasLatin && hasHan ? term : null);
             .from("lexeme_suggestions")
             .update({ chs: mergedChs, en: mergedEn, is_r18: mergedR18 })
             .eq("id", existing.id)
-            .select("id,word,is_r18,status,chs,en,source");
+            .select("id,zhh,is_r18,status,chs,en,source");
 
           if (updErr) {
             console.error("Merge update failed:", updErr);
-            console.error("Merge update failed(full):", JSON.stringify(updErr, null, 2));
+            setSubmitError("Failed to merge entry");
             return;
           }
 
-          console.log("Merge update ok:", upd);
+          console.log("Merge success:", upd);
         } else {
           console.error("Insert failed:", error);
-          console.error("Insert failed(full):", JSON.stringify(error, null, 2));
+          setSubmitError(error.message || "Failed to insert entry");
           return;
         }
+      } else {
+        console.log("Insert success:", data);
       }
 
-      console.log("Insert ok:", data);
-
+      // Clear form and close drawer on success
       setInputValue("");
       setWordType("0");
+      setSubmitError(null);
       onClose();
     } catch (e) {
       console.error("Unexpected error:", e);
+      setSubmitError(e instanceof Error ? e.message : "An unexpected error occurred");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !isSubmitting && inputValue.trim()) {
+      handleAdd();
     }
   };
 
@@ -158,6 +170,7 @@ const enVal = (hasLatin && !hasHan) ? term : (hasLatin && hasHan ? term : null);
           type="text"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
+          onKeyPress={handleKeyPress}
           placeholder=" "
           className="w-full bg-transparent text-white text-4xl text-center focus:outline-none placeholder:text-gray-600 disabled:opacity-50"
           autoFocus
@@ -165,9 +178,16 @@ const enVal = (hasLatin && !hasHan) ? term : (hasLatin && hasHan ? term : null);
         />
       </div>
 
+      {submitError && (
+        <div className="mb-4 text-red-400 text-sm text-center">
+          Error: {submitError}
+        </div>
+      )}
+
       <div className="flex justify-end -pr-20 -pb-20">
         <button
           onClick={handleAdd}
+          type="button"
           className="px-6 py-3 bg-black text-[#c8ff00] rounded-[28px] text-xl font-bold hover:scale-105 transition-transform font-[Anton] disabled:opacity-50 disabled:cursor-not-allowed"
           disabled={isSubmitting || !inputValue.trim()}
         >
