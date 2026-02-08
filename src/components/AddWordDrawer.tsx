@@ -112,7 +112,7 @@ export function AddWordDrawer({ searchTerm, isOpen, onClose }: AddWordDrawerProp
           type="button"
           disabled={isSubmitting || !inputValue.trim()}
         >
-          {isSubmitting ? "adding..." : "go"}
+          {isSubmitting ? "adding..." : "save"}
         </button>
       </div>
     </div>
