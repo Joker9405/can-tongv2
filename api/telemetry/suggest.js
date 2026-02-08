@@ -12,7 +12,7 @@ module.exports = async function handler(req, res) {
   
   if (req.method === "GET") { 
     setCors(res); 
-    return res.status(200).json({ ok: true, usage: "POST { zhh, is_r18, chs, en, source }" }); 
+    return res.status(200).json({ ok: true, usage: "POST { word, is_r18, chs, en, source }" }); 
   }
   
   if (req.method !== "POST") { 
@@ -25,24 +25,21 @@ module.exports = async function handler(req, res) {
     if (typeof body === "string") body = body ? JSON.parse(body) : {};
     body = body || {};
 
-    // 关键改进：使用 zhh 作为词汇的主要字段
-    // 支持旧的 seed_q/q 字段以保持向后兼容，但优先使用 zhh
-    const zhh = String(body.zhh || body.seed_q || body.q || "").trim().slice(0, 200);
+    // 关键：使用 word 作为主字段（实际表中的列名）
+    const word = String(body.word || "").trim().slice(0, 200);
 
     // Ensure required fields are provided
-    if (!zhh) {
+    if (!word) {
       setCors(res);
-      return res.status(200).json({ ok: false, error: "Missing zhh/seed_q/q" });
+      return res.status(200).json({ ok: false, error: "Missing word" });
     }
 
     const payload = {
-      zhh: zhh,  // 词汇本身（粤语/Cantonese）
-      zhh_pron: body.zhh_pron ? String(body.zhh_pron).trim().slice(0, 200) : null,
+      word: word,  // 词汇本身（主字段）
       chs: body.chs ? String(body.chs).trim().slice(0, 400) : null,  // 中文同义词或翻译
       en: body.en ? String(body.en).trim().slice(0, 400) : null,     // 英文同义词或翻译
       source: body.source ? String(body.source).trim().slice(0, 40) : "web",  // 默认为 'web'
       status: 'pending',
-      // 注意：不要手动设置 created_at，让 Supabase 使用数据库默认的 now()
       is_r18: typeof body.is_r18 === "boolean"
         ? (body.is_r18 ? 1 : 0)
         : typeof body.is_r18 === "number"
@@ -64,11 +61,11 @@ module.exports = async function handler(req, res) {
 
     const supabase = createClient(url, key, { auth: { persistSession: false } });
 
-    // Check if the zhh entry already exists in the lexeme_suggestions table
+    // Check if the word entry already exists in the lexeme_suggestions table
     const { data: existingData, error: existingError } = await supabase
       .from('lexeme_suggestions')
-      .select('id, zhh, is_r18, chs, en, source')
-      .eq('zhh', zhh)
+      .select('id, word, is_r18, chs, en, source')
+      .eq('word', word)
       .limit(1);
 
     if (existingError) {
@@ -78,7 +75,7 @@ module.exports = async function handler(req, res) {
 
     // If entry exists, merge fields instead of inserting duplicate
     if (existingData && existingData.length > 0) {
-      console.log("Duplicate detected, merging...", zhh);
+      console.log("Duplicate detected, merging...", word);
       
       const existing = existingData[0];
       
@@ -95,7 +92,7 @@ module.exports = async function handler(req, res) {
           is_r18: mergedR18,
         })
         .eq('id', existing.id)
-        .select('id, zhh, is_r18, status, chs, en, source');
+        .select('id, word, is_r18, status, chs, en, source');
 
       if (updateError) {
         setCors(res);
@@ -110,7 +107,7 @@ module.exports = async function handler(req, res) {
     const { data, error } = await supabase
       .from('lexeme_suggestions')
       .insert([payload])
-      .select('id, zhh, is_r18, status, chs, en, source');
+      .select('id, word, is_r18, status, chs, en, source');
 
     if (error) {
       setCors(res);
@@ -142,3 +139,4 @@ function mergeSlashList(current, incoming) {
   
   return items.length ? items.join("/") : null;
 }
+

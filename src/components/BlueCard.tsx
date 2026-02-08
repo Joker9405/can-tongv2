@@ -55,20 +55,22 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
     setSubmitError(null);
 
     try {
-      // Determine if input is Chinese (Han) or Latin characters
-      const hasHan = /[\u4E00-\u9FFF]/.test(inputWord);
-      const hasLatin = /[A-Za-z]/.test(inputWord);
+      // Get the search term context (chs and en values from the displayed card)
+      const term = (searchTerm || '').trim();
+      const hasHan = /[\u4E00-\u9FFF]/.test(term);
+      const hasLatin = /[A-Za-z]/.test(term);
 
-      // Map to appropriate columns based on input language
-      const chsVal = hasHan ? inputWord : null;
-      const enVal = (hasLatin && !hasHan) ? inputWord : (hasLatin && hasHan ? inputWord : null);
+      // Determine chs and en based on searchTerm (not inputWord)
+      // The inputWord is the new variation/suggestion being added
+      const chsVal = hasHan ? term : null;
+      const enVal = (hasLatin && !hasHan) ? term : (hasLatin && hasHan ? term : null);
 
       const payload: any = {
-        zhh: inputWord,  // 关键：使用 zhh 作为主字段（词汇本身）
+        word: inputWord,  // 关键：实际表中的字段是 word，不是 zhh
         is_r18: Number(wordType),
         status: "pending",
-        chs: chsVal,     // 中文翻译/同义词
-        en: enVal,       // 英文翻译/同义词
+        chs: chsVal,      // 从搜索词提取的中文
+        en: enVal,        // 从搜索词提取的英文
         source: "web",
       };
 
@@ -76,7 +78,7 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
       const { data, error } = await supabase
         .from("lexeme_suggestions")
         .insert([payload])
-        .select("id,zhh,is_r18,status,chs,en,source");
+        .select("id,word,is_r18,status,chs,en,source");
 
       if (error) {
         // Handle duplicate constraint (23505) or conflict (409)
@@ -85,8 +87,8 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
           
           const { data: existing, error: readErr } = await supabase
             .from("lexeme_suggestions")
-            .select("id,zhh,is_r18,status,chs,en,source")
-            .eq("zhh", inputWord)
+            .select("id,word,is_r18,status,chs,en,source")
+            .eq("word", inputWord)
             .maybeSingle();
 
           if (readErr || !existing) {
@@ -104,7 +106,7 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
             .from("lexeme_suggestions")
             .update({ chs: mergedChs, en: mergedEn, is_r18: mergedR18 })
             .eq("id", existing.id)
-            .select("id,zhh,is_r18,status,chs,en,source");
+            .select("id,word,is_r18,status,chs,en,source");
 
           if (updErr) {
             console.error("Merge update failed:", updErr);
