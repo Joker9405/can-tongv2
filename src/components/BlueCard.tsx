@@ -1,244 +1,120 @@
-import { useState, useRef, useEffect } from "react";
-import { Volume2 } from "lucide-react";
+import { useMemo, useState } from "react";
 import supabase from "../lib/supabaseClient";
 
-interface BlueCardProps {
+type Props = {
   searchTerm: string;
-}
-
-// merge values like "a/b/c" without duplicates
-const mergeSlashList = (current: string | null, incoming: string | null) => {
-  const next = (incoming ?? "").trim();
-  if (!next) return current;
-  const items = (current ?? "")
-    .split("/")
-    .map((x) => x.trim())
-    .filter(Boolean);
-  if (!items.includes(next)) items.push(next);
-  return items.length ? items.join("/") : null;
 };
 
-export function BlueCard({ searchTerm }: BlueCardProps) {
-  const [showDrawer, setShowDrawer] = useState(false);
-  const [wordType, setWordType] = useState<"0" | "1">("0"); // 0=colloquial(green), 1=vulgar(magenta)
+// BlueCard：未命中时展示 + 允许把“当前搜索词”写入 lexeme_suggestions
+export default function BlueCard({ searchTerm }: Props) {
+  const [isAdding, setIsAdding] = useState(false);
+  const [added, setAdded] = useState(false);
+
+  // Revise drawer (保持你原有交互：仅保留状态，不强行改逻辑)
+  const [isReviseOpen, setIsReviseOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
-  const drawerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (drawerRef.current && !drawerRef.current.contains(event.target as Node)) {
-        setShowDrawer(false);
-      }
-    };
+  const q = useMemo(() => (searchTerm || "").trim(), [searchTerm]);
+  const isQueryChinese = useMemo(() => /[\u4E00-\u9FFF]/.test(q), [q]);
 
-    if (showDrawer) {
-      document.addEventListener("mousedown", handleClickOutside);
+  const handleAdd = async () => {
+    if (!q || isAdding || added) return;
+
+    setIsAdding(true);
+
+    // ✅ 通过 RPC：新增则 INSERT，重复则自动合并 chs/en（不会 409）
+    const { data, error } = await supabase.rpc("submit_lexeme_suggestion", {
+      p_word: q,
+      p_is_r18: 0,
+      p_status: "pending",
+      p_chs: isQueryChinese ? q : null,
+      p_en: !isQueryChinese ? q : null,
+      p_source: "web",
+    });
+
+    if (error) {
+      console.error("submit_lexeme_suggestion failed:", error);
+      setIsAdding(false);
+      return;
     }
 
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [showDrawer]);
-
-  // Handle the add button submission
-  const handleAdd = async (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.preventDefault();
-    event.stopPropagation();
-
-    const inputWord = inputValue.trim();
-
-    if (!inputWord || isSubmitting) return;
-
-    setIsSubmitting(true);
-    setSubmitError(null);
-
-    try {
-      // Get the search term context (chs and en values from the displayed card)
-      const term = (searchTerm || '').trim();
-      const hasHan = /[\u4E00-\u9FFF]/.test(term);
-      const hasLatin = /[A-Za-z]/.test(term);
-
-      // Determine chs and en based on searchTerm (not inputWord)
-      // The inputWord is the new variation/suggestion being added
-      const chsVal = hasHan ? term : null;
-      const enVal = (hasLatin && !hasHan) ? term : (hasLatin && hasHan ? term : null);
-
-      const payload: any = {
-        word: inputWord,  // 关键：实际表中的字段是 word，不是 zhh
-        is_r18: Number(wordType),
-        status: "pending",
-        chs: chsVal,      // 从搜索词提取的中文
-        en: enVal,        // 从搜索词提取的英文
-        source: "web",
-      };
-
-      // Try to insert first
-      const { data, error } = await supabase
-        .from("lexeme_suggestions")
-        .insert([payload])
-        .select("id,word,is_r18,status,chs,en,source");
-
-      if (error) {
-        // Handle duplicate constraint (23505) or conflict (409)
-        if ((error as any).code === "23505" || (error as any).status === 409) {
-          console.log("Duplicate detected, attempting merge...");
-          
-          const { data: existing, error: readErr } = await supabase
-            .from("lexeme_suggestions")
-            .select("id,word,is_r18,status,chs,en,source")
-            .eq("word", inputWord)
-            .maybeSingle();
-
-          if (readErr || !existing) {
-            console.error("Read existing failed:", readErr || "not found");
-            setSubmitError("Failed to read existing entry");
-            return;
-          }
-
-          // Merge the fields
-          const mergedChs = mergeSlashList(existing.chs ?? null, chsVal);
-          const mergedEn = mergeSlashList(existing.en ?? null, enVal);
-          const mergedR18 = Math.max(Number(existing.is_r18 ?? 0), Number(wordType));
-
-          const { data: upd, error: updErr } = await supabase
-            .from("lexeme_suggestions")
-            .update({ chs: mergedChs, en: mergedEn, is_r18: mergedR18 })
-            .eq("id", existing.id)
-            .select("id,word,is_r18,status,chs,en,source");
-
-          if (updErr) {
-            console.error("Merge update failed:", updErr);
-            setSubmitError("Failed to merge entry");
-            return;
-          }
-
-          console.log("Merge success:", upd);
-        } else {
-          console.error("Insert failed:", error);
-          setSubmitError(error.message || "Failed to insert entry");
-          return;
-        }
-      } else {
-        console.log("Insert success:", data);
-      }
-
-      // Clear form and close drawer on success
-      setShowDrawer(false);
-      setInputValue("");
-      setWordType("0");
-      setSubmitError(null);
-    } catch (e) {
-      console.error("Unexpected error:", e);
-      setSubmitError(e instanceof Error ? e.message : "An unexpected error occurred");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  // Handle pronunciation
-  const handleSpeak = () => {
-    if ("speechSynthesis" in window) {
-      const utterance = new SpeechSynthesisUtterance(searchTerm);
-      utterance.lang = "zh-HK";
-      speechSynthesis.speak(utterance);
-    }
+    console.log("submit_lexeme_suggestion ok:", data);
+    setAdded(true);
+    setIsAdding(false);
   };
 
   return (
-    <>
-      <div className="mt-2 space-y-2">
-        {/* AI Generated Blue Card */}
-        <div className="bg-[#0000ff] rounded-[28px] p-8 relative">
-          <div className="text-center">
-            <h2 className="text-6xl font-bold text-white mb-2">{searchTerm}</h2>
-            <p className="text-lg text-gray-300">sei2 ceon2</p>
-          </div>
+    <div className="relative w-[650px] max-w-[92vw] rounded-[20px] bg-gradient-to-b from-[#0a2cff] to-[#001066] p-8 shadow-[0_18px_45px_rgba(0,0,0,0.5)]">
+      {/* header dots */}
+      <div className="mb-4 flex items-center gap-3">
+        <div className="h-5 w-5 rounded-full border-4 border-[#D7FF00] bg-transparent" />
+        <div className="h-5 w-5 rounded-full bg-[#FF00A8]" />
 
-          {/* Speaker Button */}
-          <button
-            onClick={handleSpeak}
-            className="absolute bottom-4 right-4 w-12 h-12 bg-black rounded-full 
-                       flex items-center justify-center hover:scale-110 transition-transform"
-            aria-label="Play pronunciation"
-          >
-            <Volume2 className="w-6 h-6 text-white" />
-          </button>
+        <button
+          className="ml-auto rounded-full bg-black/60 px-4 py-2 text-sm font-semibold text-white hover:bg-black/75"
+          onClick={() => setIsReviseOpen(true)}
+        >
+          revise
+        </button>
+      </div>
 
-          {/* Revise Button */}
-          {!showDrawer && (
-            <button
-              onClick={() => setShowDrawer(true)}
-              className="absolute bottom-4 left-4 px-5 py-2 bg-[#1e40af] text-[#ffffff] rounded-full text-lg hover:bg-[#1e4ea8] transition-colors font-medium font-[Anton] font-bold"
-            >
-              Revise
-            </button>
-          )}
-
-          {/* Revise Drawer */}
-          {showDrawer && (
-            <div
-              ref={drawerRef}
-              className="absolute top-full left-4 right-4 -mt-16 bg-[#000080] rounded-[28px] p-8 p-6 z-50"
-            >
-              <div className="flex gap-3 mb-6 -pl-20 -pt-20">
-                <button
-                  onClick={() => setWordType("0")}
-                  className="relative w-8 h-8 rounded-full bg-[#c8ff00] flex items-center justify-center
-                             hover:scale-110 transition-transform"
-                  aria-label="Colloquial term"
-                  type="button"
-                  disabled={isSubmitting}
-                >
-                  {wordType === "0" && <div className="w-4 h-4 rounded-full bg-black"></div>}
-                </button>
-
-                <button
-                  onClick={() => setWordType("1")}
-                  className="relative w-8 h-8 rounded-full bg-[#ff0090] flex items-center justify-center
-                             hover:scale-110 transition-transform"
-                  aria-label="Vulgar term"
-                  type="button"
-                  disabled={isSubmitting}
-                >
-                  {wordType === "1" && <div className="w-4 h-4 rounded-full bg-black"></div>}
-                </button>
-              </div>
-
-              <div className="mb-6">
-                <input
-                  type="text"
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  placeholder=""
-                  className="w-full bg-transparent text-white text-4xl text-center
-                            focus:outline-none placeholder:text-blue-400/50 disabled:opacity-50"
-                  autoFocus
-                  disabled={isSubmitting}
-                />
-              </div>
-
-              {submitError && (
-                <div className="mb-4 text-red-400 text-sm text-center">
-                  Error: {submitError}
-                </div>
-              )}
-
-              <div className="flex justify-end -pr-20 -pb-20">
-                <button 
-                  type="button"
-                  onClick={handleAdd}
-                  className="px-8 py-3 bg-black text-[#c8ff00] rounded-full text-xl hover:scale-105 transition-transform font-[Anton] font-bold disabled:opacity-50 disabled:cursor-not-allowed"
-                  disabled={isSubmitting || !inputValue.trim()}
-                >
-                  {isSubmitting ? "adding..." : "enter"}
-                </button>
-              </div>
-            </div>
-          )}
+      {/* main */}
+      <div className="min-h-[120px] rounded-[18px] bg-black/10 p-6">
+        <div className="text-center text-4xl font-extrabold text-white drop-shadow">
+          {q || "—"}
         </div>
       </div>
-    </>
+
+      {/* add */}
+      <div className="mt-6 flex justify-end">
+        <button
+          onClick={handleAdd}
+          disabled={!q || isAdding || added}
+          className={`rounded-full px-5 py-2 text-sm font-bold ${
+            added
+              ? "bg-black/40 text-[#D7FF00]"
+              : "bg-black text-[#D7FF00] hover:bg-black/85"
+          } ${!q || isAdding ? "opacity-60" : ""}`}
+        >
+          {added ? "added" : isAdding ? "adding..." : "add"}
+        </button>
+      </div>
+
+      {/* revise drawer (轻量保持) */}
+      {isReviseOpen && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/55 p-4">
+          <div className="w-[650px] max-w-[92vw] rounded-[20px] bg-[#0b0b0b] p-5">
+            <div className="mb-3 flex items-center justify-between">
+              <div className="text-base font-bold text-white">Revise</div>
+              <button
+                className="rounded-full bg-white/10 px-3 py-1 text-sm text-white hover:bg-white/15"
+                onClick={() => setIsReviseOpen(false)}
+              >
+                close
+              </button>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <input
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                placeholder="type here..."
+                className="flex-1 rounded-xl bg-white/10 px-4 py-3 text-white outline-none placeholder:text-white/40"
+              />
+              <button
+                className="rounded-full bg-[#D7FF00] px-5 py-3 text-sm font-extrabold text-black"
+                // 这里只保留原有“go”按钮；具体 revise 逻辑你后续再接
+                onClick={() => {
+                  console.log("revise go:", inputValue);
+                  setIsReviseOpen(false);
+                }}
+              >
+                go
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

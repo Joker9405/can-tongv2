@@ -7,23 +7,10 @@ interface AddWordDrawerProps {
   onClose: () => void;
 }
 
-// merge values like "a/b/c" without duplicates
-const mergeSlashList = (current: string | null, incoming: string | null) => {
-  const next = (incoming ?? "").trim();
-  if (!next) return current;
-  const items = (current ?? "")
-    .split("/")
-    .map((x) => x.trim())
-    .filter(Boolean);
-  if (!items.includes(next)) items.push(next);
-  return items.length ? items.join("/") : null;
-};
-
 export function AddWordDrawer({ searchTerm, isOpen, onClose }: AddWordDrawerProps) {
   const [wordType, setWordType] = useState<"0" | "1">("0"); // 0=colloquial(green), 1=vulgar(magenta)
   const [inputValue, setInputValue] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false); // 按钮"adding..."状态
   const drawerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -43,97 +30,50 @@ export function AddWordDrawer({ searchTerm, isOpen, onClose }: AddWordDrawerProp
   }, [isOpen, onClose]);
 
   const handleAdd = async () => {
-    const inputWord = inputValue.trim();
-    if (!inputWord || isSubmitting) return;
+    const word = inputValue.trim();
+    if (!word || isSubmitting) return;
 
     setIsSubmitting(true);
-    setSubmitError(null);
 
     try {
-      // Get the search term context (chs and en values from the displayed card)
-      const term = (searchTerm || '').trim();
-      const hasHan = /[\u4E00-\u9FFF]/.test(term);
-      const hasLatin = /[A-Za-z]/.test(term);
+      const q = (searchTerm || "").trim();
+      const isQueryChinese = /[\u4E00-\u9FFF]/.test(q);
 
-      // Determine chs and en based on searchTerm (not inputWord)
-      const chsVal = hasHan ? term : null;
-      const enVal = (hasLatin && !hasHan) ? term : (hasLatin && hasHan ? term : null);
-
+      // ⚠️ 不传 created_at（让 DB 默认 now()）
       const payload = {
-        word: inputWord,  // 关键：实际表中的字段是 word，不是 zhh
-        is_r18: Number(wordType),
+        word,
+        is_r18: wordType === "1" ? 1 : 0,
         status: "pending",
-        chs: chsVal,      // 从搜索词提取的中文
-        en: enVal,        // 从搜索词提取的英文
+        chs: q ? (isQueryChinese ? q : null) : null,
+        en: q ? (!isQueryChinese ? q : null) : null,
         source: "web",
       };
 
-      // Try to insert first
-      const { data, error } = await supabase
-        .from("lexeme_suggestions")
-        .insert([payload])
-        .select("id,word,is_r18,status,chs,en,source");
+      // ✅ 统一走 RPC：新词插入；重复词合并 chs/en；不会再出现 409
+      const { data, error } = await supabase.rpc("submit_lexeme_suggestion", {
+        p_word: payload.word,
+        p_is_r18: payload.is_r18,
+        p_status: payload.status,
+        p_chs: payload.chs,
+        p_en: payload.en,
+        p_source: payload.source,
+      });
 
       if (error) {
-        // Handle duplicate constraint (23505) or conflict (409)
-        if ((error as any).code === "23505" || (error as any).status === 409) {
-          console.log("Duplicate detected, attempting merge...");
-          
-          const { data: existing, error: readErr } = await supabase
-            .from("lexeme_suggestions")
-            .select("id,word,is_r18,status,chs,en,source")
-            .eq("word", inputWord)
-            .maybeSingle();
-
-          if (readErr || !existing) {
-            console.error("Read existing failed:", readErr || "not found");
-            setSubmitError("Failed to read existing entry");
-            return;
-          }
-
-          // Merge the fields
-          const mergedChs = mergeSlashList(existing.chs ?? null, chsVal);
-          const mergedEn = mergeSlashList(existing.en ?? null, enVal);
-          const mergedR18 = Math.max(Number(existing.is_r18 ?? 0), Number(wordType));
-
-          const { data: upd, error: updErr } = await supabase
-            .from("lexeme_suggestions")
-            .update({ chs: mergedChs, en: mergedEn, is_r18: mergedR18 })
-            .eq("id", existing.id)
-            .select("id,word,is_r18,status,chs,en,source");
-
-          if (updErr) {
-            console.error("Merge update failed:", updErr);
-            setSubmitError("Failed to merge entry");
-            return;
-          }
-
-          console.log("Merge success:", upd);
-        } else {
-          console.error("Insert failed:", error);
-          setSubmitError(error.message || "Failed to insert entry");
-          return;
-        }
-      } else {
-        console.log("Insert success:", data);
+        console.error("RPC failed:", error);
+        console.error("RPC failed(full):", JSON.stringify(error, null, 2));
+        return;
       }
 
-      // Clear form and close drawer on success
+      console.log("RPC ok:", data);
+
       setInputValue("");
       setWordType("0");
-      setSubmitError(null);
       onClose();
     } catch (e) {
       console.error("Unexpected error:", e);
-      setSubmitError(e instanceof Error ? e.message : "An unexpected error occurred");
     } finally {
       setIsSubmitting(false);
-    }
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !isSubmitting && inputValue.trim()) {
-      handleAdd();
     }
   };
 
@@ -171,7 +111,6 @@ export function AddWordDrawer({ searchTerm, isOpen, onClose }: AddWordDrawerProp
           type="text"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
-          onKeyPress={handleKeyPress}
           placeholder=" "
           className="w-full bg-transparent text-white text-4xl text-center focus:outline-none placeholder:text-gray-600 disabled:opacity-50"
           autoFocus
@@ -179,20 +118,14 @@ export function AddWordDrawer({ searchTerm, isOpen, onClose }: AddWordDrawerProp
         />
       </div>
 
-      {submitError && (
-        <div className="mb-4 text-red-400 text-sm text-center">
-          Error: {submitError}
-        </div>
-      )}
-
       <div className="flex justify-end -pr-20 -pb-20">
         <button
           onClick={handleAdd}
-          type="button"
           className="px-6 py-3 bg-black text-[#c8ff00] rounded-[28px] text-xl font-bold hover:scale-105 transition-transform font-[Anton] disabled:opacity-50 disabled:cursor-not-allowed"
+          type="button"
           disabled={isSubmitting || !inputValue.trim()}
         >
-          {isSubmitting ? "adding..." : "enter"}
+          {isSubmitting ? "adding..." : "go"}
         </button>
       </div>
     </div>
