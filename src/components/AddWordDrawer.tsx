@@ -171,7 +171,7 @@ const enVal = (hasLatin && !hasHan) ? term : (hasLatin && hasHan ? term : null);
           className="px-6 py-3 bg-black text-[#c8ff00] rounded-[28px] text-xl font-bold hover:scale-105 transition-transform font-[Anton] disabled:opacity-50 disabled:cursor-not-allowed"
           disabled={isSubmitting || !inputValue.trim()}
         >
-          {isSubmitting ? "adding..." : "add"}
+          {isSubmitting ? "adding..." : "enter"}
         </button>
       </div>
     </div>
