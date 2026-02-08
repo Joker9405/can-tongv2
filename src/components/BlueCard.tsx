@@ -43,14 +43,13 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
     try {
       // ⚠️ 关键：不要手动传 created_at（让数据库默认 now() 处理）
       // ⚠️ 关键：字段名必须和表一致（你表里确定有 word/is_r18/status/chs/zhh/en/source）
-      const payload = {
+      const payload = any = {
         word,
         is_r18: Number(wordType),
         status: "pending",
         // 可选：你要记录来源/关联搜索词就加这些（都在你表里）
-        chs: searchTerm || null,
-        zhh: null,
-        en: null,
+        chs,
+        en,
         source: "web",
       };
 
