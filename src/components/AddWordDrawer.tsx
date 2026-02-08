@@ -7,6 +7,18 @@ interface AddWordDrawerProps {
   onClose: () => void;
 }
 
+// merge values like "a/b/c" without duplicates
+const mergeSlashList = (current: string | null, incoming: string | null) => {
+  const next = (incoming ?? "").trim();
+  if (!next) return current;
+  const items = (current ?? "")
+    .split("/")
+    .map((x) => x.trim())
+    .filter(Boolean);
+  if (!items.includes(next)) items.push(next);
+  return items.length ? items.join("/") : null;
+};
+
 export function AddWordDrawer({ searchTerm, isOpen, onClose }: AddWordDrawerProps) {
   const [wordType, setWordType] = useState<"0" | "1">("0"); // 0=colloquial(green), 1=vulgar(magenta)
   const [inputValue, setInputValue] = useState("");
@@ -63,15 +75,47 @@ const enVal = (hasLatin && !hasHan) ? term : (hasLatin && hasHan ? term : null);
         .select("id,word,is_r18,status,chs,en,source");
 
       if (error) {
-        console.error("Insert failed:", error);
-        console.error("Insert failed(full):", JSON.stringify(error, null, 2));
-        return;
+        // 409 / 23505: word 已存在（unique constraint），把搜索词合并进 chs/en
+        if ((error as any).code === "23505" || (error as any).status === 409) {
+          const { data: existing, error: readErr } = await supabase
+            .from("lexeme_suggestions")
+            .select("id,word,is_r18,status,chs,en,source")
+            .eq("word", word)
+            .maybeSingle();
+
+          if (readErr || !existing) {
+            console.error("Read existing failed:", readErr || "not found");
+            return;
+          }
+
+          const mergedChs = mergeSlashList(existing.chs ?? null, chsVal);
+          const mergedEn = mergeSlashList(existing.en ?? null, enVal);
+          const mergedR18 = Math.max(Number(existing.is_r18 ?? 0), Number(wordType));
+
+          const { data: upd, error: updErr } = await supabase
+            .from("lexeme_suggestions")
+            .update({ chs: mergedChs, en: mergedEn, is_r18: mergedR18 })
+            .eq("id", existing.id)
+            .select("id,word,is_r18,status,chs,en,source");
+
+          if (updErr) {
+            console.error("Merge update failed:", updErr);
+            console.error("Merge update failed(full):", JSON.stringify(updErr, null, 2));
+            return;
+          }
+
+          console.log("Merge update ok:", upd);
+        } else {
+          console.error("Insert failed:", error);
+          console.error("Insert failed(full):", JSON.stringify(error, null, 2));
+          return;
+        }
       }
 
       console.log("Insert ok:", data);
 
       setInputValue("");
-      setWordType("1");
+      setWordType("0");
       onClose();
     } catch (e) {
       console.error("Unexpected error:", e);
@@ -122,13 +166,12 @@ const enVal = (hasLatin && !hasHan) ? term : (hasLatin && hasHan ? term : null);
       </div>
 
       <div className="flex justify-end -pr-20 -pb-20">
-        <button type="button"
+        <button
           onClick={handleAdd}
           className="px-6 py-3 bg-black text-[#c8ff00] rounded-[28px] text-xl font-bold hover:scale-105 transition-transform font-[Anton] disabled:opacity-50 disabled:cursor-not-allowed"
-          type="button"
           disabled={isSubmitting || !inputValue.trim()}
         >
-          {isSubmitting ? "adding..." : "go"}
+          {isSubmitting ? "adding..." : "add"}
         </button>
       </div>
     </div>

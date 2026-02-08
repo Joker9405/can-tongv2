@@ -313,6 +313,7 @@ export default function App() {
                 <AddWordDrawer
                   isOpen={showAddDrawer}
                   onClose={() => setShowAddDrawer(false)}
+                  searchTerm={searchTerm}
                 />
               )}
             </div>

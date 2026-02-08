@@ -6,6 +6,18 @@ interface BlueCardProps {
   searchTerm: string;
 }
 
+// merge values like "a/b/c" without duplicates
+const mergeSlashList = (current: string | null, incoming: string | null) => {
+  const next = (incoming ?? "").trim();
+  if (!next) return current;
+  const items = (current ?? "")
+    .split("/")
+    .map((x) => x.trim())
+    .filter(Boolean);
+  if (!items.includes(next)) items.push(next);
+  return items.length ? items.join("/") : null;
+};
+
 export function BlueCard({ searchTerm }: BlueCardProps) {
   const [showDrawer, setShowDrawer] = useState(false);
   const [wordType, setWordType] = useState<"0" | "1">("0"); // 0=colloquial(green), 1=vulgar(magenta)
@@ -67,13 +79,44 @@ const enVal = (hasLatin && !hasHan) ? term : (hasLatin && hasHan ? term : null);
         .select("id,word,is_r18,status,chs,en,source");
 
       if (error) {
-        // 关键：把服务端真正说的“缺哪个列”打印出来（在 Console 看）
-        console.error("Insert failed:", error);
-        console.error("Insert failed(full):", JSON.stringify(error, null, 2));
-        return;
-      }
+        // 409 / 23505: word 已存在（unique constraint），把搜索词合并进 chs/en
+        if ((error as any).code === "23505" || (error as any).status === 409) {
+          const { data: existing, error: readErr } = await supabase
+            .from("lexeme_suggestions")
+            .select("id,word,is_r18,status,chs,en,source")
+            .eq("word", word)
+            .maybeSingle();
 
-      console.log("Insert ok:", data);
+          if (readErr || !existing) {
+            console.error("Read existing failed:", readErr || "not found");
+            return;
+          }
+
+          const mergedChs = mergeSlashList(existing.chs ?? null, chsVal);
+          const mergedEn = mergeSlashList(existing.en ?? null, enVal);
+          const mergedR18 = Math.max(Number(existing.is_r18 ?? 0), Number(wordType));
+
+          const { data: upd, error: updErr } = await supabase
+            .from("lexeme_suggestions")
+            .update({ chs: mergedChs, en: mergedEn, is_r18: mergedR18 })
+            .eq("id", existing.id)
+            .select("id,word,is_r18,status,chs,en,source");
+
+          if (updErr) {
+            console.error("Merge update failed:", updErr);
+            console.error("Merge update failed(full):", JSON.stringify(updErr, null, 2));
+            return;
+          }
+
+          console.log("Merge ok:", upd);
+        } else {
+          console.error("Insert failed:", error);
+          console.error("Insert failed(full):", JSON.stringify(error, null, 2));
+          return;
+        }
+      } else {
+        console.log("Insert ok:", data);
+      }
 
       setShowDrawer(false);
       setInputValue("");
