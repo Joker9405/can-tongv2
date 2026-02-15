@@ -3,6 +3,7 @@ function setCors(res) {
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
 }
+
 function normQ(q) {
   return String(q || "")
     .trim()
@@ -13,56 +14,40 @@ function normQ(q) {
 
 module.exports = async function handler(req, res) {
   if (req.method === "OPTIONS") { setCors(res); return res.status(204).end(); }
-  if (req.method === "GET") { setCors(res); return res.status(200).json({ ok: true, usage: "POST { q }" }); }
-  if (req.method !== "POST") { setCors(res); return res.status(200).json({ ok: false, error: "Method Not Allowed (use POST)" }); }
+  if (req.method !== "POST") { setCors(res); return res.status(200).json({ ok: false, error: "Use POST" }); }
 
   try {
     let body = req.body;
     if (typeof body === "string") body = body ? JSON.parse(body) : {};
-    body = body || {};
 
     const q = normQ(body.q);
-    if (!q) { setCors(res); return res.status(200).json({ ok: true, skipped: true, reason: "empty q" }); }
+    // isHit 由前端传入：true 代表搜到了结果，false 代表词库里没有
+    const isHit = body.isHit === true;
+
+    if (!q) {
+      setCors(res);
+      return res.status(200).json({ ok: true, skipped: true, reason: "empty q" });
+    }
 
     const { createClient } = await import("@supabase/supabase-js");
-    const url = process.env.SUPABASE_URL;
-    const anon = process.env.SUPABASE_ANON_KEY;
-    const service = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    const key = service || anon;
-    if (!url || !key) {
-      setCors(res);
-      return res.status(200).json({ ok: false, error: "Missing env: SUPABASE_URL or SUPABASE_ANON_KEY/SUPABASE_SERVICE_ROLE_KEY" });
-    }
-    const supabase = createClient(url, key, { auth: { persistSession: false } });
+    const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY);
 
-    const sel = await supabase.from("telemetry_search").select("id,cnt").eq("q", q).maybeSingle();
-    if (sel.error && sel.status !== 406) {
-      setCors(res);
-      return res.status(200).json({ ok: false, error: "select failed: " + sel.error.message });
+    // 1. 处理 telemetry_search 表 (记录所有搜索行为)
+    // 使用 upsert 逻辑：如果 q 存在则更新，不存在则插入
+    const { data: sData, error: sError } = await supabase.rpc('increment_telemetry_search', {
+      row_q: q,
+      is_zero: !isHit
+    });
+
+    // 2. 如果未命中，处理 telemetry_zero 表
+    if (!isHit) {
+      await supabase.rpc('increment_telemetry_zero', { row_q: q });
     }
 
-    if (sel.data?.id) {
-      const nextCnt = (sel.data.cnt || 0) + 1;
-      const upd = await supabase
-        .from("telemetry_search")
-        .update({ cnt: nextCnt, last_seen_at: new Date().toISOString() })
-        .eq("id", sel.data.id)
-        .select("id,q,cnt,last_seen_at")
-        .maybeSingle();
-      if (upd.error) { setCors(res); return res.status(200).json({ ok: false, error: "update failed: " + upd.error.message }); }
-      setCors(res); return res.status(200).json({ ok: true, mode: "update", row: upd.data });
-    }
-
-    const ins = await supabase
-      .from("telemetry_search")
-      .insert({ q, cnt: 1, first_seen_at: new Date().toISOString(), last_seen_at: new Date().toISOString() })
-      .select("id,q,cnt,last_seen_at")
-      .maybeSingle();
-    if (ins.error) { setCors(res); return res.status(200).json({ ok: false, error: "insert failed: " + ins.error.message }); }
-
-    setCors(res); return res.status(200).json({ ok: true, mode: "insert", row: ins.data });
+    setCors(res);
+    return res.status(200).json({ ok: true, isHit });
   } catch (e) {
     setCors(res);
-    return res.status(200).json({ ok: false, error: e?.message || String(e) });
+    return res.status(200).json({ ok: false, error: e.message });
   }
 };
