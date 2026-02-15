@@ -1,3 +1,4 @@
+// search.js 完整替换
 function setCors(res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
@@ -5,47 +6,39 @@ function setCors(res) {
 }
 
 function normQ(q) {
-  return String(q || "")
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, " ")
-    .slice(0, 120);
+  return String(q || "").trim().toLowerCase().replace(/\s+/g, " ").slice(0, 120);
 }
 
 module.exports = async function handler(req, res) {
   if (req.method === "OPTIONS") { setCors(res); return res.status(204).end(); }
-  if (req.method !== "POST") { setCors(res); return res.status(200).json({ ok: false, error: "Use POST" }); }
+  if (req.method !== "POST") { setCors(res); return res.status(200).json({ ok: false, error: "POST only" }); }
 
   try {
     let body = req.body;
-    if (typeof body === "string") body = body ? JSON.parse(body) : {};
+    if (typeof body === "string") body = JSON.parse(body);
 
     const q = normQ(body.q);
-    // isHit 由前端传入：true 代表搜到了结果，false 代表词库里没有
+    // 关键：接收前端的命中判断 (true/false)
     const isHit = body.isHit === true;
 
     if (!q) {
       setCors(res);
-      return res.status(200).json({ ok: true, skipped: true, reason: "empty q" });
+      return res.status(200).json({ ok: true, skipped: true });
     }
 
     const { createClient } = await import("@supabase/supabase-js");
     const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY);
 
-    // 1. 处理 telemetry_search 表 (记录所有搜索行为)
-    // 使用 upsert 逻辑：如果 q 存在则更新，不存在则插入
-    const { data: sData, error: sError } = await supabase.rpc('increment_telemetry_search', {
+    // 调用统一的 RPC 函数，一次性处理两张表
+    const { error } = await supabase.rpc('track_unified_search', {
       row_q: q,
-      is_zero: !isHit
+      is_hit: isHit
     });
 
-    // 2. 如果未命中，处理 telemetry_zero 表
-    if (!isHit) {
-      await supabase.rpc('increment_telemetry_zero', { row_q: q });
-    }
+    if (error) throw error;
 
     setCors(res);
-    return res.status(200).json({ ok: true, isHit });
+    return res.status(200).json({ ok: true, recorded: true, status: isHit ? "bingo" : "miss" });
   } catch (e) {
     setCors(res);
     return res.status(200).json({ ok: false, error: e.message });
