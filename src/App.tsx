@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Search } from './components/Search';
 import { GreenCard } from './components/GreenCard';
 import { MagentaCard } from './components/MagentaCard';
@@ -33,51 +33,6 @@ export default function App() {
   const [swearingToggle, setSwearingToggle] = useState(false);
   const [showAddDrawer, setShowAddDrawer] = useState(false);
   const [notFound, setNotFound] = useState(false);
-
-
-// Telemetry (search hit/miss) - debounced to avoid spamming while typing
-const telemetryTimer = useRef<number | null>(null);
-const telemetryLastKey = useRef<string>('');
-
-const reportTelemetry = async (q: string, isHit: boolean) => {
-  try {
-    const body = {
-      q,
-      isHit,
-      tz: Intl.DateTimeFormat().resolvedOptions().timeZone || '',
-      source: 'web_search',
-      ts: Date.now(),
-    };
-    const resp = await fetch('/api/telemetry/search', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-      keepalive: true,
-    });
-    const data = await resp.json().catch(() => ({}));
-    if (!data?.ok) {
-      // Keep UI silent but leave a hint for debugging.
-      console.warn('[telemetry/search] not recorded', data);
-    }
-  } catch (e) {
-    // Ignore telemetry errors
-  }
-};
-
-const scheduleTelemetry = (q: string, isHit: boolean) => {
-  const qq = String(q || '').trim();
-  if (!qq) return;
-
-  const key = `${qq}::${isHit ? '1' : '0'}`;
-  if (telemetryTimer.current) window.clearTimeout(telemetryTimer.current);
-
-  telemetryTimer.current = window.setTimeout(() => {
-    // Avoid duplicate submits when state re-renders with same value
-    if (telemetryLastKey.current === key) return;
-    telemetryLastKey.current = key;
-    reportTelemetry(qq, isHit);
-  }, 900);
-};
 
   useEffect(() => {
     const loadCSV = async () => {
@@ -199,8 +154,6 @@ const scheduleTelemetry = (q: string, isHit: boolean) => {
       setRelatedWords([]);
       setNotFound(false);
       setSwearingToggle(false);
-      if (telemetryTimer.current) window.clearTimeout(telemetryTimer.current);
-      telemetryLastKey.current = '';
       return;
     }
 
@@ -230,18 +183,12 @@ const scheduleTelemetry = (q: string, isHit: boolean) => {
       } else {
         setRelatedWords([]);
       }
-
-      // record bingo
-      scheduleTelemetry(query, true);
     } else {
       setMatchedEntries([]);
       setSelectedEntry(null);
       setRelatedWords([]);
       setNotFound(true);
       setSwearingToggle(false);
-
-      // record miss
-      scheduleTelemetry(query, false);
     }
   };
 
