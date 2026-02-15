@@ -1,4 +1,4 @@
-// search.js 完整替换
+// 覆盖你项目中的 api/search.js
 function setCors(res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
@@ -18,7 +18,7 @@ module.exports = async function handler(req, res) {
     if (typeof body === "string") body = JSON.parse(body);
 
     const q = normQ(body.q);
-    // 关键：接收前端的命中判断 (true/false)
+    // 关键：由前端判断该词是否在 lexeme.csv 中并传入
     const isHit = body.isHit === true;
 
     if (!q) {
@@ -27,9 +27,12 @@ module.exports = async function handler(req, res) {
     }
 
     const { createClient } = await import("@supabase/supabase-js");
-    const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY);
+    const supabase = createClient(
+      process.env.SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY
+    );
 
-    // 调用统一的 RPC 函数，一次性处理两张表
+    // 调用 SQL 函数一次性更新两张表
     const { error } = await supabase.rpc('track_unified_search', {
       row_q: q,
       is_hit: isHit
