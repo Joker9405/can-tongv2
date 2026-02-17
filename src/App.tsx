@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Search } from './components/Search';
 import { GreenCard } from './components/GreenCard';
 import { MagentaCard } from './components/MagentaCard';
@@ -33,6 +33,41 @@ export default function App() {
   const [swearingToggle, setSwearingToggle] = useState(false);
   const [showAddDrawer, setShowAddDrawer] = useState(false);
   const [notFound, setNotFound] = useState(false);
+
+  // ---- Search telemetry (records into telemetry_search/telemetry_zero via /api/telemetry/search) ----
+  const telemetryRef = useRef<{ timer?: number; lastKey?: string }>({});
+
+  const postSearchTelemetry = async (q: string, isHit: boolean) => {
+    try {
+      const payload = {
+        q,
+        isHit,
+        tz: Intl.DateTimeFormat().resolvedOptions().timeZone || "",
+        source: "web_search",
+        ts: Date.now(),
+      };
+      await fetch("/api/telemetry/search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        keepalive: true,
+      });
+    } catch {
+      // telemetry must not break UX
+    }
+  };
+
+  const scheduleSearchTelemetry = (q: string, isHit: boolean) => {
+    const key = `${q}|${isHit ? "1" : "0"}`;
+
+    if (telemetryRef.current.timer) window.clearTimeout(telemetryRef.current.timer);
+    telemetryRef.current.timer = window.setTimeout(() => {
+      if (telemetryRef.current.lastKey === key) return;
+      telemetryRef.current.lastKey = key;
+      postSearchTelemetry(q, isHit);
+    }, 800);
+  };
+
 
   useEffect(() => {
     const loadCSV = async () => {
@@ -165,6 +200,9 @@ export default function App() {
       const enTokens = splitTokens(entry.en, true);
       return chsTokens.includes(query) || enTokens.includes(queryEn);
     });
+
+    // Telemetry: record this search with correct hit_status
+    scheduleSearchTelemetry(query, searchResults.length > 0);
 
     if (searchResults.length > 0) {
       const colloquialResults = searchResults.filter(e => e.is_r18 === '0');
