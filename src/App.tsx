@@ -4,8 +4,6 @@ import { GreenCard } from './components/GreenCard';
 import { MagentaCard } from './components/MagentaCard';
 import { BlueCard } from './components/BlueCard';
 import { AddWordDrawer } from './components/AddWordDrawer';
-// 导入你定义的 supabase 客户端，确保路径正确
-import { supabase } from './supabaseClient';
 
 export interface LexemeEntry {
   id?: string;
@@ -33,56 +31,39 @@ export default function App() {
   const [showAddDrawer, setShowAddDrawer] = useState(false);
   const [notFound, setNotFound] = useState(false);
 
-  // Telemetry 计时器，避免打字太快导致频繁写入数据库
   const telemetryTimer = useRef<number | null>(null);
   const telemetryLastKey = useRef<string>('');
 
-  /**
-   * 核心逻辑：向 Supabase 写入搜索统计
-   */
+  // 发送数据到你的 api/search.js (Vercel 后端)
   const reportTelemetry = async (q: string, isHit: boolean) => {
-    const searchTerm = q.trim().toLowerCase();
-    const hitStatus = isHit ? 'bingo' : 'miss';
-
     try {
-      // 1. 记录到全量表 telemetry_search
-      await supabase.from('telemetry_search').insert([
-        {
-          q: searchTerm,
-          is_zero: !isHit,
-          hit_status: hitStatus,
-          cnt: 1, // 这里假设是简单插入，数据库可设置累加逻辑
-          last_seen_at: new Date().toISOString()
-        }
-      ]);
-
-      // 2. 如果未命中，额外记录到 telemetry_zero
-      if (!isHit) {
-        await supabase.from('telemetry_zero').insert([
-          {
-            q: searchTerm,
-            cnt: 1,
-            last_seen_at: new Date().toISOString()
-          }
-        ]);
-      }
+      const body = {
+        q,
+        isHit,
+        tz: Intl.DateTimeFormat().resolvedOptions().timeZone || '',
+        source: 'web_search',
+      };
+      await fetch('/api/search', { // 这里的路径对应你 vercel 上的 search.js 路由
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+        keepalive: true,
+      });
     } catch (e) {
-      console.error('[Supabase Telemetry Error]:', e);
+      console.error('Telemetry failed', e);
     }
   };
 
   const scheduleTelemetry = (q: string, isHit: boolean) => {
     const qq = String(q || '').trim();
     if (!qq) return;
-
     const key = `${qq}::${isHit ? '1' : '0'}`;
     if (telemetryTimer.current) window.clearTimeout(telemetryTimer.current);
-
     telemetryTimer.current = window.setTimeout(() => {
       if (telemetryLastKey.current === key) return;
       telemetryLastKey.current = key;
       reportTelemetry(qq, isHit);
-    }, 1500); // 延迟1.5秒待用户停止输入后再写入
+    }, 1200);
   };
 
   useEffect(() => {
@@ -139,11 +120,6 @@ export default function App() {
       if (!r || r.every(c => String(c ?? '').trim() === '')) continue;
       const entry: any = {};
       headers.forEach((header, index) => { entry[header] = String(r[index] ?? '').trim(); });
-      entry.id = entry.id || '';
-      entry.zhh = entry.zhh || '';
-      entry.zhh_pron = entry.zhh_pron || '';
-      entry.chs = entry.chs || '';
-      entry.en = entry.en || '';
       entry.is_r18 = normalizeIsR18(entry.is_r18);
       data.push(entry as LexemeEntry);
     }
@@ -153,25 +129,17 @@ export default function App() {
   const splitTokens = (value: string, lower = false) =>
     String(value ?? '').split('/').map(s => s.trim()).filter(Boolean).map(s => (lower ? s.toLowerCase() : s));
 
-  /**
-   * 搜索执行逻辑
-   */
   const handleSearch = (term: string) => {
     setSearchTerm(term);
     const query = term.trim();
     if (!query) {
       setMatchedEntries([]);
       setSelectedEntry(null);
-      setRelatedWords([]);
       setNotFound(false);
-      setSwearingToggle(false);
-      if (telemetryTimer.current) window.clearTimeout(telemetryTimer.current);
-      telemetryLastKey.current = '';
       return;
     }
-
     const queryEn = query.toLowerCase();
-    const searchResults: LexemeEntry[] = lexemeData.filter(entry => {
+    const searchResults = lexemeData.filter(entry => {
       const chsTokens = splitTokens(entry.chs, false);
       const enTokens = splitTokens(entry.en, true);
       return chsTokens.includes(query) || enTokens.includes(queryEn);
@@ -179,40 +147,24 @@ export default function App() {
 
     if (searchResults.length > 0) {
       const colloquialResults = searchResults.filter(e => e.is_r18 === '0');
-      const entriesToChooseFrom = colloquialResults.length > 0 ? colloquialResults : searchResults;
-      const randomIndex = Math.floor(Math.random() * entriesToChooseFrom.length);
-      const selected = entriesToChooseFrom[randomIndex];
-
+      const selected = colloquialResults.length > 0 ? colloquialResults[0] : searchResults[0];
       setMatchedEntries(searchResults);
       setSelectedEntry(selected);
       setNotFound(false);
-      setSwearingToggle(false);
-
       if (selected.related) {
         setRelatedWords(selected.related.split(/[,/]/).map(w => w.trim()).filter(w => w));
-      } else {
-        setRelatedWords([]);
       }
-
-      // 命中 - 标记为 bingo
-      scheduleTelemetry(query, true);
+      scheduleTelemetry(query, true); // Bingo
     } else {
       setMatchedEntries([]);
       setSelectedEntry(null);
-      setRelatedWords([]);
       setNotFound(true);
-      setSwearingToggle(false);
-
-      // 未命中 - 标记为 miss
-      scheduleTelemetry(query, false);
+      scheduleTelemetry(query, false); // Miss
     }
   };
 
   const handleEntryClick = (entry: LexemeEntry) => {
     setSelectedEntry(entry);
-    if (entry.related) {
-      setRelatedWords(entry.related.split(/[,/]/).map(w => w.trim()).filter(w => w));
-    }
   };
 
   const toggleLanguage = () => {
@@ -230,23 +182,13 @@ export default function App() {
             <h1 className="text-3xl font-bold text-[#c8ff00] font-[Architects_Daughter] text-[32px]">Can-Tong</h1>
             <div className="w-2 h-2 rounded-full bg-[#c8ff00]"></div>
           </div>
-          <button onClick={toggleLanguage} className="text-sm text-gray-400 hover:text-gray-300 transition-colors font-[Inder]">
-            chs‑zhh‑en
-          </button>
+          <button onClick={toggleLanguage} className="text-sm text-gray-400 hover:text-gray-300 transition-colors font-[Inder]">chs‑zhh‑en</button>
         </div>
-
         <Search value={searchTerm} onChange={handleSearch} placeholder="imbecile" />
-
         {loading && <div className="text-center text-gray-400 mt-8">Loading data...</div>}
-
         {!loading && selectedEntry && (
           <div className="mt-2 space-y-2">
-            {selectedEntry.is_r18 === '1' ? (
-              <MagentaCard entry={selectedEntry} />
-            ) : (
-              <GreenCard entry={selectedEntry} />
-            )}
-
+            {selectedEntry.is_r18 === '1' ? <MagentaCard entry={selectedEntry} /> : <GreenCard entry={selectedEntry} />}
             <div className="flex flex-wrap gap-2">
               {colloquialEntries.filter(e => e !== selectedEntry).map((entry, index) => (
                 <button key={`green-${index}`} onClick={() => handleEntryClick(entry)} className="px-5 py-3 bg-[#c8ff00] text-black rounded-[28px] p-8 relative text-lg hover:scale-105 transition-transform font-medium">
@@ -254,45 +196,26 @@ export default function App() {
                 </button>
               ))}
             </div>
-
             {vulgarEntries.length > 0 && !swearingToggle && (
-              <div className="flex items-center gap-2">
-                <button onClick={() => setSwearingToggle(true)} className="px-5 py-3 bg-[#ff0090] text-white rounded-[28px] p-8 relative text-lg hover:bg-[#ff1a9f] transition-colors font-medium font-bold font-[Anton]">
-                  Swearing
-                </button>
-              </div>
+              <button onClick={() => setSwearingToggle(true)} className="px-5 py-3 bg-[#ff0090] text-white rounded-[28px] p-8 relative text-lg font-[Anton] font-bold">Swearing</button>
             )}
-
-            {swearingToggle && vulgarEntries.length > 0 && (
+            {swearingToggle && (
               <div className="flex flex-wrap gap-2">
-                {vulgarEntries.filter(e => e !== selectedEntry).map((entry, index) => (
-                  <button key={`magenta-${index}`} onClick={() => handleEntryClick(entry)} className="px-5 py-3 bg-[#ff0090] text-white rounded-[28px] p-8 relative text-lg hover:scale-105 transition-transform font-medium animate-slide-in" style={{ animationDelay: `${index * 0.05}s` }}>
-                    {entry.zhh}
-                  </button>
+                {vulgarEntries.map((entry, index) => (
+                  <button key={`magenta-${index}`} onClick={() => handleEntryClick(entry)} className="px-5 py-3 bg-[#ff0090] text-white rounded-[28px] p-8 relative text-lg animate-slide-in">{entry.zhh}</button>
                 ))}
               </div>
             )}
-
             <div className="relative">
-              <button onClick={() => setShowAddDrawer(true)} className="px-5 py-3 bg-gray-700 text-[#c8ff00] rounded-[28px] p-8 relative text-lg hover:bg-gray-600 transition-colors font-medium font-[Anton] font-bold">
-                add
-              </button>
-              {showAddDrawer && (
-                <AddWordDrawer isOpen={showAddDrawer} searchTerm={searchTerm} onClose={() => setShowAddDrawer(false)} />
-              )}
+              <button onClick={() => setShowAddDrawer(true)} className="px-5 py-3 bg-gray-700 text-[#c8ff00] rounded-[28px] p-8 relative text-lg font-[Anton] font-bold">add</button>
+              {showAddDrawer && <AddWordDrawer isOpen={showAddDrawer} searchTerm={searchTerm} onClose={() => setShowAddDrawer(false)} />}
             </div>
           </div>
         )}
-
-        {!loading && notFound && searchTerm && (
-          <BlueCard searchTerm={searchTerm} />
-        )}
-
+        {!loading && notFound && searchTerm && <BlueCard searchTerm={searchTerm} />}
         <div className="mt-16 pt-8 text-center text-xs text-gray-600">
           <p className="font-[Inder]">Vocabulary collected on that day: {lexemeData.length} Entry</p>
-          <p className="mt-1 font-[ABeeZee]">
-            CanTongMVP — Code MIT, Core Lexicons Closed (All Rights Reserved).
-          </p>
+          <p className="mt-1 font-[ABeeZee]">CanTongMVP — Code MIT, Core Lexicons Closed (All Rights Reserved).</p>
         </div>
       </div>
     </div>
