@@ -1,23 +1,22 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { Search } from './components/Search';
 import { GreenCard } from './components/GreenCard';
 import { MagentaCard } from './components/MagentaCard';
 import { BlueCard } from './components/BlueCard';
 import { AddWordDrawer } from './components/AddWordDrawer';
+// 导入你定义的 supabase 客户端，确保路径正确
+import { supabase } from './supabaseClient';
 
 export interface LexemeEntry {
-  id?: string;          // 对应 id 字段
-  zhh: string;          // 对应 zhh 字段
-  zhh_pron: string;     // 对应 zhh_pron（粤拼）字段
-  // 统一规范为 '0' | '1'，避免出现 "1" / 1 / 1\r 导致的粉卡不稳定
-  is_r18: '0' | '1';    // 对应 is_r18 字段
-  chs: string;          // 对应 chs 字段
-  en: string;           // 对应 en 字段
-  owner_tag?: string;   // 对应 owner_tag 字段
-  register?: string;    // 对应 register 字段
-  intent?: string;      // 对应 intent 字段
-  // 兼容旧 UI 逻辑（即便 CSV 不提供这些列，也不会影响）
+  id?: string;
+  zhh: string;
+  zhh_pron: string;
+  is_r18: '0' | '1';
+  chs: string;
+  en: string;
+  owner_tag?: string;
+  register?: string;
+  intent?: string;
   related?: string;
   tags?: string;
 }
@@ -34,55 +33,61 @@ export default function App() {
   const [showAddDrawer, setShowAddDrawer] = useState(false);
   const [notFound, setNotFound] = useState(false);
 
+  // Telemetry 计时器，避免打字太快导致频繁写入数据库
+  const telemetryTimer = useRef<number | null>(null);
+  const telemetryLastKey = useRef<string>('');
 
-// Telemetry (search hit/miss) - debounced to avoid spamming while typing
-const telemetryTimer = useRef<number | null>(null);
-const telemetryLastKey = useRef<string>('');
+  /**
+   * 核心逻辑：向 Supabase 写入搜索统计
+   */
+  const reportTelemetry = async (q: string, isHit: boolean) => {
+    const searchTerm = q.trim().toLowerCase();
+    const hitStatus = isHit ? 'bingo' : 'miss';
 
-const reportTelemetry = async (q: string, isHit: boolean) => {
-  try {
-    const body = {
-      q,
-      isHit,
-      tz: Intl.DateTimeFormat().resolvedOptions().timeZone || '',
-      source: 'web_search',
-      ts: Date.now(),
-    };
-    const resp = await fetch('/api/telemetry/search', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-      keepalive: true,
-    });
-    const data = await resp.json().catch(() => ({}));
-    if (!data?.ok) {
-      // Keep UI silent but leave a hint for debugging.
-      console.warn('[telemetry/search] not recorded', data);
+    try {
+      // 1. 记录到全量表 telemetry_search
+      await supabase.from('telemetry_search').insert([
+        {
+          q: searchTerm,
+          is_zero: !isHit,
+          hit_status: hitStatus,
+          cnt: 1, // 这里假设是简单插入，数据库可设置累加逻辑
+          last_seen_at: new Date().toISOString()
+        }
+      ]);
+
+      // 2. 如果未命中，额外记录到 telemetry_zero
+      if (!isHit) {
+        await supabase.from('telemetry_zero').insert([
+          {
+            q: searchTerm,
+            cnt: 1,
+            last_seen_at: new Date().toISOString()
+          }
+        ]);
+      }
+    } catch (e) {
+      console.error('[Supabase Telemetry Error]:', e);
     }
-  } catch (e) {
-    // Ignore telemetry errors
-  }
-};
+  };
 
-const scheduleTelemetry = (q: string, isHit: boolean) => {
-  const qq = String(q || '').trim();
-  if (!qq) return;
+  const scheduleTelemetry = (q: string, isHit: boolean) => {
+    const qq = String(q || '').trim();
+    if (!qq) return;
 
-  const key = `${qq}::${isHit ? '1' : '0'}`;
-  if (telemetryTimer.current) window.clearTimeout(telemetryTimer.current);
+    const key = `${qq}::${isHit ? '1' : '0'}`;
+    if (telemetryTimer.current) window.clearTimeout(telemetryTimer.current);
 
-  telemetryTimer.current = window.setTimeout(() => {
-    // Avoid duplicate submits when state re-renders with same value
-    if (telemetryLastKey.current === key) return;
-    telemetryLastKey.current = key;
-    reportTelemetry(qq, isHit);
-  }, 900);
-};
+    telemetryTimer.current = window.setTimeout(() => {
+      if (telemetryLastKey.current === key) return;
+      telemetryLastKey.current = key;
+      reportTelemetry(qq, isHit);
+    }, 1500); // 延迟1.5秒待用户停止输入后再写入
+  };
 
   useEffect(() => {
     const loadCSV = async () => {
       try {
-        // Load the CSV file from local public directory
         const response = await fetch('/lexeme.csv');
         const csvText = await response.text();
         const parsedData = parseCSV(csvText);
@@ -93,105 +98,66 @@ const scheduleTelemetry = (q: string, isHit: boolean) => {
         setLoading(false);
       }
     };
-
     loadCSV();
   }, []);
 
-  // 规范化 is_r18：兼容 1 / "1" / 1\r / 空值
   const normalizeIsR18 = (raw: unknown): '0' | '1' => {
-    const v = String(raw ?? '')
-      .replace(/^\uFEFF/, '')
-      .trim()
-      .replace(/^"+|"+$/g, '');
+    const v = String(raw ?? '').replace(/^\uFEFF/, '').trim().replace(/^"+|"+$/g, '');
     return v === '1' ? '1' : '0';
   };
 
-  // RFC4180 兼容 CSV 解析：解决含引号/逗号/换行导致的列错位（粉卡不稳定的根因）
   const parseCsvRows = (text: string): string[][] => {
     const rows: string[][] = [];
     let row: string[] = [];
     let field = '';
     let inQuotes = false;
-
     for (let i = 0; i < text.length; i++) {
       const ch = text[i];
       const next = text[i + 1];
-
       if (ch === '"') {
-        if (inQuotes && next === '"') {
-          field += '"';
-          i++;
-        } else {
-          inQuotes = !inQuotes;
-        }
+        if (inQuotes && next === '"') { field += '"'; i++; } else { inQuotes = !inQuotes; }
         continue;
       }
-
-      if (ch === ',' && !inQuotes) {
-        row.push(field);
-        field = '';
-        continue;
-      }
-
+      if (ch === ',' && !inQuotes) { row.push(field); field = ''; continue; }
       if ((ch === '\n' || ch === '\r') && !inQuotes) {
         if (ch === '\r' && next === '\n') i++;
-        row.push(field);
-        rows.push(row);
-        row = [];
-        field = '';
-        continue;
+        row.push(field); rows.push(row); row = []; field = ''; continue;
       }
-
       field += ch;
     }
-
-    // flush last field/row
-    row.push(field);
-    rows.push(row);
+    row.push(field); rows.push(row);
     return rows;
   };
 
   const parseCSV = (csvText: string): LexemeEntry[] => {
     const rows = parseCsvRows(csvText);
     if (!rows.length) return [];
-
     const headers = rows[0].map(h => String(h ?? '').replace(/^\uFEFF/, '').trim());
     const data: LexemeEntry[] = [];
-
     for (let i = 1; i < rows.length; i++) {
       const r = rows[i];
       if (!r || r.every(c => String(c ?? '').trim() === '')) continue;
-
       const entry: any = {};
-      headers.forEach((header, index) => {
-        entry[header] = String(r[index] ?? '').trim();
-      });
-
-      // 必填字段兜底，避免空值导致渲染异常
+      headers.forEach((header, index) => { entry[header] = String(r[index] ?? '').trim(); });
       entry.id = entry.id || '';
       entry.zhh = entry.zhh || '';
       entry.zhh_pron = entry.zhh_pron || '';
       entry.chs = entry.chs || '';
       entry.en = entry.en || '';
       entry.is_r18 = normalizeIsR18(entry.is_r18);
-
       data.push(entry as LexemeEntry);
     }
-
     return data;
   };
 
-  // 词条字段里用 / 分隔多个同义词：只允许“完全一致”命中某一个 token（取消 includes/模糊）
   const splitTokens = (value: string, lower = false) =>
-    String(value ?? '')
-      .split('/')
-      .map(s => s.trim())
-      .filter(Boolean)
-      .map(s => (lower ? s.toLowerCase() : s));
+    String(value ?? '').split('/').map(s => s.trim()).filter(Boolean).map(s => (lower ? s.toLowerCase() : s));
 
+  /**
+   * 搜索执行逻辑
+   */
   const handleSearch = (term: string) => {
     setSearchTerm(term);
-
     const query = term.trim();
     if (!query) {
       setMatchedEntries([]);
@@ -205,8 +171,6 @@ const scheduleTelemetry = (q: string, isHit: boolean) => {
     }
 
     const queryEn = query.toLowerCase();
-
-    // 只允许 chs 或 en 精确 token 命中（完全相等），否则不算命中
     const searchResults: LexemeEntry[] = lexemeData.filter(entry => {
       const chsTokens = splitTokens(entry.chs, false);
       const enTokens = splitTokens(entry.en, true);
@@ -225,13 +189,12 @@ const scheduleTelemetry = (q: string, isHit: boolean) => {
       setSwearingToggle(false);
 
       if (selected.related) {
-        const words = selected.related.split(/[,/]/).map(w => w.trim()).filter(w => w);
-        setRelatedWords(words);
+        setRelatedWords(selected.related.split(/[,/]/).map(w => w.trim()).filter(w => w));
       } else {
         setRelatedWords([]);
       }
 
-      // record bingo
+      // 命中 - 标记为 bingo
       scheduleTelemetry(query, true);
     } else {
       setMatchedEntries([]);
@@ -240,37 +203,21 @@ const scheduleTelemetry = (q: string, isHit: boolean) => {
       setNotFound(true);
       setSwearingToggle(false);
 
-      // record miss
+      // 未命中 - 标记为 miss
       scheduleTelemetry(query, false);
-    }
-  };
-
-
-  const handleWordClick = (word: string) => {
-    const found = matchedEntries.find(entry => entry.zhh === word);
-    if (found) {
-      setSelectedEntry(found);
-      if (found.related) {
-        const words = found.related.split(/[,/]/).map(w => w.trim()).filter(w => w);
-        setRelatedWords(words);
-      }
     }
   };
 
   const handleEntryClick = (entry: LexemeEntry) => {
     setSelectedEntry(entry);
     if (entry.related) {
-      const words = entry.related.split(/[,/]/).map(w => w.trim()).filter(w => w);
-      setRelatedWords(words);
+      setRelatedWords(entry.related.split(/[,/]/).map(w => w.trim()).filter(w => w));
     }
   };
 
   const toggleLanguage = () => {
     setLanguage(prev => prev === 'chs' ? 'en' : 'chs');
   };
-
-  const isSwearing = selectedEntry?.is_r18 === '1' || selectedEntry?.tags?.includes('Swearing');
-  const isColloquial = selectedEntry?.is_r18 === '0';
 
   const vulgarEntries = matchedEntries.filter(e => e.is_r18 === '1');
   const colloquialEntries = matchedEntries.filter(e => e.is_r18 === '0');
@@ -283,20 +230,12 @@ const scheduleTelemetry = (q: string, isHit: boolean) => {
             <h1 className="text-3xl font-bold text-[#c8ff00] font-[Architects_Daughter] text-[32px]">Can-Tong</h1>
             <div className="w-2 h-2 rounded-full bg-[#c8ff00]"></div>
           </div>
-          
-          <button
-            onClick={toggleLanguage}
-            className="text-sm text-gray-400 hover:text-gray-300 transition-colors font-[Inder]"
-          >
+          <button onClick={toggleLanguage} className="text-sm text-gray-400 hover:text-gray-300 transition-colors font-[Inder]">
             chs‑zhh‑en
           </button>
         </div>
 
-        <Search
-          value={searchTerm}
-          onChange={handleSearch}
-          placeholder="imbecile"
-        />
+        <Search value={searchTerm} onChange={handleSearch} placeholder="imbecile" />
 
         {loading && <div className="text-center text-gray-400 mt-8">Loading data...</div>}
 
@@ -309,27 +248,16 @@ const scheduleTelemetry = (q: string, isHit: boolean) => {
             )}
 
             <div className="flex flex-wrap gap-2">
-              {colloquialEntries
-                .filter(e => e !== selectedEntry)
-                .map((entry, index) => (
-                  <button
-                    key={`green-${index}`}
-                    onClick={() => handleEntryClick(entry)}
-                    className="px-5 py-3 bg-[#c8ff00] text-black rounded-[28px] p-8 relative text-lg 
-                              hover:scale-105 transition-transform font-medium"
-                  >
-                    {entry.zhh} 
-                  </button>
-                ))}
+              {colloquialEntries.filter(e => e !== selectedEntry).map((entry, index) => (
+                <button key={`green-${index}`} onClick={() => handleEntryClick(entry)} className="px-5 py-3 bg-[#c8ff00] text-black rounded-[28px] p-8 relative text-lg hover:scale-105 transition-transform font-medium">
+                  {entry.zhh}
+                </button>
+              ))}
             </div>
 
             {vulgarEntries.length > 0 && !swearingToggle && (
               <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setSwearingToggle(true)}
-                  className="px-5 py-3 bg-[#ff0090] text-white rounded-[28px] p-8 relative text-lg 
-                            hover:bg-[#ff1a9f] transition-colors font-medium font-bold font-[Anton]"
-                >
+                <button onClick={() => setSwearingToggle(true)} className="px-5 py-3 bg-[#ff0090] text-white rounded-[28px] p-8 relative text-lg hover:bg-[#ff1a9f] transition-colors font-medium font-bold font-[Anton]">
                   Swearing
                 </button>
               </div>
@@ -337,37 +265,20 @@ const scheduleTelemetry = (q: string, isHit: boolean) => {
 
             {swearingToggle && vulgarEntries.length > 0 && (
               <div className="flex flex-wrap gap-2">
-                {vulgarEntries
-                  .filter(e => e !== selectedEntry)
-                  .map((entry, index) => (
-                    <button
-                      key={`magenta-${index}`}
-                      onClick={() => handleEntryClick(entry)}
-                      className="px-5 py-3 bg-[#ff0090] text-white rounded-[28px] p-8 relative text-lg 
-                                hover:scale-105 transition-transform font-medium animate-slide-in"
-                      style={{ animationDelay: `${index * 0.05}s` }}
-                    >
-                      {entry.zhh} 
-                    </button>
-                  ))}
+                {vulgarEntries.filter(e => e !== selectedEntry).map((entry, index) => (
+                  <button key={`magenta-${index}`} onClick={() => handleEntryClick(entry)} className="px-5 py-3 bg-[#ff0090] text-white rounded-[28px] p-8 relative text-lg hover:scale-105 transition-transform font-medium animate-slide-in" style={{ animationDelay: `${index * 0.05}s` }}>
+                    {entry.zhh}
+                  </button>
+                ))}
               </div>
             )}
 
             <div className="relative">
-              <button
-                onClick={() => setShowAddDrawer(true)}
-                className="px-5 py-3 bg-gray-700 text-[#c8ff00] rounded-[28px] p-8 relative text-lg 
-                          hover:bg-gray-600 transition-colors font-medium font-[Anton] font-bold"
-              >
+              <button onClick={() => setShowAddDrawer(true)} className="px-5 py-3 bg-gray-700 text-[#c8ff00] rounded-[28px] p-8 relative text-lg hover:bg-gray-600 transition-colors font-medium font-[Anton] font-bold">
                 add
               </button>
-              
               {showAddDrawer && (
-                <AddWordDrawer
-                  isOpen={showAddDrawer}
-                  searchTerm={searchTerm}
-                  onClose={() => setShowAddDrawer(false)}
-                />
+                <AddWordDrawer isOpen={showAddDrawer} searchTerm={searchTerm} onClose={() => setShowAddDrawer(false)} />
               )}
             </div>
           </div>
