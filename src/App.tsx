@@ -35,7 +35,7 @@ export default function App() {
   const [notFound, setNotFound] = useState(false);
 
   // ---- Search telemetry (records into telemetry_search/telemetry_zero via /api/telemetry/search) ----
-  const telemetryRef = useRef<{ timer?: number; lastKey?: string }>({});
+  const telemetryRef = useRef<{ timer?: number; lastSentKey?: string; lastSentAt?: number }>({});
 
   const postSearchTelemetry = async (q: string, isHit: boolean) => {
     try {
@@ -46,6 +46,7 @@ export default function App() {
         source: "web_search",
         ts: Date.now(),
       };
+
       await fetch("/api/telemetry/search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -57,15 +58,29 @@ export default function App() {
     }
   };
 
+  // Debounce typing: only send when user pauses (avoids logging every keystroke).
+  // Also prevent accidental double-fire of the same (q, hit) within a short window.
   const scheduleSearchTelemetry = (q: string, isHit: boolean) => {
-    const key = `${q}|${isHit ? "1" : "0"}`;
+    const qTrim = String(q ?? "").trim();
+    if (!qTrim) return;
+    if (loading) return; // avoid false "miss" before lexeme.csv is loaded
 
+    const key = qTrim + "|" + (isHit ? "1" : "0");
     if (telemetryRef.current.timer) window.clearTimeout(telemetryRef.current.timer);
+
     telemetryRef.current.timer = window.setTimeout(() => {
-      if (telemetryRef.current.lastKey === key) return;
-      telemetryRef.current.lastKey = key;
-      postSearchTelemetry(q, isHit);
-    }, 800);
+      const now = Date.now();
+      if (
+        telemetryRef.current.lastSentKey === key &&
+        telemetryRef.current.lastSentAt &&
+        now - telemetryRef.current.lastSentAt < 700
+      ) {
+        return;
+      }
+      telemetryRef.current.lastSentKey = key;
+      telemetryRef.current.lastSentAt = now;
+      postSearchTelemetry(qTrim, isHit);
+    }, 500);
   };
 
 
