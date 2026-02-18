@@ -34,55 +34,26 @@ export default function App() {
   const [showAddDrawer, setShowAddDrawer] = useState(false);
   const [notFound, setNotFound] = useState(false);
 
-  // ---- Search telemetry (records into telemetry_search/telemetry_zero via /api/telemetry/search) ----
-  const telemetryRef = useRef<{ timer?: number; lastSentKey?: string; lastSentAt?: number }>({});
-
-  const postSearchTelemetry = async (q: string, isHit: boolean) => {
-    try {
-      const payload = {
-        q,
-        isHit,
-        tz: Intl.DateTimeFormat().resolvedOptions().timeZone || "",
-        source: "web_search",
-        ts: Date.now(),
-      };
-
-      await fetch("/api/telemetry/search", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-        keepalive: true,
-      });
-    } catch {
-      // telemetry must not break UX
-    }
-  };
-
-  // Debounce typing: only send when user pauses (avoids logging every keystroke).
-  // Also prevent accidental double-fire of the same (q, hit) within a short window.
+  // --- Telemetry: 只在“完成一次检索”后上报（带 isHit），避免打字噪音 ---
+  const telemetryTimerRef = useRef<number | null>(null);
   const scheduleSearchTelemetry = (q: string, isHit: boolean) => {
-    const qTrim = String(q ?? "").trim();
-    if (!qTrim) return;
-    if (loading) return; // avoid false "miss" before lexeme.csv is loaded
+    const v = (q || '').trim();
+    if (!v) return;
 
-    const key = qTrim + "|" + (isHit ? "1" : "0");
-    if (telemetryRef.current.timer) window.clearTimeout(telemetryRef.current.timer);
+    if (telemetryTimerRef.current) window.clearTimeout(telemetryTimerRef.current);
 
-    telemetryRef.current.timer = window.setTimeout(() => {
-      const now = Date.now();
-      if (
-        telemetryRef.current.lastSentKey === key &&
-        telemetryRef.current.lastSentAt &&
-        now - telemetryRef.current.lastSentAt < 700
-      ) {
-        return;
-      }
-      telemetryRef.current.lastSentKey = key;
-      telemetryRef.current.lastSentAt = now;
-      postSearchTelemetry(qTrim, isHit);
-    }, 500);
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+    telemetryTimerRef.current = window.setTimeout(() => {
+      fetch('/api/telemetry/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ q: v, isHit, tz, source: 'web_search' }),
+        keepalive: true,
+      }).catch(() => {
+        // ignore telemetry errors
+      });
+    }, 600);
   };
-
 
   useEffect(() => {
     const loadCSV = async () => {
@@ -216,9 +187,6 @@ export default function App() {
       return chsTokens.includes(query) || enTokens.includes(queryEn);
     });
 
-    // Telemetry: record this search with correct hit_status
-    scheduleSearchTelemetry(query, searchResults.length > 0);
-
     if (searchResults.length > 0) {
       const colloquialResults = searchResults.filter(e => e.is_r18 === '0');
       const entriesToChooseFrom = colloquialResults.length > 0 ? colloquialResults : searchResults;
@@ -243,6 +211,10 @@ export default function App() {
       setNotFound(true);
       setSwearingToggle(false);
     }
+
+
+    // Telemetry: 记录一次完成的检索（命中/未命中）
+    scheduleSearchTelemetry(query, searchResults.length > 0);
   };
 
 
