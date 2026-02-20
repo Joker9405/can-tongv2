@@ -1,58 +1,78 @@
-// search.js 完整替换
-function setCors(res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-}
+import { createClient } from '@supabase/supabase-js';
 
-function normQ(q) {
-  return String(q || "").trim().toLowerCase().replace(/\s+/g, " ").slice(0, 120);
-}
+/**
+ * POST /api/telemetry/search
+ * Body:
+ *  - q: string
+ *  - isHit?: boolean
+ *  - source?: string (default: 'web_search')
+ *  - tz?: string (default: '')
+ *
+ * Writes:
+ *  - telemetry_search: ALL queries (bingo/miss) aggregated by q (cnt++)
+ *  - telemetry_zero: ONLY miss queries aggregated by q (cnt++)
+ */
+export default async function handler(req, res) {
+  // CORS (simple)
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  if (req.method === 'OPTIONS') return res.status(200).end();
 
-module.exports = async function handler(req, res) {
-  if (req.method === "OPTIONS") { setCors(res); return res.status(204).end(); }
-  if (req.method !== "POST") { setCors(res); return res.status(200).json({ ok: false, error: "POST only" }); }
+  if (req.method !== 'POST') {
+    return res.status(405).json({ ok: false, error: 'Method Not Allowed' });
+  }
 
   try {
-    let body = req.body;
-    if (typeof body === "string") body = JSON.parse(body);
+    const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
 
-    const q = normQ(body.q);
-    // 关键：接收前端的命中判断 (true/false)
-    // 只记录“完成一次检索”的请求，不记录纯打字/输入事件。
-    const hasIsHit = typeof body.isHit === 'boolean';
-    const isHit = body.isHit === true;
-    const tz = typeof body.tz === 'string' ? body.tz : null;
-    const source = typeof body.source === 'string' ? body.source : null;
-
+    const qRaw = (body.q ?? '').toString();
+    const q = qRaw.trim();
     if (!q) {
-      setCors(res);
-      return res.status(200).json({ ok: true, skipped: true });
+      return res.status(200).json({ ok: true, recorded: false, skipped: true, reason: 'empty q' });
     }
 
-    if (!hasIsHit) {
-      // 防止旧的“打字埋点”把所有输入都当成 miss 写进 telemetry_zero
-      setCors(res);
-      return res.status(200).json({ ok: true, skipped: true, reason: 'missing_isHit' });
+    // Accept both camelCase (isHit) and snake_case (is_hit) to avoid mismatch.
+    const isHit = body.isHit !== undefined ? Boolean(body.isHit) : Boolean(body.is_hit);
+    const source = String(body.source || 'web_search');
+    const tz = String(body.tz || '');
+
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const anonKey = process.env.SUPABASE_ANON_KEY;
+
+    // Serverless route SHOULD use service role. If missing, fall back to anon (may be blocked by RLS).
+    const supabaseKey = serviceRoleKey || anonKey;
+    if (!supabaseUrl || !supabaseKey) {
+      return res.status(500).json({ ok: false, error: 'Missing SUPABASE_URL or SUPABASE_*_KEY in Vercel env' });
     }
 
-    const { createClient } = await import("@supabase/supabase-js");
-    const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY);
-
-    // 调用统一的 RPC 函数，一次性处理两张表
-    const { error } = await supabase.rpc('track_unified_search', {
-      row_q: q,
-      is_hit: isHit,
-      tz,
-      source
+    const supabase = createClient(supabaseUrl, supabaseKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
     });
 
-    if (error) throw error;
+    // Call the DB function (atomic cnt++). The function itself writes both tables.
+    // NOTE: arg names MUST match the SQL function: (is_hit, row_q, source, tz)
+    const { data, error } = await supabase.rpc('track_unified_search', {
+      is_hit: isHit,
+      row_q: q,
+      source,
+      tz,
+    });
 
-    setCors(res);
-    return res.status(200).json({ ok: true, recorded: true, q, hit_status: isHit ? "bingo" : "miss" });
+    if (error) {
+      // IMPORTANT: still return 200 so UI isn't broken, but expose error for debugging in DevTools.
+      return res.status(200).json({
+        ok: false,
+        error: error.message || String(error),
+        hint: 'Check Supabase SQL: track_unified_search(is_hit boolean, row_q text, source text, tz text) exists and is granted EXECUTE',
+      });
+    }
+
+    // Your UI asked for: { ok: true, recorded: true, status: 'bingo' | 'miss' }
+    const status = isHit ? 'bingo' : 'miss';
+    return res.status(200).json({ ok: true, recorded: true, status, data: data ?? null });
   } catch (e) {
-    setCors(res);
-    return res.status(200).json({ ok: false, error: e.message });
+    return res.status(500).json({ ok: false, error: e?.message || String(e) });
   }
-};
+}
