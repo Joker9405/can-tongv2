@@ -333,17 +333,17 @@ L331,點鳩樣行,dim2 gau1 joeng6 haang4,1,怎么去/怎样去/怎么走/点鬼
 L332,點閪樣行,dim2 hai1 joeng6 haang4,1,怎么去/怎样去/怎么走/点鬼样行,how to get there,Colloquial,
 L333,硬鳩頸,ngaang6 gau1 geng2,1,思想不开通/吃古不化/硬颈,narrow minded/conservatives/fuddy duddy/dogged/stubborn/obstinate,Colloquial,
 L334,咁柒硬頸,gam3 cat6 ngaang6 geng2,1,思想不开通/吃古不化/硬颈,narrow minded/conservatives/fuddy duddy/dogged/stubborn/obstinate,Colloquial,
-L335,咁撚硬頸,gam2 nan2 ngaang6 geng2,1,思想不开通/吃古不化/硬颈,narrow minded/conservatives/fuddy duddy/dogged/stubborn/obstinate,Colloquial,
-L336,咁閪硬頸,gam2 hai1 ngaang6 geng2,1,思想不开通/吃古不化/硬颈,narrow minded/conservatives/fuddy duddy/dogged/stubborn/obstinate,Colloquial,
-L337,咁鳩硬頸,gam2 gau1 ngaang6 geng2,1,思想不开通/吃古不化/硬颈,narrow minded/conservatives/fuddy duddy/dogged/stubborn/obstinate,Colloquial,
+L335,咁撚硬頸,gam3 nan2 ngaang6 geng2,1,思想不开通/吃古不化/硬颈,narrow minded/conservatives/fuddy duddy/dogged/stubborn/obstinate,Colloquial,
+L336,咁閪硬頸,gam3 hai1 ngaang6 geng2,1,思想不开通/吃古不化/硬颈,narrow minded/conservatives/fuddy duddy/dogged/stubborn/obstinate,Colloquial,
+L337,咁鳩硬頸,gam3 gau1 ngaang6 geng2,1,思想不开通/吃古不化/硬颈,narrow minded/conservatives/fuddy duddy/dogged/stubborn/obstinate,Colloquial,
 L338,𠸎㨢,na1 neng3,0,连结/瓜葛/关系,linkage/unresolved matters/relation/association,Colloquial,
 L339,啦掕,aa1 lang3,0,连结/瓜葛/关系,linkage/unresolved matters/relation/association,Colloquial,
 L340,挐掕,aa1 lang4,0,连结/瓜葛/关系,linkage/unresolved matters/relation/association,Colloquial,
 L341,啦㨢,aa1 lang5,0,连结/瓜葛/关系,linkage/unresolved matters/relation/association,Colloquial,
 L342,冇挐冇掕,mou5 naa1 mou5 nang3,0,毫无关系/没有任何瓜葛,completely unrelated,Colloquial,
 L343,瓜葛,gwaa1 got3,0,连结/瓜葛/关系,linkage/unresolved matters/relation/association,Formal,
-L344,咁撚着數？,gam2 nan2 zoek6 sou3,1,沒有免費的午餐/天上不会掉馅饼,too good to be true/It's not that simple/something too good to be true/There is no free lunch,Colloquial,ask
-L345,咁柒着數？,gam2 cat6 zoek6 sou3,1,沒有免費的午餐/天上不会掉馅饼,too good to be true/It's not that simple/something too good to be true/There is no free lunch,Colloquial,ask
+L344,咁撚着數？,gam3 nan2 zoek6 sou3,1,沒有免費的午餐/天上不会掉馅饼,too good to be true/It's not that simple/something too good to be true/There is no free lunch,Colloquial,ask
+L345,咁柒着數？,gam3 cat6 zoek6 sou3,1,沒有免費的午餐/天上不会掉馅饼,too good to be true/It's not that simple/something too good to be true/There is no free lunch,Colloquial,ask
 L346,猜FING,caai1 FING,0,剪刀石头布/石头剪刀布,Rock Paper Scissors,Colloquial,
 L347,黑水,hak1 seoi2,0,咖啡,coffee/cafe,Colloquial,
 L348,廢水 ,fai3 seoi2,0,饮料,drinks/drinkable,Colloquial,
@@ -779,7 +779,7 @@ L775,真係唔简单,zan1 hai6 m4 gaan2 daan1,0,真不容易,that`s rough,Colloq
 L776,難到我囖,naan4 dou2 ngo5 lo1,0,你把我难住了,you got me,Colloquial,
 L777,你考起我喇,nei5 haau2 hei2 ngo5 laa3,0,你把我难住了,you got me,Colloquial,
 L778,冇搞喇,mou5 gaau2 laa3,1,别闹/别闹了/别,cut it out,Colloquial,
-L779,冇搞咁多嘢喇,mou5 gaau2 gam2 do1 je5 laa3,0,别闹/别闹了/别,cut it out,Colloquial,
+L779,冇搞咁多嘢喇,mou5 gaau2 gam3 do1 je5 laa3,0,别闹/别闹了/别,cut it out,Colloquial,
 L780,呢嗰乜嘢嚟咖,nei1 go2 mat1 je5 lai4 gaa3,0,这是什么/这是什么鬼,what the heck,Colloquial,
 L781,乜鬼嘢嚟咖,mat1 gwai2 je5 lai4 gaa3,0,这是什么/这是什么鬼,what the heck,Colloquial,
 L782,乜Q嘢嚟咖,mat1 Q je5 lai4 gaa3,0,这是什么/这是什么鬼,what the heck,Colloquial,
@@ -1042,7 +1042,7 @@ L1032,隨便,ceoi4 pin2,0,随便/草率/随意/粗心/轻易,casually/informally
 L1033,是旦,si6 daan6,0,随便/草率/随意/粗心/轻易,casually/informally/randomly/easily/carelessly,Colloquial,
 L1034,輕易,hing1 ji6,0,随便/草率/随意/粗心/轻易,casually/informally/randomly/easily/carelessly,Colloquial,
 L1035,求其,kau4 kei4,0,随便/草率/随意/粗心/无所谓/没要求/马虎,casually/informally/randomly/easily/carelessly/whatever,Colloquial,
-L1036,亂鳩咁嚟,lyun6 gau1 gam2 lai4,1,随便/草率/随意/粗心/轻易/乱来,casually/informally/randomly/easily/carelessly,Colloquial,
+L1036,亂鳩咁嚟,lyun6 gau1 gam3 lai4,1,随便/草率/随意/粗心/轻易/乱来,casually/informally/randomly/easily/carelessly,Colloquial,
 L1037,得唔得,dak1 m4 dak1 ,0,行不行,are you ok/Is it okay/Can you do it,Colloquial,
 L1038,唔好,m4 hou3,0,不/不要,no/don't,Colloquial,
 L1039,唔得,m4 dak1 ,0,不行,no way,Colloquial,
@@ -1069,7 +1069,7 @@ L1059,發狼戾,faat3 long1 lai2,0,发疯/抓狂/疯掉/耍脾气/生气,manic/g
 L1060,掬氣,guk1 hei3,0,生气/憋气/受气,angry/moody,Colloquial,Emotional expression
 L1061,發啷厲,faat3 long1 lai2,0,发疯/抓狂/疯掉/耍脾气/生气,manic/go mad/Get mad/Pissed off,Colloquial,Emotional expression
 L1062,忟薑,mang2 goeng1,0,情绪低/容易发脾气的人,loose the temper/angry/unhappy,Colloquial,Emotional state
-L1063,成嚿忟薑咁,sing4 gau6 mang2 goeng1 gam2,0,情绪低/像个容易发脾气的人,loose the temper/angry/unhappy,Colloquial,Emotional state
+L1063,成嚿忟薑噉,sing4 gau6 mang2 goeng1 gam2,0,情绪低/像个容易发脾气的人,loose the temper/angry/unhappy,Colloquial,Emotional state
 L1064,發忟憎,faat3 mang2 zang2 ,0,发疯/抓狂/疯掉/耍脾气/生气/情绪失控,manic/go mad/Get mad/Pissed off,Colloquial,Emotional expression
 L1065,發𤷪𤺧,faat3 mang2 zang2 ,0,发疯/抓狂/疯掉/耍脾气/生气/情绪失控,manic/go mad/Get mad/Pissed off,Colloquial,Emotional expression
 L1066,走漏,zau2 lau6,0,揭发/披露/曝光/暴露/揭露,expose/uncover/unmask/reveal/disclosure,Colloquial,describe
@@ -1174,13 +1174,21 @@ L1164,損鳩咗,syun2 kau2 zo2 ,1,擦伤了/破了皮/受伤了,Abrasion/Broken 
 L1165,損撚咗,syun2 nan2 zo2 ,1,擦伤了/破了皮/受伤了,Abrasion/Broken skin/Injury,Colloquial,Injury
 L1166,損柒咗,syun2 cat6 zo2 ,1,擦伤了/破了皮/受伤了,Abrasion/Broken skin/Injury,Colloquial,Injury
 L1167,屈鳩親,wat1 kau2 can1,1,扭伤了/受伤了/受伤了,I sprained my ankle/I'm injured/I'm hurt,Colloquial,Injury
-L1168,好,hou3,0,好的/无语/无语了/可以,ok/okay/speechless,Colloquial,
-L1169,得,dak1,0,好的/无语/无语了/可以,ok/okay/speechless,Colloquial,
-L1170,冇嘢講,mou2 je5 gong2,0,好的/无语/无语了/可以/无话可说,ok/okay/speechless,Colloquial,
-L1171,得喇咁,dak1 laa3 gam3,0,好的/无语/无语了/可以/无话可说,ok/okay/speechless,Colloquial,
-L1172,冇嘢好講,mou2 je5 hou3 gong2,0,好的/无语/无语了/可以/无话可说,ok/okay/speechless,Colloquial,
-L1173,,,,,,,
-,,,,,,,
-,,,,,,,
-,,,,,,,
+L1168,好,hou3,0,好的/无语/无语了/可以/行,ok/okay/speechless,Colloquial,response
+L1169,得,dak1,0,好的/无语/无语了/可以/行,ok/okay/speechless,Colloquial,response
+L1170,冇嘢講,mou2 je5 gong2,0,好的/无语/无语了/可以/无话可说,ok/okay/speechless,Colloquial,response
+L1171,得喇咁,dak1 laa3 gam3,0,好的/无语/无语了/可以/无话可说,ok/okay/speechless,Colloquial,response
+L1172,冇嘢好講,mou2 je5 hou3 gong2,0,好的/无语/无语了/可以/无话可说,ok/okay/speechless,Colloquial,response
+L1173,收兵,sau1 bing1,0,养鱼,breadcrumbing,Colloquial,behavior
+L1174,做兵,zou6 bing1,0,当备胎/当舔狗/当工具人/当护花使者,become backup/become benched,Colloquial,person
+L1175,做觀音兵,gun1 jam1 bing1,0,当备胎/当舔狗/当工具人/当护花使者,become backup/become benched,Colloquial,person
+L1176,觀音兵,gun1 jam1 bing1,0,备胎/舔狗/工具人/护花使者,backup/planB/benched/benching/cushioning,Colloquial,title
+L1177,護花使者, wu6 faa1 si5 ze2,0,备胎/舔狗/工具人/护花使者,backup/planB/benched/benching/cushioning,Colloquial,title
+L1178,搬運兵,bun1 wan6 bing1,0,备胎/舔狗/工具人/护花使者/功能备胎/搬运备胎,backup/planB/benched/rebound/benching/cushioning,Colloquial,title
+L1179,運輸兵,wan6 syu1 bing1,0,备胎/舔狗/工具人/护花使者/功能备胎/运输备胎,backup/planB/benched/rebound/benching/cushioning,Colloquial,title
+L1180,飛冰,fei1 jing4,0,不加冰,no ice,Colloquial,order
+L1181,走冰,zau2 jing4,0,不加冰,no ice,Colloquial,order
+L1182,走路,zau2 lou2,0,步行,walk,Colloquial,Behavior
+L1183,行緊过嚟,hang4,0,在路上/正在过来/步行中,walking,Colloquial,Behavior/response
+L1184,行緊,hang4 gan2,0,正在进行/正走着/行走中/步行中,walking,Colloquial,Behavior
 ,,,,,,,
