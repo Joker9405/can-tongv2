@@ -80,7 +80,8 @@ export function BlueCard({ searchTerm }: BlueCardProps) {
 
   return (
     <>
-      <div className="mt-2 space-y-2">
+      {/* BlueCard - 统一间距 mt-4 */}
+      <div className="mt-4 space-y-4">
         {/* AI Generated Blue Card */}
         <div className="bg-[#0000ff] rounded-[28px] p-8 relative">
           <div className="text-center">

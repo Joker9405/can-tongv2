@@ -5,6 +5,7 @@ import { GreenCard } from './components/GreenCard';
 import { MagentaCard } from './components/MagentaCard';
 import { BlueCard } from './components/BlueCard';
 import { AddWordDrawer } from './components/AddWordDrawer';
+import { MoreHorizontal } from 'lucide-react';
 
 export interface LexemeEntry {
   id?: string;          // 对应 id 字段
@@ -249,45 +250,69 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-black text-white pb-20">
-      <div className="max-w-3xl mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-2">
-            <h1 className="text-3xl font-bold text-[#c8ff00] font-[Architects_Daughter] text-[32px]">Can-Tong</h1>
-            <div className="w-2 h-2 rounded-full bg-[#c8ff00]"></div>
+      <div className="max-w-3xl mx-auto px-4 pt-2">
+        {/* 系统状态栏区域 - 时间/电量/信号 */}
+        <div className="h-6 flex items-center justify-between text-xs text-gray-400 font-[Inder]">
+          <span>13:05</span>
+          <div className="flex items-center gap-1">
+            <span>📶</span>
+            <span>🔋</span>
           </div>
-          
-          <button
-            onClick={toggleLanguage}
-            className="text-sm text-gray-400 hover:text-gray-300 transition-colors font-[Inder]"
-          >
-            chs‑zhh‑en
-          </button>
         </div>
 
-        <Search
-          value={searchTerm}
-          onChange={handleSearch}
-          placeholder="imbecile"
-        />
+        {/* 统一头部 - Can-Tong• + 黑色胶囊 */}
+        <div className="flex items-center justify-between mt-2 mb-4">
+          <h1 className="text-[32px] text-[#c8ff00] font-[Architects_Daughter]">
+            Can-Tong•
+          </h1>
+          
+          <div className="flex items-center gap-3">
+            {/* 黑色胶囊按钮 - 白图标 */}
+            <button
+              className="w-9 h-9 rounded-full bg-black border border-gray-700 flex items-center justify-center"
+            >
+              <MoreHorizontal className="w-5 h-5 text-white" />
+            </button>
+            
+            {/* 语言切换 */}
+            <button
+              onClick={toggleLanguage}
+              className="text-sm text-gray-400 hover:text-gray-300 transition-colors font-[Inder]"
+            >
+              chs‑zhh‑en
+            </button>
+          </div>
+        </div>
 
-        {loading && <div className="text-center text-gray-400 mt-8">Loading data...</div>}
+        {/* 搜索框 - 统一间距基准 mt-4 */}
+        <div className="mt-4">
+          <Search
+            value={searchTerm}
+            onChange={handleSearch}
+            placeholder="imbecile"
+          />
+        </div>
 
+        {loading && <div className="text-center text-gray-400 mt-4">Loading data...</div>}
+
+        {/* 主内容区 - 统一间距 mt-4 */}
         {!loading && selectedEntry && (
-          <div className="mt-2 space-y-2">
+          <div className="mt-4 space-y-4">
             {selectedEntry.is_r18 === '1' ? (
               <MagentaCard entry={selectedEntry} />
             ) : (
               <GreenCard entry={selectedEntry} />
             )}
 
-            <div className="flex flex-wrap gap-2">
+            {/* 口语绿卡组 - 统一间距 */}
+            <div className="flex flex-wrap gap-3">
               {colloquialEntries
                 .filter(e => e !== selectedEntry)
                 .map((entry, index) => (
                   <button
                     key={`green-${index}`}
                     onClick={() => handleEntryClick(entry)}
-                    className="px-5 py-3 bg-[#c8ff00] text-black rounded-[28px] p-8 relative text-lg 
+                    className="px-5 py-3 bg-[#c8ff00] text-black rounded-[28px] text-lg 
                               hover:scale-105 transition-transform font-medium"
                   >
                     {entry.zhh} 
@@ -295,11 +320,12 @@ export default function App() {
                 ))}
             </div>
 
+            {/* Swearing 按钮 - 统一间距 */}
             {vulgarEntries.length > 0 && !swearingToggle && (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 <button
                   onClick={() => setSwearingToggle(true)}
-                  className="px-5 py-3 bg-[#ff0090] text-white rounded-[28px] p-8 relative text-lg 
+                  className="px-5 py-3 bg-[#ff0090] text-white rounded-[28px] text-lg 
                             hover:bg-[#ff1a9f] transition-colors font-medium font-bold font-[Anton]"
                 >
                   Swearing
@@ -307,15 +333,16 @@ export default function App() {
               </div>
             )}
 
+            {/* 粗口绿卡组 - 统一间距 */}
             {swearingToggle && vulgarEntries.length > 0 && (
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-3">
                 {vulgarEntries
                   .filter(e => e !== selectedEntry)
                   .map((entry, index) => (
                     <button
                       key={`magenta-${index}`}
                       onClick={() => handleEntryClick(entry)}
-                      className="px-5 py-3 bg-[#ff0090] text-white rounded-[28px] p-8 relative text-lg 
+                      className="px-5 py-3 bg-[#ff0090] text-white rounded-[28px] text-lg 
                                 hover:scale-105 transition-transform font-medium animate-slide-in"
                       style={{ animationDelay: `${index * 0.05}s` }}
                     >
@@ -325,10 +352,11 @@ export default function App() {
               </div>
             )}
 
+            {/* add 按钮 - 统一间距 */}
             <div className="relative">
               <button
                 onClick={() => setShowAddDrawer(true)}
-                className="px-5 py-3 bg-gray-700 text-[#c8ff00] rounded-[28px] p-8 relative text-lg 
+                className="px-5 py-3 bg-gray-700 text-[#c8ff00] rounded-[28px] text-lg 
                           hover:bg-gray-600 transition-colors font-medium font-[Anton] font-bold"
               >
                 add
@@ -349,9 +377,10 @@ export default function App() {
           <BlueCard searchTerm={searchTerm} />
         )}
 
-        <div className="mt-16 pt-8 text-center text-xs text-gray-600">
+        {/* Footer - 统一间距 mt-8 */}
+        <div className="mt-8 pt-4 text-center text-xs text-gray-600">
           <p className="font-[Inder]">Vocabulary collected on that day: {lexemeData.length} Entry</p>
-          <p className="mt-1 font-[ABeeZee]">
+          <p className="mt-2 font-[ABeeZee]">
             CanTongMVP — Code MIT, Core Lexicons Closed (All Rights Reserved).
           </p>
         </div>
